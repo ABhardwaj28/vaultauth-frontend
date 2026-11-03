@@ -1,161 +1,130 @@
-# VaultAuth SSO — Frontend Client
+# VaultAuth SSO — Frontend Web Client
 
-> **Enterprise Single Sign-On (SSO) Portal with Client-Side Hashing, Mock 2FA OTP Verification, and Active Session Revocation.**
+> **Enterprise Single Sign-On (SSO) Portal with Multi-Factor Verification, Active Session Telemetry, and Instant 1-Click Revocation.**
 
-[![Status](https://img.shields.io/badge/Project%20Status-Active%20Development-blue.svg)](https://github.com/ABhardwaj28/vaultauth-frontend)
+[![Project Status](https://img.shields.io/badge/Project%20Status-Active%20Development-blue.svg)](https://github.com/ABhardwaj28/vaultauth-frontend)
+[![PRD Version](https://img.shields.io/badge/PRD-v2.0%20(Optimized)-success.svg)](docs/PRD_v2.0.md)
 [![Track](https://img.shields.io/badge/Track-PST__PD__154%20Product%20Development-orange.svg)]()
 [![Batch](https://img.shields.io/badge/Batch-2026%20Level%204%20(Stretch)-purple.svg)]()
-[![Backend Repo](https://img.shields.io/badge/Backend%20Repo-vaultauth--backend-success.svg)](https://github.com/ProPlays2312/vaultauth-backend)
+[![Backend Service](https://img.shields.io/badge/Backend%20API-vaultauth--backend-blueviolet.svg)](https://github.com/ProPlays2312/vaultauth-backend)
+[![Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)]()
 
 ---
 
-## 1. Project Overview
+## 1. Executive Summary
 
-**VaultAuth SSO** is a streamlined cybersecurity authentication portal engineered for enterprise teams requiring robust single sign-on (SSO), client-side cryptographic hashing, two-factor authentication (2FA) simulation, and real-time session management without the overhead of massive OAuth2/OIDC server infrastructure.
-
-- **Theme:** Identity & Access Management (IAM), Zero-Trust Architecture
-- **Industry:** Cybersecurity
-- **Core Value Proposition:** Hashed credential verification, 2FA OTP simulation, and active session revoking in under 30 seconds.
-
----
-
-## 2. Problem Statement & Solution
-
-### The Challenge
-- **Cleartext Credential Risks:** Many entry-level and legacy authentication platforms persist unhashed or poorly secured credentials, exposing organizations to credential stuffing and data breach hazards.
-- **Absence of 2FA Workflows:** Lack of secondary challenge gates allows compromised passwords to result directly in unauthorized account access.
-- **Session Persistence & Hijacking:** Employees leave sessions active across unmanaged devices, and administrators lack a centralized mechanism to inspect and terminate compromised sessions instantly.
-
-### The VaultAuth SSO Solution
-1. **Client-Side SHA-256 Hashing:** Plaintext passwords are never stored or transmitted raw. Secrets are transformed into 64-character SHA-256 hexadecimal digests via the Web Cryptography API (`crypto.subtle`).
-2. **Two-Factor Authentication (2FA OTP) Simulation:** Successful credential matching triggers a time-limited 6-digit mock OTP challenge screen.
-3. **Session Revocation & Telemetry:** Enterprise administrators can view live session details (device, client IP, timestamp) and terminate any session with 1-click instant revocation.
-4. **Brute-Force Guard:** 3 consecutive invalid attempts automatically lock the target account for 5 minutes.
+**VaultAuth SSO** is a zero-trust single sign-on (SSO) and identity access management (IAM) client application engineered for modern enterprise workforces. Built to interface with the [vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend) service, this client provides:
+- **Out-of-Band 2FA Verification:** Authenticates primary credentials and enforces secondary 6-digit email OTP (via Resend) or TOTP verification before issuing session tokens.
+- **Active Session Telemetry & 1-Click Revocation:** Enables employees to inspect their active sessions and administrators to revoke compromised devices globally in under 30 seconds.
+- **Client Security & Zero-Knowledge Transmission:** Plaintext secrets are sent over TLS directly to the server's Argon2id hashing engine; tokens are kept strictly in ephemeral memory/`sessionStorage` and dropped on any 401 error.
+- **Anti-Enumeration Privacy:** Standardized generic error responses prevent account existence probing and credential enumeration.
 
 ---
 
-## 3. Frontend Architecture & Optimization Strategy
+## 2. Team & Project Roles
 
-This repository contains the standalone, responsive web frontend for **VaultAuth SSO**. It is optimized according to the following design principles:
-
-### A. Pluggable Service Adapter Layer (Mock-to-Backend Transition)
-To guarantee zero friction when integrating with the [vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend), the frontend isolates all state and API operations inside an abstract service adapter (`apiService.js`):
-- **Local/Mock Mode:** Operates using browser `localStorage` seeded with standard `sample-data.json`, enabling standalone demonstration and offline testing.
-- **Live Backend Mode:** Enables seamless redirection to the REST endpoints exposed by `vaultauth-backend` with standard `fetch()` calls and Bearer token handling.
-
-### B. Security & Cryptographic Hardening
-- **Zero Raw Secret Exposure (BR-01):** Raw passwords never reach `localStorage` or `console.log`.
-- **SubtleCrypto Fallback Engine:** Implements a pure JS SHA-256 digest fallback for non-secure testing contexts (e.g. non-HTTPS, LAN IPs) where `window.crypto.subtle` is restricted.
-- **Strict DOM Sanitization (XSS Defense):** All dynamic strings (emails, device names, IP addresses, audit events) are sanitized before insertion into the DOM.
-- **Defensive Account Lockout (BR-03):** Client-side lockout timer state persists across reloads to prevent brute-force retries.
-
-### C. Enterprise UX & Responsive Design
-- **Responsive Layout:** Built with Bootstrap 5 and custom cybersecurity dark/light styling, fluidly tested across mobile viewports (375px) to desktop displays (1440px).
-- **Split 6-Digit OTP Input:** Optimized OTP entry with auto-focus jumping, backspace navigation, and clipboard paste support.
-- **Interactive Evaluation Toast:** Includes an opt-in evaluation toast showing generated mock OTPs for rapid grading and assessment.
-- **Role Switcher & Quick Demo State Reset:** Fast-switch toggle between **End User** and **Enterprise Admin** views, with a "Reset Demo Directory" button to reseed initial identity records.
-- **WebAuthn / FIDO2 Concept Card:** Reading-only stretch architectural card explaining hardware security keys and passwordless standards.
+- **Frontend & Client Security Lead:** Apoorva Bhardwaj ([@ABhardwaj28](https://github.com/ABhardwaj28))
+- **Backend & DevSecOps Lead:** Shaurya Jain ([@ProPlays2312](https://github.com/ProPlays2312))
+- **Course Mentor:** Mahati Ma'am
+- **Program:** Polaris School of Technology — On the Job Training (OJT), Semester 1
 
 ---
 
-## 4. Roles & Capabilities Matrix
+## 3. Product Requirements Document (PRD v2.0)
 
-| Capability | End User (Employee) | Enterprise Admin |
-|:---|:---:|:---:|
-| **Select Active Role (Demo Sign-In)** | Yes | Yes |
-| **Register New Account (Email + Hashed Password)** | Yes | Yes |
-| **Authenticate with 2FA Mock OTP** | Yes | Yes |
-| **View Own Active Sessions & Digital ID Card** | Yes | Yes |
-| **Revoke Any User Session** | No | **Yes** |
-| **View Global Security Audit Log** | No | **Yes** |
-| **Reset SSO Portal State (Demo)** | Yes | Yes |
+This repository strictly implements the **VaultAuth SSO PRD v2.0**, which elevates the platform from an isolated prototype to a production-grade full-stack architecture:
+- 📄 **[Read PRD v2.0 (Markdown)](docs/PRD_v2.0.md)**
+- 📥 **[Download PRD v2.0 (Compiled PDF)](docs/VaultAuth_SSO_PRD_v2.0.pdf)**
 
 ---
 
-## 5. API & Service Contract
+## 4. Frontend Architecture & Client Engineering
 
-The frontend implements and communicates with the backend via the following standard contracts:
-
-```typescript
-// 1. User Registration
-registerUser(email: string, plainPassword: string): Promise<UserRecord>
-// Error codes: ERR_DUPLICATE_EMAIL, ERR_WEAK_PASSWORD
-
-// 2. Primary Credential Verification
-authenticateUser(email: string, plainPassword: string): Promise<OTPChallengeState>
-// Error codes: ERR_INVALID_CREDENTIALS, ERR_ACCOUNT_LOCKED
-
-// 3. Mock 2FA OTP Validation
-verifyOTP(userId: string, inputOtp: string): Promise<SessionTokenResponse>
-// Error codes: ERR_INVALID_OTP
-
-// 4. Session Termination
-revokeSession(adminUser: string, sessionId: string): Promise<RevocationResult>
-// Error codes: ERR_FORBIDDEN, ERR_NOT_FOUND
-```
-
----
-
-## 6. Planned Directory Structure
+### 4.1 Single-Page Application (SPA) Views
+The client is structured as a fast, accessible, lightweight Vanilla JavaScript Single-Page Application without heavy framework bloat:
 
 ```text
 vaultauth-frontend/
-├── .gitignore                # Git ignore rules for OS, IDE, and build caches
-├── README.md                 # Complete system documentation and roadmap
-├── index.html                # Single-page enterprise SSO portal interface
+├── index.html                # Semantic HTML5 entrypoint with view containers
+├── vercel.json               # Production CSP, SRI, and security response headers
+├── docs/
+│   ├── PRD_v2.0.md           # Product Requirements Document (v2.0)
+│   └── VaultAuth_SSO_PRD_v2.0.pdf
 ├── css/
-│   └── style.css             # Enterprise styling, modern dark/light themes, OTP pins
+│   └── style.css             # Enterprise dark-mode styling, status pills, OTP inputs
 ├── js/
-│   ├── app.js                # Core controller and event orchestration
-│   ├── crypto.js             # SubtleCrypto SHA-256 wrapper & fallback
-│   ├── api.js                # Abstract Adapter (Mock LocalStorage <-> Live Backend)
-│   ├── session.js            # Active session tracking and device fingerprinting
-│   ├── audit.js              # Security event logger with XSS-safe DOM output
-│   └── ui.js                 # DOM views, OTP inputs, toasts, and modal handlers
-└── sample-data.json          # Pre-seeded users, active sessions, and audit logs
+│   ├── app.js                # Hash router and view coordinator
+│   ├── api.js                # Dual-mode API adapter (Mock <-> Live Backend)
+│   ├── auth.js               # Token lifecycle, session state, and auth guards
+│   ├── ui.js                 # DOM manipulators, spinners, modals, toasts
+│   └── components/
+│       ├── otpInput.js       # Auto-advancing split 6-digit numeric input
+│       ├── countdownTimer.js # Visual countdown ring for OTP expiry & lockout
+│       ├── sessionTable.js   # Active session manager with 1-click revocation buttons
+│       └── auditTable.js     # Admin audit log explorer with event filter
+└── sample-data.json          # Pre-seeded identities for offline testing
 ```
 
----
-
-## 7. Paired Backend Repository
-
-- **Repository:** [https://github.com/ProPlays2312/vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend)
-- **Collaboration Flow:** As the backend specification is updated and endpoints are landed in `vaultauth-backend`, this frontend repository will consume the live endpoints via its `api.js` adapter.
-
----
-
-## 8. Development & Quickstart (Upcoming Stage)
-
-Once the frontend code is committed in the next stage:
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/ABhardwaj28/vaultauth-frontend.git
-   cd vaultauth-frontend
-   ```
-2. Run locally via any static HTTP server:
-   ```bash
-   # Using Python 3
-   python3 -m http.server 3000
-
-   # Or using Node/npx
-   npx serve .
-   ```
-3. Open `http://localhost:3000` in your browser.
+### 4.2 Key Frontend UX & Security Features
+1. **Split 6-Digit OTP Box Component:**
+   - 6 individual numeric inputs with auto-advance, backspace auto-reverse, and clipboard paste routing (e.g. pasting `"849201"` fills all boxes and submits automatically).
+2. **Cold-Start Resilience Toast:**
+   - When communicating with the Render free-tier container during a wake-up cycle (> 2.0s response), an elegant non-blocking status banner informs the user: *"Connecting to VaultAuth cloud service (waking container)..."* to prevent frustration or repeated clicks.
+3. **Defense-in-Depth XSS Prevention:**
+   - Zero `innerHTML` with server-supplied attributes (user emails, device names, IPs, audit metadata). All dynamic strings are rendered through `element.textContent` and DOM node construction.
+4. **Strict Content Security Policy (`vercel.json`):**
+   - Configured with `default-src 'self'`, `script-src 'self'`, and `connect-src` limited to the production API origin, blocking malicious cross-origin exfiltration.
+5. **Interactive WebAuthn/FIDO2 Concept Card:**
+   - Reading-only modal illustrating public-key cryptography and biometric authentication workflows to satisfy stretch learning requirements.
 
 ---
 
-## 9. Milestones & Delivery Schedule
+## 5. API & Service Contract (FastAPI Alignment)
 
-- [x] **Week 1 (Current):** Git repository initialization, comprehensive documentation, frontend architecture optimization, `.gitignore` setup.
-- [ ] **Week 2:** Bootstrap UI views, SHA-256 WebCrypto integration, user registration, primary login, and mock 2FA OTP flow.
-- [ ] **Week 3:** Account lockout mechanism (3 failed attempts), session revocation manager, integration with `vaultauth-backend`.
-- [ ] **Week 4:** End-to-end security audit, test script verification, GitHub Pages / Vercel deployment, demonstration walkthrough.
+The frontend communicates with [vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend) over base path `/api/v1`:
+
+| Operation | Endpoint | Method | Client Headers / Payload |
+| :--- | :--- | :---: | :--- |
+| **Register Account** | `/api/v1/auth/register` | `POST` | `{ "email": "...", "password": "..." }` |
+| **Email Verification** | `/api/v1/auth/verify-email` | `POST` | `{ "email": "...", "code": "123456" }` |
+| **Resend Code** | `/api/v1/auth/verify-email/resend` | `POST` | `{ "email": "..." }` (capped at 3) |
+| **Primary Login** | `/api/v1/auth/login` | `POST` | `{ "email": "...", "password": "..." }` |
+| **Verify 2FA Code** | `/api/v1/auth/2fa/verify` | `POST` | `{ "challenge_id": "...", "code": "123456" }` |
+| **Sign Out** | `/api/v1/auth/logout` | `POST` | `Authorization: Bearer <token>` |
+| **User Active Sessions** | `/api/v1/me/sessions` | `GET` | `Authorization: Bearer <token>` |
+| **Revoke Session** | `/api/v1/sessions/{id}` | `DELETE` | `Authorization: Bearer <token>` |
+| **Admin All Sessions** | `/api/v1/admin/sessions` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin Audit Trail** | `/api/v1/admin/audit-logs` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
 
 ---
 
-## 10. Contributors & Sign-off
+## 6. Local Development & Quickstart
 
-- **Frontend Lead:** Apoorva Bhardwaj ([@ABhardwaj28](https://github.com/ABhardwaj28))
-- **Backend Lead:** Shaurya Jain ([@ProPlays2312](https://github.com/ProPlays2312))
-- **Program:** On the Job Training (OJT) — Semester 1
-- **Track ID:** `PST_PD_154`
+```bash
+# 1. Clone the repository
+git clone https://github.com/ABhardwaj28/vaultauth-frontend.git
+cd vaultauth-frontend
+
+# 2. Run locally with any static web server
+# Option A: Python
+python3 -m http.server 3000
+
+# Option B: Node / npx
+npx serve .
+```
+Visit `http://localhost:3000` in your web browser.
+
+---
+
+## 7. Delivery Milestones
+
+- [x] **Week 1:** Repository setup, PRD v2.0 optimization, responsive Bootstrap UI layout, and API adapter skeleton.
+- [ ] **Week 2:** Split 6-digit OTP input, registration & email verification views, login flow, and ephemeral token handling.
+- [ ] **Week 3:** Active session management table with 1-click revocation, admin audit log explorer, and Vercel deployment with CSP headers.
+- [ ] **Week 4:** Cross-browser testing, mobile responsive polish (375px), WebAuthn concept card, and end-to-end demo video.
+
+---
+
+## 8. License
+
+Licensed under the MIT License. Developed for academic demonstration at Polaris School of Technology.
