@@ -40,51 +40,92 @@ This repository strictly implements the **VaultAuth SSO PRD v2.0**, which elevat
 
 ## 4. Frontend Architecture & Modern Tech Stack
 
-### 4.1 Bun + React 18 + Tailwind CSS + Lucide
-The client has been upgraded to a high-performance modern Single-Page Application (SPA) powered by **Bun**, **React 18**, **Vite**, and **Tailwind CSS**, designed with an enterprise cybersecurity aesthetic inspired by Cloudflare Zero-Trust & Access:
+### 4.1 Bun + React 18 + TypeScript + Tailwind CSS (shadcn/ui-Grade)
+The client is engineered as a production-grade, enterprise-ready Single-Page Application (SPA) powered by **Bun**, **React 18**, **TypeScript**, and **Tailwind CSS**, designed with an engineered aesthetic modeled directly after **shadcn/ui** (`shadcn.com`), Linear, and Cloudflare Zero-Trust:
 
 ```text
 vaultauth-frontend/
-├── index.html                # Semantic entrypoint with theme flash prevention
-├── package.json              # Bun/Node package manifest
-├── vite.config.js            # Vite configuration with React fast refresh
-├── tailwind.config.js        # Custom Cloudflare Amber trademark design system & dark mode
-├── postcss.config.js         # PostCSS pipeline (Tailwind & Autoprefixer)
+├── index.html                   # Zero-FOUC theme bootloader & semantic entrypoint
+├── package.json                 # Bun/Node package manifest
+├── tsconfig.json                # Strict TypeScript configuration ("strict": true)
+├── vite.config.ts               # Vite configuration with React fast refresh & @ path aliases
+├── tailwind.config.js           # Semantic HSL design tokens & darkMode: ["class"]
+├── postcss.config.js            # PostCSS pipeline (Tailwind & Autoprefixer)
+├── .env.example                 # Environment variables specification
 ├── docs/
-│   ├── FRONTEND_PLANNER.md   # Phased delivery roadmap and component spec
-│   ├── PRD_v2.0.md           # Product Requirements Document (v2.0)
+│   ├── FRONTEND_PLANNER.md      # Phased delivery roadmap & component spec
+│   ├── PRD_v2.0.md              # Product Requirements Document (v2.0)
 │   └── VaultAuth_SSO_PRD_v2.0.pdf
 └── src/
-    ├── main.jsx              # React DOM root entrypoint
-    ├── App.jsx               # Application coordinator & routing state
-    ├── index.css             # Tailwind layers & tactile button utilities
-    ├── config.js             # API Gateway configuration & trademark branding
-    ├── services/
-    │   └── api.js            # Unified API service adapter with latency telemetry
-    └── components/
-        ├── Navbar.jsx        # Sticky navigation with live backend health monitor & theme switcher
-        ├── ThemeToggle.jsx   # Tactile Dark/Light theme mode switch
-        ├── AuthCard.jsx      # High-density Cloudflare-style authentication card
-        ├── LoginForm.jsx     # Corporate login with Zero-Trust integrity guard
-        ├── RegisterForm.jsx  # Account provisioning with NIST SP 800-63B strength meter
-        ├── ZeroTrustBadge.jsx# Cloudflare Turnstile-style security check component
-        ├── TwoFactorModal.jsx# 6-box OTP entry with countdown & resend throttle
-        └── DashboardView.jsx # Session telemetry, device cards, and 1-click revocation
+    ├── main.tsx                 # React DOM root entrypoint
+    ├── App.tsx                  # Application route registry with protected guards
+    ├── index.css                # Semantic HSL custom properties & theme tokens
+    ├── types/
+    │   └── api.ts               # Strict TypeScript contracts for all endpoints & errors
+    ├── lib/
+    │   ├── api.ts               # Typed fetch client, X-Request-ID & X-RateLimit-* parser
+    │   └── utils.ts             # cn(), formatters, User-Agent device parser, copyToClipboard
+    ├── context/
+    │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
+    │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
+    ├── components/
+    │   ├── ui/                  # shadcn-grade primitives
+    │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
+    │   │   ├── input.tsx        # High-assurance input with focus rings
+    │   │   ├── label.tsx        # Accessible form label
+    │   │   ├── card.tsx         # Hairline-bordered card containers
+    │   │   ├── badge.tsx        # Semantic status and role badges
+    │   │   ├── alert.tsx        # Contextual notification banners
+    │   │   ├── table.tsx        # Structured tabular views with uppercase mono headers
+    │   │   ├── dialog.tsx       # Radix UI accessible modal dialogs
+    │   │   ├── dropdown-menu.tsx# Radix UI popovers and action menus
+    │   │   ├── tabs.tsx         # Radix UI accessible segmented tabs
+    │   │   ├── separator.tsx    # Crisp 1px hairline dividers
+    │   │   ├── collapsible.tsx  # Expandable technical JSON drawers
+    │   │   ├── tooltip.tsx      # Hover technical details tooltips
+    │   │   ├── otp-input.tsx    # Accessible 6-cell segmented numeric OTP input
+    │   │   ├── copy-button.tsx  # 1-click clipboard copy with visual feedback
+    │   │   └── ThemeToggle.tsx  # Radix dropdown theme switcher (Light / Dark / System)
+    │   └── layout/
+    │       ├── AuthShell.tsx    # Constrained layout for authentication views
+    │       ├── DashboardShell.tsx# Unified dashboard with role-aware navigation
+    │       ├── TopBar.tsx       # Brand mark, live backend telemetry pill & user status
+    │       ├── RouteGuards.tsx  # Protected guards (RequireAuth, RequireAdmin, PublicOnly)
+    │       └── ErrorLayout.tsx  # Standardized error layout with technical diagnostics
+    └── pages/
+        ├── auth/
+        │   ├── LoginPage.tsx    # /login: Primary credentials with anti-enumeration handling
+        │   ├── RegisterPage.tsx # /register: NIST SP 800-63B policy validator (12-128 chars)
+        │   └── VerifyOtpPage.tsx# /verify-otp: 6-cell numeric OTP with 60s cooldown & attempt tracking
+        ├── dashboard/
+        │   ├── ProfileTab.tsx   # /dashboard/profile: User ID, role, status, and crypto specs
+        │   ├── SessionsTab.tsx  # /dashboard/sessions: Active employee sessions & 1-click self-revocation
+        │   └── admin/
+        │       ├── AppsTab.tsx  # /dashboard/admin/apps: OAuth clients + CRITICAL One-Time Secret Reveal
+        │       ├── UsersTab.tsx # /dashboard/admin/users: Directory search, 3-strike unlock & status controls
+        │       ├── AuditLogsTab.tsx # /dashboard/admin/audit-logs: Security audit trail & JSON drawer
+        │       └── GlobalSessionsTab.tsx # /dashboard/admin/sessions: Centralized kill-switch
+        └── errors/
+            ├── ForbiddenPage.tsx    # 403: ERR_FORBIDDEN (Administrator authority required)
+            ├── NotFoundPage.tsx     # 404: ERR_NOT_FOUND (Missing resource or route)
+            ├── RateLimitedPage.tsx  # 429: ERR_RATE_LIMITED (Live X-RateLimit-Reset countdown)
+            ├── ServerErrorPage.tsx  # 500/503: Offline / gateway unreachable
+            └── ErrorBoundary.tsx    # Global React ErrorBoundary wrapping root routes
 ```
 
-### 4.2 Key Frontend UX & Security Features
-1. **Cloudflare-Inspired Aesthetic & Trademark Identity:**
-   - **Trademark Color:** Cloudflare Tangerine / Safety Amber (`#F6821F`) with subtle ambient radial glow.
-   - **Tactile, Professional Buttons:** Layered top-highlight (`inset 0 1px 0 rgba(255,255,255,0.35)`), subtle gradient, micro-border, and active compression (not classic flat Tailwind buttons).
-   - **Dual Theme Support:** True obsidian cybersecurity dark mode (`#0A0D14` / `#111622`) and pristine enterprise white light mode (`#F8FAFC`).
-2. **Zero-Trust Posture Verification:**
-   - Turnstile-inspired browser integrity check widget validating TLS 1.3 posture and client attestation.
-3. **Split 6-Digit OTP Box Component:**
-   - 6 individual numeric inputs with auto-advance, backspace auto-reverse, clipboard paste routing, and 10-minute expiry countdown.
-4. **NIST SP 800-63B Password Validation:**
-   - Real-time client-side evaluation requiring minimum 12 characters, uppercase, lowercase, and numeric/symbol complexity with dynamic visual feedback.
-5. **Session Telemetry & 1-Click Revocation:**
-   - Real-time list of active employee sessions with device recognition (laptop/smartphone), IP origin, and instant revocation (`DELETE /api/v1/sessions/{id}`).
+### 4.2 Key Engineering & Security Highlights
+1. **Engineered shadcn/ui Design Standards:**
+   - Restrained Zinc/Slate palette driven entirely by semantic HSL CSS custom properties (`--background`, `--card`, `--primary`, `--border`, `--input`, `--ring`).
+   - Visual hierarchy established through crisp `1px solid hsl(var(--border))` hairline borders and subtle surface contrast rather than heavy drop shadows or glassmorphism abuse.
+   - Dual theme support (Light, Dark, and System) with zero-FOUC inline boot script.
+2. **One-Time OAuth Secret Reveal Flow:**
+   - When registering OAuth/OIDC relying party clients in `/dashboard/admin/apps`, the client secret is presented in a high-clarity one-time modal with copy buttons, requiring explicit user acknowledgment before dismissal.
+3. **Session Governance & Centralized Kill-Switch:**
+   - Both self-service session management for employees and centralized administrative termination across all global sessions with &lt;30s revocation enforcement.
+4. **NIST SP 800-63B Compliant Authentication:**
+   - Client-side validation enforcing 12 to 128 character password boundaries, paired with 6-digit split OTP input with paste routing, backspace auto-reverse, and 3-attempt limit tracking.
+5. **Strict TypeScript & Build Verification:**
+   - 100% type-checked under `"strict": true` and `"noUncheckedIndexedAccess": true`. Built with Bun in ~1s.
 
 ---
 

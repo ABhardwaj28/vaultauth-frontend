@@ -4,73 +4,91 @@
 
 @layer base {
   :root {
-    --color-brand: 246 130 31;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    /* Trademark Enterprise Accent: Cloudflare Safety Amber */
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 24 95% 53%;
+
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 5.5%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 5.5%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 24 95% 53%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 240 3.7% 14%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 14%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 14%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 24 95% 53%;
   }
 }
 
-/* Subtle enterprise grid pattern for cybersecurity backdrop */
-.bg-cyber-grid {
-  background-image: radial-gradient(rgba(246, 130, 31, 0.08) 1px, transparent 1px);
-  background-size: 32px 32px;
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased font-sans;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
 
-.dark .bg-cyber-grid {
-  background-image: radial-gradient(rgba(246, 130, 31, 0.12) 1px, transparent 1px);
-  background-size: 32px 32px;
+/* Custom subtle scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
 }
-
-/* Custom Elegant Button & UI Layer (Professional, Tactile, Non-standard Tailwind) */
-@layer components {
-  /* Trademark Elegant Primary Button */
-  .btn-elegant-primary {
-    @apply relative inline-flex items-center justify-center font-medium text-sm text-white
-           rounded-lg px-4 py-2.5 transition-all duration-150 select-none
-           bg-gradient-to-b from-[#FB923C] via-[#F6821F] to-[#E0690B]
-           border border-[#D96608]
-           shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_1px_2px_rgba(0,0,0,0.15)]
-           hover:brightness-105 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.4),0_4px_16px_rgba(246,130,31,0.35)]
-           active:scale-[0.985] active:brightness-95 active:shadow-[inset_0_2px_4px_rgba(0,0,0,0.2)]
-           disabled:opacity-60 disabled:cursor-not-allowed disabled:pointer-events-none;
-  }
-
-  /* Trademark Elegant Secondary Button */
-  .btn-elegant-secondary {
-    @apply relative inline-flex items-center justify-center font-medium text-sm
-           rounded-lg px-4 py-2.5 transition-all duration-150 select-none
-           bg-white dark:bg-[#161C28] text-slate-700 dark:text-slate-200
-           border border-slate-200 dark:border-[#263147]
-           shadow-[0_1px_2px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.04),0_1px_2px_rgba(0,0,0,0.2)]
-           hover:bg-slate-50 dark:hover:bg-[#1C2538] hover:border-slate-300 dark:hover:border-slate-600
-           active:scale-[0.985] active:brightness-95
-           disabled:opacity-60 disabled:cursor-not-allowed;
-  }
-
-  /* Danger Button */
-  .btn-elegant-danger {
-    @apply relative inline-flex items-center justify-center font-medium text-xs
-           rounded-md px-2.5 py-1.5 transition-all duration-150 select-none
-           bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20
-           hover:bg-rose-500 hover:text-white hover:border-rose-600
-           active:scale-95 disabled:opacity-50;
-  }
-
-  /* Professional Input Field */
-  .input-elegant {
-    @apply w-full rounded-lg px-3.5 py-2.5 text-sm transition-all duration-150
-           bg-white dark:bg-[#0B0F17]
-           text-slate-900 dark:text-slate-100
-           placeholder-slate-400 dark:placeholder-slate-500
-           border border-slate-200 dark:border-[#1F2737]
-           focus:outline-none focus:border-brand-500 dark:focus:border-brand-500
-           focus:ring-2 focus:ring-brand-500/20 dark:focus:ring-brand-500/25;
-  }
-
-  /* Cloudflare-inspired Card Layout */
-  .card-elegant {
-    @apply bg-white dark:bg-[#111622]
-           border border-slate-200/80 dark:border-[#1E2638]
-           rounded-2xl
-           shadow-[0_8px_30px_rgb(0,0,0,0.04),0_1px_3px_rgb(0,0,0,0.02)]
-           dark:shadow-[0_20px_50px_rgba(0,0,0,0.55),inset_0_1px_0_rgba(255,255,255,0.06)];
-  }
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
