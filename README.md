@@ -38,44 +38,53 @@ This repository strictly implements the **VaultAuth SSO PRD v2.0**, which elevat
 
 ---
 
-## 4. Frontend Architecture & Client Engineering
+## 4. Frontend Architecture & Modern Tech Stack
 
-### 4.1 Single-Page Application (SPA) Views
-The client is structured as a fast, accessible, lightweight Vanilla JavaScript Single-Page Application without heavy framework bloat:
+### 4.1 Bun + React 18 + Tailwind CSS + Lucide
+The client has been upgraded to a high-performance modern Single-Page Application (SPA) powered by **Bun**, **React 18**, **Vite**, and **Tailwind CSS**, designed with an enterprise cybersecurity aesthetic inspired by Cloudflare Zero-Trust & Access:
 
 ```text
 vaultauth-frontend/
-├── index.html                # Semantic HTML5 entrypoint with view containers
-├── vercel.json               # Production CSP, SRI, and security response headers
+├── index.html                # Semantic entrypoint with theme flash prevention
+├── package.json              # Bun/Node package manifest
+├── vite.config.js            # Vite configuration with React fast refresh
+├── tailwind.config.js        # Custom Cloudflare Amber trademark design system & dark mode
+├── postcss.config.js         # PostCSS pipeline (Tailwind & Autoprefixer)
 ├── docs/
+│   ├── FRONTEND_PLANNER.md   # Phased delivery roadmap and component spec
 │   ├── PRD_v2.0.md           # Product Requirements Document (v2.0)
 │   └── VaultAuth_SSO_PRD_v2.0.pdf
-├── css/
-│   └── style.css             # Enterprise dark-mode styling, status pills, OTP inputs
-├── js/
-│   ├── app.js                # Hash router and view coordinator
-│   ├── api.js                # Dual-mode API adapter (Mock <-> Live Backend)
-│   ├── auth.js               # Token lifecycle, session state, and auth guards
-│   ├── ui.js                 # DOM manipulators, spinners, modals, toasts
-│   └── components/
-│       ├── otpInput.js       # Auto-advancing split 6-digit numeric input
-│       ├── countdownTimer.js # Visual countdown ring for OTP expiry & lockout
-│       ├── sessionTable.js   # Active session manager with 1-click revocation buttons
-│       └── auditTable.js     # Admin audit log explorer with event filter
-└── sample-data.json          # Pre-seeded identities for offline testing
+└── src/
+    ├── main.jsx              # React DOM root entrypoint
+    ├── App.jsx               # Application coordinator & routing state
+    ├── index.css             # Tailwind layers & tactile button utilities
+    ├── config.js             # API Gateway configuration & trademark branding
+    ├── services/
+    │   └── api.js            # Unified API service adapter with latency telemetry
+    └── components/
+        ├── Navbar.jsx        # Sticky navigation with live backend health monitor & theme switcher
+        ├── ThemeToggle.jsx   # Tactile Dark/Light theme mode switch
+        ├── AuthCard.jsx      # High-density Cloudflare-style authentication card
+        ├── LoginForm.jsx     # Corporate login with Zero-Trust integrity guard
+        ├── RegisterForm.jsx  # Account provisioning with NIST SP 800-63B strength meter
+        ├── ZeroTrustBadge.jsx# Cloudflare Turnstile-style security check component
+        ├── TwoFactorModal.jsx# 6-box OTP entry with countdown & resend throttle
+        └── DashboardView.jsx # Session telemetry, device cards, and 1-click revocation
 ```
 
 ### 4.2 Key Frontend UX & Security Features
-1. **Split 6-Digit OTP Box Component:**
-   - 6 individual numeric inputs with auto-advance, backspace auto-reverse, and clipboard paste routing (e.g. pasting `"849201"` fills all boxes and submits automatically).
-2. **Cold-Start Resilience Toast:**
-   - When communicating with the Render free-tier container during a wake-up cycle (> 2.0s response), an elegant non-blocking status banner informs the user: *"Connecting to VaultAuth cloud service (waking container)..."* to prevent frustration or repeated clicks.
-3. **Defense-in-Depth XSS Prevention:**
-   - Zero `innerHTML` with server-supplied attributes (user emails, device names, IPs, audit metadata). All dynamic strings are rendered through `element.textContent` and DOM node construction.
-4. **Strict Content Security Policy (`vercel.json`):**
-   - Configured with `default-src 'self'`, `script-src 'self'`, and `connect-src` limited to the production API origin, blocking malicious cross-origin exfiltration.
-5. **Interactive WebAuthn/FIDO2 Concept Card:**
-   - Reading-only modal illustrating public-key cryptography and biometric authentication workflows to satisfy stretch learning requirements.
+1. **Cloudflare-Inspired Aesthetic & Trademark Identity:**
+   - **Trademark Color:** Cloudflare Tangerine / Safety Amber (`#F6821F`) with subtle ambient radial glow.
+   - **Tactile, Professional Buttons:** Layered top-highlight (`inset 0 1px 0 rgba(255,255,255,0.35)`), subtle gradient, micro-border, and active compression (not classic flat Tailwind buttons).
+   - **Dual Theme Support:** True obsidian cybersecurity dark mode (`#0A0D14` / `#111622`) and pristine enterprise white light mode (`#F8FAFC`).
+2. **Zero-Trust Posture Verification:**
+   - Turnstile-inspired browser integrity check widget validating TLS 1.3 posture and client attestation.
+3. **Split 6-Digit OTP Box Component:**
+   - 6 individual numeric inputs with auto-advance, backspace auto-reverse, clipboard paste routing, and 10-minute expiry countdown.
+4. **NIST SP 800-63B Password Validation:**
+   - Real-time client-side evaluation requiring minimum 12 characters, uppercase, lowercase, and numeric/symbol complexity with dynamic visual feedback.
+5. **Session Telemetry & 1-Click Revocation:**
+   - Real-time list of active employee sessions with device recognition (laptop/smartphone), IP origin, and instant revocation (`DELETE /api/v1/sessions/{id}`).
 
 ---
 

@@ -3,7 +3,7 @@
 ## Executive Summary
 This planner outlines the step-by-step frontend implementation roadmap for **VaultAuth SSO** (Track: `PST_PD_154`), tailored directly to the live backend API deployed at **`https://api.vaultauth.proplays2312.eu.org/`**.
 
-The frontend is engineered as a zero-dependency, high-assurance Single Page Application (SPA) using **Vanilla JavaScript (ES6 Modules)**, **Bootstrap 5.3**, and an enterprise cybersecurity dark-mode design system.
+The frontend is engineered as a modern, high-assurance Single Page Application (SPA) using **Bun**, **React 18**, **Tailwind CSS**, **Lucide Icons**, and an enterprise cybersecurity dark/light design system with Cloudflare-inspired aesthetics.
 
 ---
 
@@ -56,25 +56,27 @@ gantt
     OIDC Demo, WebAuthn Card & CSP Headers :p5, after p4, 3d
 ```
 
-### Phase 1: Foundational Scaffolding & Live Connectivity *(Current Stage)*
-- [x] **Repository & Documentation:** Initialized `vaultauth-frontend` on GitHub with PRD v2.0.
-- [x] **Backend Live Discovery:** Analyzed OpenAPI 3.1.0 schema on `api.vaultauth.proplays2312.eu.org`.
-- [x] **Semantic Markup Skeleton:** `index.html` with responsive Bootstrap 5 layout and cybersecurity navigation header.
-- [x] **Design Tokens & Theme:** Custom cyber dark-mode variables (neon accents, high-contrast badges, glowing status indicators).
-- [x] **Live Health Handshake:** Client initializes a lightweight ping to `GET /health` and displays a dynamic "API: Connected" badge in the UI.
+### Phase 1: Foundational Scaffolding & Live Connectivity
+- [x] **Repository & Documentation:** Initialized `vaultauth-frontend` with PRD v2.0 and modern stack.
+- [x] **Modern Stack Architecture:** Upgraded to Bun runtime, React 18, Vite bundler, and Tailwind CSS.
+- [x] **Enterprise Design Tokens:** Custom Cloudflare Tangerine (`#F6821F`) trademark identity, obsidian dark canvas (`#0A0D14`), and pristine light theme (`#F8FAFC`).
+- [x] **Tactile Elegant Buttons:** Layered depth, internal highlights, micro-borders, and physical press compression (replacing classic flat buttons).
+- [x] **Live Health Handshake:** Dynamic telemetry pill with real-time API ping latency (`GET /health` and `/api/v1/health`).
 
 ### Phase 2: Core Authentication & Token Lifecycle
-- [ ] **Registration Form:** Implements `POST /api/v1/auth/register` with client-side password policy validation (min 12 chars).
-- [ ] **Login Form:** Implements `POST /api/v1/auth/login`, receives Bearer token and role (`user` vs `admin`).
-- [ ] **Ephemeral Token Storage:** Stores session token in memory / `sessionStorage` (zero plaintext disk exposure).
-- [ ] **Uniform Error Handling:** Graceful UI alerts for `ERR_INVALID_CREDENTIALS` (anti-enumeration privacy).
-- [ ] **Sign Out:** Implements `POST /api/v1/auth/logout`, purges client storage, and resets view state.
+- [x] **Registration Form:** Implements `POST /api/v1/auth/register` with dynamic NIST SP 800-63B password validation (minimum 12 chars, uppercase, lowercase, numbers/symbols).
+- [x] **Login Form:** Implements `POST /api/v1/auth/login` with Zero-Trust browser integrity attestation.
+- [x] **2FA OTP Challenge Modal:** Implements split 6-digit numeric input with auto-advance, backspace reversing, paste handling, and 10-minute countdown timer (`POST /api/v1/auth/2fa/verify`).
+- [x] **Email Verification:** Implements `POST /api/v1/auth/verify-email` and resend throttle (`POST /api/v1/auth/verify-email/resend`).
+- [x] **Ephemeral Token Storage:** Stores session token in memory / `sessionStorage` (zero plaintext disk exposure).
+- [x] **Uniform Error Handling:** Graceful UI alerts for `ERR_INVALID_CREDENTIALS` (anti-enumeration privacy).
+- [x] **Sign Out:** Implements `POST /api/v1/auth/logout`, purges client storage, and resets view state.
 
 ### Phase 3: Employee Session Telemetry & Self-Revocation
-- [ ] **User Profile Card:** Queries `GET /api/v1/me` and renders employee credentials (email, role, created timestamp).
-- [ ] **Live Active Sessions Table:** Queries `GET /api/v1/me/sessions`, displaying device user-agents, IP addresses, login timestamps, and "Current Device" indicators.
-- [ ] **1-Click Self-Revocation:** Wire "Revoke" button to `DELETE /api/v1/sessions/{session_id}`.
-- [ ] **Automatic 401 Interceptor:** If the current session is revoked elsewhere, any API call receiving 401 immediately redirects to login.
+- [x] **User Profile Card:** Queries `GET /api/v1/me` and renders employee credentials (email, role, created timestamp).
+- [x] **Live Active Sessions Table:** Queries `GET /api/v1/me/sessions`, displaying device user-agents, IP addresses, login timestamps, and "Current Device" indicators.
+- [x] **1-Click Self-Revocation:** Wires "Revoke" button to `DELETE /api/v1/sessions/{session_id}`.
+- [x] **Automatic 401 Interceptor:** If the current session is revoked elsewhere, any API call receiving 401 immediately redirects to login.
 
 ### Phase 4: Enterprise Admin Security Console
 - [ ] **Role Guarded Navigation:** Evaluates user role; displays "Admin Console" navigation tab exclusively for `role === 'admin'`.
@@ -123,3 +125,4 @@ vaultauth-frontend/
 | **Admin All Sessions** | `/api/v1/admin/sessions` | `GET` | `200 AdminSessionListResponse` |
 | **Admin Audit Trail** | `/api/v1/admin/audit-logs` | `GET` | `200 AdminAuditLogListResponse` |
 | **Admin User Unlock** | `/api/v1/admin/users/{id}/unlock` | `POST` | `200 AdminActionResponse` |
+
