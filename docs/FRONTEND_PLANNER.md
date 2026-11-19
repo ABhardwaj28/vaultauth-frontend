@@ -11,11 +11,11 @@ The frontend is engineered as a modern, high-assurance Single Page Application (
 
 ```mermaid
 flowchart TD
-    subgraph Client["Frontend Client (vaultauth-frontend)"]
-        UI["DOM View Router (app.js)"]
-        API_LAYER["API Service Adapter (js/api.js)"]
-        SESSION_STORE["Ephemeral Token Storage (sessionStorage)"]
-        COMPONENTS["Modular UI Components (Modals, Tables, Spinners)"]
+    subgraph Client["Frontend Client (vaultauth-frontend - Bun + React 18)"]
+        UI["React Router v7 SPA Routing"]
+        API_LAYER["Typed API Service (src/lib/api.ts)"]
+        SESSION_STORE["Ephemeral Token Storage (AuthContext + sessionStorage)"]
+        COMPONENTS["shadcn/ui & Radix UI Primitives (Modals, Tables, Drawers)"]
     end
 
     subgraph Backend["Live Backend Service (vaultauth-backend)"]
@@ -79,15 +79,16 @@ gantt
 - [x] **Automatic 401 Interceptor:** If the current session is revoked elsewhere, any API call receiving 401 immediately redirects to login.
 
 ### Phase 4: Enterprise Admin Security Console
-- [ ] **Role Guarded Navigation:** Evaluates user role; displays "Admin Console" navigation tab exclusively for `role === 'admin'`.
-- [ ] **System-Wide Sessions Directory:** Connects to `GET /api/v1/admin/sessions` with 1-click global revocation kill-switch.
-- [ ] **User Account Control:** Interfaces with `GET /api/v1/admin/users`, supporting 1-click account unlock (`POST /api/v1/admin/users/{id}/unlock`) and status toggling (`ACTIVE`, `LOCKED`, `DISABLED`).
-- [ ] **Immutable Security Audit Log Explorer:** Implements `GET /api/v1/admin/audit-logs` with event-type filtering and XSS-sanitized tabular output.
+- [x] **Role Guarded Navigation:** Evaluates user role via `RouteGuards.tsx`; renders "Admin" tabs exclusively for `role === 'admin'`.
+- [x] **System-Wide Sessions Directory:** Connects to `GET /api/v1/admin/sessions` with 1-click global revocation kill-switch (`GlobalSessionsTab.tsx`).
+- [x] **User Account Control:** Interfaces with `GET /api/v1/admin/users`, supporting 1-click account unlock (`POST /api/v1/admin/users/{id}/unlock`) and status toggling (`ACTIVE`, `LOCKED`, `DISABLED`) (`UsersTab.tsx`).
+- [x] **Immutable Security Audit Log Explorer:** Implements `GET /api/v1/admin/audit-logs` with event-type filtering and expandable JSON drawers with XSS sanitization (`AuditLogsTab.tsx`).
 
-### Phase 5: OIDC Identity Demo, Stretch Goals & Deployment
-- [ ] **WebAuthn / FIDO2 Concept Card:** Interactive modal demonstrating biometric authentication standards.
-- [ ] **Render Cold-Start Toast:** UX helper displaying a graceful *"Waking up container..."* alert when backend response latency exceeds 2.0s.
-- [ ] **Production Deployment:** Host static build on Vercel with strict Content Security Policy (`vercel.json`).
+### Phase 5: OIDC Identity Demo, Error Pages & Deployment
+- [x] **OAuth / OIDC Application Management:** Complete relying party client creation with mandatory **One-Time Secret Reveal Modal** and client revocation (`AppsTab.tsx`).
+- [x] **Standardized Error Diagnostics:** Standardized `401`, `403` (Forbidden), `404` (Not Found), `429` (Rate Limited with live reset countdown), `500/503` (Offline), and React `ErrorBoundary`.
+- [x] **Render Cold-Start & Latency Defense:** Global non-blocking alert displaying container warm-up status when backend response latency exceeds 2.0s.
+- [x] **Production Deployment:** Configured for Vercel with strict Content Security Policy (`vercel.json`) and zero-FOUC theme loader.
 
 ---
 
@@ -95,18 +96,71 @@ gantt
 
 ```text
 vaultauth-frontend/
-├── index.html                  # Semantic layout with responsive auth & dashboard containers
-├── vercel.json                 # Security response headers (CSP, X-Frame-Options, SRI)
-├── css/
-│   └── style.css               # Cybersecurity dark theme, glowing badges, card layouts
-├── js/
-│   ├── config.js               # API URL endpoint configuration
-│   ├── api.js                  # Asynchronous HTTP client & error handler
-│   └── app.js                  # Application entrypoint & DOM event orchestration
-└── docs/
-    ├── PRD_v2.0.md             # Complete technical requirements specification
-    ├── FRONTEND_PLANNER.md     # This implementation roadmap
-    └── VaultAuth_SSO_PRD_v2.0.pdf
+├── index.html                   # Zero-FOUC theme bootloader & semantic entrypoint
+├── package.json                 # Bun/Node package manifest (React 18, Radix UI, Lucide)
+├── tsconfig.json                # Strict TypeScript configuration ("strict": true)
+├── vite.config.ts               # Vite bundler configuration with @ path aliases
+├── tailwind.config.js           # Semantic HSL design tokens & darkMode: ["class"]
+├── postcss.config.js            # PostCSS pipeline (Tailwind & Autoprefixer)
+├── docs/
+│   ├── FRONTEND_PLANNER.md      # Phased delivery roadmap & component spec
+│   ├── PRD_v2.0.md              # Product Requirements Document (v2.0)
+│   └── VaultAuth_SSO_PRD_v2.0.pdf
+└── src/
+    ├── main.tsx                 # React DOM root entrypoint
+    ├── App.tsx                  # Application route registry with protected guards
+    ├── index.css                # Semantic HSL custom properties & theme tokens
+    ├── types/
+    │   └── api.ts               # Strict TypeScript contracts for all endpoints & errors
+    ├── lib/
+    │   ├── api.ts               # Typed fetch client, X-Request-ID & X-RateLimit-* parser
+    │   └── utils.ts             # cn(), formatters, User-Agent device parser, copyToClipboard
+    ├── context/
+    │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
+    │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
+    ├── components/
+    │   ├── ui/                  # shadcn-grade primitives
+    │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
+    │   │   ├── input.tsx        # High-assurance input with focus rings
+    │   │   ├── label.tsx        # Accessible form label
+    │   │   ├── card.tsx         # Hairline-bordered card containers
+    │   │   ├── badge.tsx        # Semantic status and role badges
+    │   │   ├── alert.tsx        # Contextual notification banners
+    │   │   ├── table.tsx        # Structured tabular views with uppercase mono headers
+    │   │   ├── dialog.tsx       # Radix UI accessible modal dialogs
+    │   │   ├── dropdown-menu.tsx# Radix UI popovers and action menus
+    │   │   ├── tabs.tsx         # Radix UI accessible segmented tabs
+    │   │   ├── separator.tsx    # Crisp 1px hairline dividers
+    │   │   ├── collapsible.tsx  # Expandable technical JSON drawers
+    │   │   ├── tooltip.tsx      # Hover technical details tooltips
+    │   │   ├── otp-input.tsx    # Accessible 6-cell segmented numeric OTP input
+    │   │   ├── copy-button.tsx  # 1-click clipboard copy with visual feedback
+    │   │   └── ThemeToggle.tsx  # Radix dropdown theme switcher (Light / Dark / System)
+    │   └── layout/
+    │       ├── AuthShell.tsx    # Constrained layout for authentication views
+    │       ├── DashboardShell.tsx# Unified dashboard with role-aware navigation
+    │       ├── TopBar.tsx       # Brand mark, live backend telemetry pill & user status
+    │       ├── RouteGuards.tsx  # Protected guards (RequireAuth, RequireAdmin, PublicOnly)
+    │       └── ErrorLayout.tsx  # Standardized error layout with technical diagnostics
+    └── pages/
+        ├── auth/
+        │   ├── LoginPage.tsx    # /login: Primary credentials with anti-enumeration handling
+        │   ├── RegisterPage.tsx # /register: NIST SP 800-63B policy validator (12-128 chars)
+        │   └── VerifyOtpPage.tsx# /verify-otp: 6-cell numeric OTP with 60s cooldown & attempt tracking
+        ├── dashboard/
+        │   ├── ProfileTab.tsx   # /dashboard/profile: User ID, role, status, and crypto specs
+        │   ├── SessionsTab.tsx  # /dashboard/sessions: Active employee sessions & 1-click self-revocation
+        │   └── admin/
+        │       ├── AppsTab.tsx  # /dashboard/admin/apps: OAuth clients + CRITICAL One-Time Secret Reveal
+        │       ├── UsersTab.tsx # /dashboard/admin/users: Directory search, 3-strike unlock & status controls
+        │       ├── AuditLogsTab.tsx # /dashboard/admin/audit-logs: Security audit trail & JSON drawer
+        │       └── GlobalSessionsTab.tsx # /dashboard/admin/sessions: Centralized kill-switch
+        └── errors/
+            ├── ForbiddenPage.tsx    # 403: ERR_FORBIDDEN (Administrator authority required)
+            ├── NotFoundPage.tsx     # 404: ERR_NOT_FOUND (Missing resource or route)
+            ├── RateLimitedPage.tsx  # 429: ERR_RATE_LIMITED (Live X-RateLimit-Reset countdown)
+            ├── ServerErrorPage.tsx  # 500/503: Offline / gateway unreachable
+            └── ErrorBoundary.tsx    # Global React ErrorBoundary wrapping root routes
 ```
 
 ---
