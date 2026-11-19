@@ -21,21 +21,10 @@ export function SessionsTab() {
     setError(null);
     try {
       const data = await api.getMySessions();
-      setSessions(data);
+      setSessions(data || []);
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load active sessions.");
-      // Fallback display if in local development
-      setSessions([
-        {
-          id: "sess_curr_workstation",
-          ip_address: "127.0.0.1",
-          user_agent: navigator.userAgent,
-          created_at: new Date().toISOString(),
-          last_active_at: new Date().toISOString(),
-          is_current: true,
-          current: true,
-        },
-      ]);
+      setSessions([]);
     } finally {
       setLoading(false);
     }
@@ -141,8 +130,10 @@ export function SessionsTab() {
                   </TableRow>
                 ) : (
                   sessions.map((session, index) => {
-                    const isCurrent = session.current || session.is_current || index === 0;
-                    const parsed = parseUserAgent(session.user_agent);
+                    const isCurrent = Boolean(session.current ?? session.is_current ?? (index === 0 && sessions.length === 1));
+                    const rawUa = session.device || session.user_agent || "Corporate Workstation";
+                    const rawIp = session.ip || session.ip_address || "—";
+                    const parsed = parseUserAgent(rawUa);
 
                     return (
                       <TableRow key={session.id || index}>
@@ -169,11 +160,11 @@ export function SessionsTab() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[220px] cursor-help">
-                                    {session.user_agent || "Corporate Workstation"}
+                                    {rawUa}
                                   </span>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs break-all font-mono text-[11px]">
-                                  {session.user_agent}
+                                  {rawUa}
                                 </TooltipContent>
                               </Tooltip>
                             </div>
@@ -183,7 +174,7 @@ export function SessionsTab() {
                         <TableCell className="font-mono text-xs">
                           <span className="flex items-center text-muted-foreground">
                             <Globe className="h-3 w-3 mr-1 opacity-70" />
-                            {session.ip_address || "127.0.0.1"}
+                            {rawIp}
                           </span>
                         </TableCell>
 

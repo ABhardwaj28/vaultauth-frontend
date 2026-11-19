@@ -46,25 +46,34 @@ export function UsersTab() {
     setError(null);
     try {
       const data = await api.getAdminUsers({
-        q: searchQuery || undefined,
+        q: searchQuery.trim() || undefined,
         role: roleFilter !== "All" ? roleFilter : undefined,
         status: statusFilter !== "All" ? statusFilter : undefined,
         limit: 50,
       });
-      setUsers(data.items);
-      setTotal(data.total);
+      const userList = data.users || data.items || (Array.isArray(data) ? data : []);
+      setUsers(userList);
+      setTotal(data.total ?? userList.length);
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load directory users.");
+      setUsers([]);
     } finally {
       setLoading(false);
     }
   }, [searchQuery, roleFilter, statusFilter]);
 
   useEffect(() => {
+    let active = true;
     const debounceTimer = setTimeout(() => {
-      fetchUsers();
-    }, 250);
-    return () => clearTimeout(debounceTimer);
+      if (active) {
+        fetchUsers();
+      }
+    }, 200);
+
+    return () => {
+      active = false;
+      clearTimeout(debounceTimer);
+    };
   }, [fetchUsers]);
 
   // Actions
@@ -234,14 +243,14 @@ export function UsersTab() {
             </TableHeader>
 
             <TableBody>
-              {users.length === 0 ? (
+              {!users || users.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-24 text-center text-muted-foreground text-xs">
                     {loading ? "Searching enterprise directory..." : "No accounts match the current filter."}
                   </TableCell>
                 </TableRow>
               ) : (
-                users.map((item) => {
+                (users || []).map((item) => {
                   const isLocked = item.status === "LOCKED" || (item.failed_attempts || 0) >= 3;
                   const isCurrent = item.id === currentUser?.id;
 

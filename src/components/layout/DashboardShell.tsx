@@ -2,6 +2,7 @@ import { NavLink, Outlet, useLocation } from "react-router-dom";
 import {
   User,
   Laptop,
+  Settings,
   Layers,
   Users,
   FileText,
@@ -22,7 +23,6 @@ export function DashboardShell() {
       name: "My Profile",
       href: "/dashboard/profile",
       icon: User,
-      // also highlight if on exact /dashboard
       isActive: location.pathname === "/dashboard" || location.pathname === "/dashboard/profile",
     },
     {
@@ -30,6 +30,12 @@ export function DashboardShell() {
       href: "/dashboard/sessions",
       icon: Laptop,
       isActive: location.pathname === "/dashboard/sessions",
+    },
+    {
+      name: "Account Settings",
+      href: "/dashboard/settings",
+      icon: Settings,
+      isActive: location.pathname === "/dashboard/settings",
     },
   ];
 
@@ -125,16 +131,12 @@ export function DashboardShell() {
         <Outlet />
       </main>
 
-      {/* Minimal Footer */}
+      {/* Clean Minimal Footer */}
       <footer className="border-t border-border py-4 px-4 text-center text-xs text-muted-foreground font-mono">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>VaultAuth SSO Control Plane</span>
-          <div className="flex items-center space-x-3">
-            <span>Argon2id Hashed</span>
-            <span>•</span>
-            <span>Opaque 256-Bit Bearer</span>
-            <span>•</span>
-            <span>Zero Cleartext</span>
+          <span>© 2026 VaultAuth SSO</span>
+          <div className="flex items-center space-x-2">
+            <span>Single Sign-On Portal</span>
           </div>
         </div>
       </footer>

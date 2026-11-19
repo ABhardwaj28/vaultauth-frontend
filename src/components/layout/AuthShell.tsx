@@ -22,15 +22,12 @@ export function AuthShell({ children }: AuthShellProps) {
                 VaultAuth
               </span>
               <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider">
-                Identity
+                SSO
               </span>
             </div>
           </Link>
 
           <div className="flex items-center space-x-3">
-            <span className="hidden sm:inline text-xs font-mono text-muted-foreground">
-              Zero-Trust Architecture
-            </span>
             <ThemeToggle />
           </div>
         </div>
@@ -43,17 +40,11 @@ export function AuthShell({ children }: AuthShellProps) {
         </div>
       </main>
 
-      {/* Engineering Footer */}
+      {/* Clean Footer */}
       <footer className="border-t border-border py-4 px-4 text-center text-xs text-muted-foreground font-mono">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>VaultAuth SSO • High-Assurance Zero-Trust Engine</span>
-          <div className="flex items-center space-x-3">
-            <span>NIST SP 800-63B</span>
-            <span>•</span>
-            <span>Argon2id</span>
-            <span>•</span>
-            <span>FIDO2 Ready</span>
-          </div>
+          <span>© 2026 VaultAuth SSO</span>
+          <span>Enterprise Identity &amp; Access Management</span>
         </div>
       </footer>
     </div>

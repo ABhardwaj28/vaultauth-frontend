@@ -129,12 +129,15 @@ export function GlobalSessionsTab() {
                   </TableRow>
                 ) : (
                   sessions.map((session, index) => {
-                    const parsed = parseUserAgent(session.user_agent);
+                    const rawUa = session.device || session.user_agent || "Corporate Workstation";
+                    const rawIp = session.ip || session.ip_address || "—";
+                    const rawEmail = session.email || session.user_email || session.user_id || "corporate_user";
+                    const parsed = parseUserAgent(rawUa);
 
                     return (
                       <TableRow key={session.id || index}>
                         <TableCell className="font-mono text-xs text-foreground font-medium">
-                          {session.user_email || session.user_id || "corporate_user"}
+                          {rawEmail}
                         </TableCell>
 
                         <TableCell>
@@ -153,7 +156,7 @@ export function GlobalSessionsTab() {
                                 </span>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-xs break-all font-mono text-[11px]">
-                                {session.user_agent}
+                                {rawUa}
                               </TooltipContent>
                             </Tooltip>
                           </div>
@@ -162,7 +165,7 @@ export function GlobalSessionsTab() {
                         <TableCell className="font-mono text-xs text-muted-foreground">
                           <span className="flex items-center">
                             <Globe className="h-3 w-3 mr-1 opacity-70" />
-                            {session.ip_address || "127.0.0.1"}
+                            {rawIp}
                           </span>
                         </TableCell>
 

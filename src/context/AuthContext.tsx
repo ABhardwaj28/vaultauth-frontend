@@ -8,11 +8,13 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   isAdmin: boolean;
+  isServiceUnavailable: boolean;
   sessionExpiredNotice: string | null;
   setSessionExpiredNotice: (msg: string | null) => void;
   setAuthSession: (token: string, user: UserProfile) => void;
   refreshProfile: () => Promise<UserProfile | null>;
   logout: () => Promise<void>;
+  checkServiceAvailability: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -33,10 +35,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return null;
   });
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isServiceUnavailable, setIsServiceUnavailable] = useState<boolean>(false);
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
 
   const logout = useCallback(async () => {
     try {
+      setSessionExpiredNotice(null);
       await api.logout();
     } catch {
       // ignore
@@ -64,16 +68,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const status = (err as { status?: number })?.status;
       if (status === 401) {
         logout();
-        setSessionExpiredNotice("Your session has expired or was revoked. Please sign in again.");
+        setSessionExpiredNotice("Your session has expired. Please sign in again.");
       }
       return null;
     }
   }, [logout]);
 
+  const checkServiceAvailability = useCallback(async (): Promise<boolean> => {
+    const health = await api.checkHealth();
+    if (health.ok) {
+      setIsServiceUnavailable(false);
+      return true;
+    }
+    setIsServiceUnavailable(true);
+    return false;
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
-    async function hydrate() {
+    async function initialize() {
+      // 1. Initial Service Connectivity Handshake
+      try {
+        const health = await api.checkHealth();
+        if (!health.ok) {
+          if (isMounted) {
+            setIsServiceUnavailable(true);
+            setIsLoading(false);
+          }
+          return;
+        }
+      } catch {
+        if (isMounted) {
+          setIsServiceUnavailable(true);
+          setIsLoading(false);
+        }
+        return;
+      }
+
+      if (isMounted) setIsServiceUnavailable(false);
+
+      // 2. Hydrate Existing Session if token exists
       const existingToken = api.getToken();
       if (!existingToken) {
         if (isMounted) setIsLoading(false);
@@ -98,7 +133,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
 
-    hydrate();
+    initialize();
 
     // Listen to global session_expired events dispatched from ApiClient
     const handleSessionExpired = (e: Event) => {
@@ -135,11 +170,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         isAuthenticated,
         isAdmin,
+        isServiceUnavailable,
         sessionExpiredNotice,
         setSessionExpiredNotice,
         setAuthSession,
         refreshProfile,
         logout,
+        checkServiceAvailability,
       }}
     >
       {children}

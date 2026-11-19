@@ -253,13 +253,21 @@ export function AppsTab() {
                       </div>
                     </TableCell>
 
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      <div className="truncate max-w-[180px]" title={client.redirect_uris?.join(", ")}>
-                        {client.redirect_uris?.[0] || "—"}
-                        {(client.redirect_uris?.length || 0) > 1 && (
-                          <span className="ml-1 text-[10px] text-primary">
-                            (+{(client.redirect_uris?.length || 1) - 1} more)
-                          </span>
+                    <TableCell className="font-mono text-xs text-muted-foreground min-w-[260px]">
+                      <div className="flex flex-col gap-1.5 py-1">
+                        {(client.redirect_uris || []).map((uri, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between space-x-1.5 px-2 py-1 rounded bg-muted/40 border border-border/70 select-all group"
+                          >
+                            <span className="font-mono text-foreground text-[11px] break-all leading-normal">
+                              {uri}
+                            </span>
+                            <CopyButton value={uri} className="h-5 px-1 text-[10px] shrink-0 opacity-70 hover:opacity-100" />
+                          </div>
+                        ))}
+                        {(!client.redirect_uris || client.redirect_uris.length === 0) && (
+                          <span className="text-muted-foreground italic">None configured</span>
                         )}
                       </div>
                     </TableCell>

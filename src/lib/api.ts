@@ -25,7 +25,7 @@ const DEFAULT_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://api.vaultauth.proplays2312.eu.org";
 
 class ApiClient {
-  private baseUrl: string;
+  public baseUrl: string;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
@@ -34,12 +34,13 @@ class ApiClient {
   // Ephemeral storage helpers
   getToken(): string | null {
     if (typeof window === "undefined") return null;
-    return sessionStorage.getItem("vaultauth_token");
+    return sessionStorage.getItem("vaultauth_token") || localStorage.getItem("vaultauth_token");
   }
 
   setToken(token: string): void {
     if (typeof window !== "undefined") {
       sessionStorage.setItem("vaultauth_token", token);
+      localStorage.setItem("vaultauth_token", token);
     }
   }
 
@@ -47,6 +48,7 @@ class ApiClient {
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("vaultauth_token");
       sessionStorage.removeItem("vaultauth_user");
+      localStorage.removeItem("vaultauth_token");
     }
   }
 
@@ -99,6 +101,15 @@ class ApiClient {
       reset: resetHeader ? parseInt(resetHeader, 10) : undefined,
     };
 
+    // Handle 204 No Content gracefully
+    if (response.status === 204) {
+      return {
+        data: {} as T,
+        headers: response.headers,
+        rateLimit,
+      };
+    }
+
     const isJson = (response.headers.get("content-type") || "").includes("application/json");
     const responseBody = isJson ? await response.json().catch(() => ({})) : {};
 
@@ -106,8 +117,12 @@ class ApiClient {
       const responseRequestId =
         response.headers.get("X-Request-ID") || responseBody?.error?.request_id || requestId;
 
-      // Handle 401 Unauthorized globally
-      if (response.status === 401 && endpoint !== "/api/v1/auth/login") {
+      // Handle 401 Unauthorized globally (except login / logout)
+      if (
+        response.status === 401 &&
+        endpoint !== "/api/v1/auth/login" &&
+        endpoint !== "/api/v1/auth/logout"
+      ) {
         this.clearToken();
         if (typeof window !== "undefined") {
           window.dispatchEvent(
@@ -118,19 +133,27 @@ class ApiClient {
         }
       }
 
+      // Determine clean error code
+      let errorCode = responseBody?.error?.code;
+      if (!errorCode) {
+        if (response.status === 401) {
+          errorCode = endpoint.includes("/auth/login") ? "ERR_INVALID_CREDENTIALS" : "ERR_UNAUTHENTICATED";
+        } else if (response.status === 403) {
+          errorCode = "ERR_FORBIDDEN";
+        } else if (response.status === 404) {
+          errorCode = "ERR_NOT_FOUND";
+        } else if (response.status === 422) {
+          errorCode = "ERR_WEAK_PASSWORD";
+        } else if (response.status === 429) {
+          errorCode = "ERR_RATE_LIMITED";
+        } else {
+          errorCode = `HTTP_${response.status}`;
+        }
+      }
+
       const errorPayload: ApiError = {
         status: response.status,
-        code:
-          responseBody?.error?.code ||
-          (response.status === 401
-            ? "ERR_UNAUTHENTICATED"
-            : response.status === 403
-            ? "ERR_FORBIDDEN"
-            : response.status === 404
-            ? "ERR_NOT_FOUND"
-            : response.status === 429
-            ? "ERR_RATE_LIMITED"
-            : `HTTP_${response.status}`),
+        code: errorCode,
         message:
           responseBody?.error?.message ||
           responseBody?.detail ||
@@ -155,21 +178,30 @@ class ApiClient {
   async checkHealth(): Promise<{ ok: boolean; status: string; latency: number; details?: HealthCheckResponse }> {
     const startTime = performance.now();
     try {
-      let res = await fetch(`${this.baseUrl}/health`, {
-        method: "GET",
-        headers: { Accept: "application/json" },
-      }).catch(() => null);
-
-      if (!res || !res.ok) {
-        res = await fetch(`${this.baseUrl}/api/v1/health`, {
+      let res: Response | null = null;
+      try {
+        res = await fetch(`${this.baseUrl}/health`, {
           method: "GET",
           headers: { Accept: "application/json" },
         });
+      } catch {
+        res = null;
+      }
+
+      if (!res || !res.ok) {
+        try {
+          res = await fetch(`${this.baseUrl}/api/v1/health`, {
+            method: "GET",
+            headers: { Accept: "application/json" },
+          });
+        } catch {
+          res = null;
+        }
       }
 
       const latency = Math.round(performance.now() - startTime);
-      if (!res.ok) {
-        return { ok: false, status: `HTTP ${res.status}`, latency };
+      if (!res || !res.ok) {
+        return { ok: false, status: res ? `HTTP ${res.status}` : "offline", latency };
       }
       const data = await res.json().catch(() => ({ status: "ok" }));
       return { ok: true, status: data.status || "healthy", latency, details: data };
@@ -227,11 +259,18 @@ class ApiClient {
   }
 
   async logout(): Promise<void> {
+    const token = this.getToken();
     try {
-      if (this.getToken()) {
-        await this.request<GenericMessageResponse>("/api/v1/auth/logout", {
+      if (token) {
+        // Safe dispatch: does not throw or trigger unhandled errors
+        await fetch(`${this.baseUrl}/api/v1/auth/logout`, {
           method: "POST",
-        });
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }).catch(() => null);
       }
     } finally {
       this.clearToken();
@@ -244,15 +283,29 @@ class ApiClient {
     return res.data;
   }
 
+  /**
+   * Retrieves active sessions for the currently authenticated user.
+   * Backends return { items: [...] } or { sessions: [...] } or direct array.
+   */
   async getMySessions(): Promise<SessionItem[]> {
-    const res = await this.request<SessionItem[] | { sessions: SessionItem[] }>("/api/v1/me/sessions", {
+    const res = await this.request<any>("/api/v1/me/sessions", {
       method: "GET",
     });
-    if (Array.isArray(res.data)) return res.data;
-    if (Array.isArray((res.data as { sessions: SessionItem[] })?.sessions)) {
-      return (res.data as { sessions: SessionItem[] }).sessions;
-    }
-    return [];
+
+    const rawList: any[] =
+      res.data?.items ||
+      res.data?.sessions ||
+      (Array.isArray(res.data) ? res.data : []);
+
+    return rawList.map((s) => ({
+      ...s,
+      ip_address: s.ip_address || s.ip || "Unknown IP",
+      ip: s.ip || s.ip_address || "Unknown IP",
+      user_agent: s.user_agent || s.device || "Unknown Device",
+      device: s.device || s.user_agent || "Unknown Device",
+      is_current: s.current ?? s.is_current ?? false,
+      current: s.current ?? s.is_current ?? false,
+    }));
   }
 
   async revokeSession(sessionId: string): Promise<GenericMessageResponse> {
@@ -264,15 +317,16 @@ class ApiClient {
 
   // --- Administrator Endpoints ---
   async getOAuthClients(): Promise<OAuthClient[]> {
-    const res = await this.request<OAuthClient[] | { clients: OAuthClient[] }>(
-      "/api/v1/admin/oauth/clients",
-      { method: "GET" }
-    );
-    if (Array.isArray(res.data)) return res.data;
-    if (Array.isArray((res.data as { clients: OAuthClient[] })?.clients)) {
-      return (res.data as { clients: OAuthClient[] }).clients;
-    }
-    return [];
+    const res = await this.request<any>("/api/v1/admin/oauth/clients", {
+      method: "GET",
+    });
+
+    const rawList: any[] =
+      res.data?.clients ||
+      res.data?.items ||
+      (Array.isArray(res.data) ? res.data : []);
+
+    return rawList;
   }
 
   async createOAuthClient(payload: CreateOAuthClientPayload): Promise<OAuthClient> {
@@ -300,20 +354,26 @@ class ApiClient {
     if (filter?.offset) params.set("offset", filter.offset.toString());
 
     const queryString = params.toString() ? `?${params.toString()}` : "";
-    const res = await this.request<AdminUsersResponse | AdminUserListItem[]>(
+    const res = await this.request<any>(
       `/api/v1/admin/users${queryString}`,
       { method: "GET" }
     );
 
-    if (Array.isArray(res.data)) {
-      return {
-        items: res.data,
-        total: res.data.length,
-        limit: filter?.limit || 20,
-        offset: filter?.offset || 0,
-      };
-    }
-    return res.data;
+    const userList: AdminUserListItem[] =
+      res.data?.users ||
+      res.data?.items ||
+      (Array.isArray(res.data) ? res.data : []);
+
+    const totalCount =
+      typeof res.data?.total === "number" ? res.data.total : userList.length;
+
+    return {
+      users: userList,
+      items: userList,
+      total: totalCount,
+      limit: filter?.limit || 50,
+      offset: filter?.offset || 0,
+    };
   }
 
   async unlockUser(userId: string): Promise<GenericMessageResponse> {
@@ -352,28 +412,40 @@ class ApiClient {
     if (params?.limit) query.set("limit", params.limit.toString());
 
     const queryString = query.toString() ? `?${query.toString()}` : "";
-    const res = await this.request<AuditLogItem[] | { logs: AuditLogItem[] }>(
+    const res = await this.request<any>(
       `/api/v1/admin/audit-logs${queryString}`,
       { method: "GET" }
     );
 
-    if (Array.isArray(res.data)) return res.data;
-    if (Array.isArray((res.data as { logs: AuditLogItem[] })?.logs)) {
-      return (res.data as { logs: AuditLogItem[] }).logs;
-    }
-    return [];
+    const rawList: AuditLogItem[] =
+      res.data?.audit_logs ||
+      res.data?.logs ||
+      res.data?.items ||
+      (Array.isArray(res.data) ? res.data : []);
+
+    return rawList;
   }
 
   async getGlobalSessions(limit = 50): Promise<SessionItem[]> {
-    const res = await this.request<SessionItem[] | { sessions: SessionItem[] }>(
+    const res = await this.request<any>(
       `/api/v1/admin/sessions?limit=${limit}`,
       { method: "GET" }
     );
-    if (Array.isArray(res.data)) return res.data;
-    if (Array.isArray((res.data as { sessions: SessionItem[] })?.sessions)) {
-      return (res.data as { sessions: SessionItem[] }).sessions;
-    }
-    return [];
+
+    const rawList: any[] =
+      res.data?.sessions ||
+      res.data?.items ||
+      (Array.isArray(res.data) ? res.data : []);
+
+    return rawList.map((s) => ({
+      ...s,
+      ip_address: s.ip_address || s.ip || "Unknown IP",
+      ip: s.ip || s.ip_address || "Unknown IP",
+      user_agent: s.user_agent || s.device || "Unknown Device",
+      device: s.device || s.user_agent || "Unknown Device",
+      user_email: s.user_email || s.email || "Unknown User",
+      email: s.email || s.user_email || "Unknown User",
+    }));
   }
 }
 

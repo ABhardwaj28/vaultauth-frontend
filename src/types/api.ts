@@ -1,20 +1,14 @@
-/**
- * VaultAuth SSO — Comprehensive API Type Contracts
- * Strict schemas for Authentication, Governance, OAuth/OIDC, and Normalized Errors
- */
-
 export type UserRole = "user" | "admin";
-export type UserStatus = "ACTIVE" | "LOCKED" | "DISABLED" | "PENDING";
-export type ClientType = "confidential" | "public";
+export type UserStatus = "PENDING" | "ACTIVE" | "LOCKED" | "DISABLED";
+export type ClientType = "public" | "confidential";
 
-// --- Normalized Error Model ---
 export interface ApiError {
-  status: number;          // HTTP status code (0 for network/offline)
-  code: string;            // e.g. ERR_INVALID_CREDENTIALS, ERR_UNAUTHENTICATED, ERR_FORBIDDEN, ERR_NOT_FOUND, ERR_WEAK_PASSWORD, ERR_RATE_LIMITED, ERR_NETWORK
-  message: string;         // Safe human-readable message from error.message
-  requestId?: string;      // error.request_id or X-Request-ID response header
-  rateLimitReset?: number; // Parsed Unix timestamp from X-RateLimit-Reset when status === 429
-  timestamp: string;       // ISO-8601 timestamp
+  status: number;
+  code: string;
+  message: string;
+  requestId?: string;
+  rateLimitReset?: number;
+  timestamp: string;
 }
 
 // --- User Profile & Governance ---
@@ -23,10 +17,11 @@ export interface UserProfile {
   email: string;
   role: UserRole;
   status: UserStatus;
-  totp_enabled?: boolean;
   failed_attempts?: number;
   locked_until?: string | null;
+  totp_enabled?: boolean;
   created_at: string;
+  updated_at?: string;
 }
 
 export interface AdminUserListItem extends UserProfile {
@@ -42,7 +37,8 @@ export interface AdminUsersFilter {
 }
 
 export interface AdminUsersResponse {
-  items: AdminUserListItem[];
+  users?: AdminUserListItem[];
+  items?: AdminUserListItem[];
   total: number;
   limit: number;
   offset: number;
@@ -53,10 +49,16 @@ export interface SessionItem {
   id: string;
   user_id?: string;
   user_email?: string;
-  ip_address: string;
-  user_agent: string;
+  email?: string;
+  ip_address?: string;
+  ip?: string;
+  user_agent?: string;
+  device?: string;
+  status?: string;
   created_at: string;
+  last_seen_at?: string;
   last_active_at?: string;
+  idle_expires_at?: string;
   expires_at?: string;
   absolute_expires_at?: string;
   is_current?: boolean;
@@ -138,5 +140,4 @@ export interface HealthCheckResponse {
   status: string;
   db?: string;
   database?: string;
-  version?: string;
 }

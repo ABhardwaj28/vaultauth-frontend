@@ -64,17 +64,48 @@ export function LoginPage() {
       }
     } catch (err: unknown) {
       const apiErr = err as ApiError;
+      const msg = (apiErr.message || "").toLowerCase();
+      const code = (apiErr.code || "").toUpperCase();
 
-      if (apiErr.status === 429 && apiErr.rateLimitReset) {
-        const remainingSecs = Math.max(1, Math.floor(apiErr.rateLimitReset - Date.now() / 1000));
+      if (
+        apiErr.status === 403 ||
+        code === "ERR_FORBIDDEN" ||
+        msg.includes("disabled")
+      ) {
+        // Disabled account error per PRD & PAGES_AND_COMPONENTS Section 1.1
+        setError("Account is disabled. Contact your administrator.");
+      } else if (
+        code === "ERR_ACCOUNT_LOCKED" ||
+        msg.includes("locked")
+      ) {
+        // 3-strike temporary lockout error per PRD BR-03
+        setError("Account is temporarily locked due to consecutive failed attempts. Contact your administrator or wait 5 minutes.");
+      } else if (
+        apiErr.status === 429 ||
+        code === "ERR_RATE_LIMITED" ||
+        msg.includes("rate limit")
+      ) {
+        const remainingSecs = apiErr.rateLimitReset
+          ? Math.max(1, Math.floor(apiErr.rateLimitReset - Date.now() / 1000))
+          : 60;
         setRateLimitTimer(remainingSecs);
-        setError(`Rate limit exceeded. Please wait ${remainingSecs} seconds before retrying.`);
-      } else if (apiErr.status === 403) {
-        setError("Account is disabled or locked. Please contact your system administrator.");
-      } else if (apiErr.status === 401 || apiErr.code === "ERR_INVALID_CREDENTIALS") {
+        setError(`Too many login attempts. Please wait ${remainingSecs} seconds before trying again.`);
+      } else if (
+        apiErr.status === 401 ||
+        code === "ERR_INVALID_CREDENTIALS" ||
+        code === "ERR_UNAUTHENTICATED" ||
+        msg.includes("invalid") ||
+        msg.includes("password") ||
+        msg.includes("credential") ||
+        msg.includes("access denied") ||
+        msg.includes("forbidden")
+      ) {
+        // NIST SP 800-63B / PRD BR-05 Anti-Enumeration uniform error
         setError("Invalid email or password.");
+      } else if (apiErr.status === 0 || code === "ERR_NETWORK") {
+        setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
       } else {
-        setError(apiErr.message || "Authentication failed. Please verify credentials.");
+        setError("Invalid email or password.");
       }
     } finally {
       setLoading(false);
