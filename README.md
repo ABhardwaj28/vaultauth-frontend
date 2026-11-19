@@ -145,6 +145,12 @@ The frontend communicates with [vaultauth-backend](https://github.com/ProPlays23
 | **Revoke Session** | `/api/v1/sessions/{id}` | `DELETE` | `Authorization: Bearer <token>` |
 | **Admin All Sessions** | `/api/v1/admin/sessions` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
 | **Admin Audit Trail** | `/api/v1/admin/audit-logs` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin Directory** | `/api/v1/admin/users` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin Unlock Account** | `/api/v1/admin/users/{id}/unlock` | `POST` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin User Status** | `/api/v1/admin/users/{id}/status` | `PATCH` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin OAuth Clients** | `/api/v1/admin/oauth/clients` | `GET` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin Create OAuth** | `/api/v1/admin/oauth/clients` | `POST` | `Authorization: Bearer <token>` (Admin Only) |
+| **Admin Revoke OAuth** | `/api/v1/admin/oauth/clients/{id}` | `DELETE` | `Authorization: Bearer <token>` (Admin Only) |
 
 ---
 

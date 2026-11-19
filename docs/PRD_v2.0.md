@@ -33,7 +33,7 @@ v1.0 was a client-only demo (`localStorage`, SHA-256 in the browser). That desig
 | **8** | Lockout rule contradiction (5 min vs contact admin) | Auto-unlock after 5 min; manual admin unlock also supported | Reconciles both requirements safely into a cohesive policy. | Accepted |
 | **9** | Reset-state button for both roles | CLI only (`reset`), run by backend student (D15). No HTTP reset endpoint | An HTTP endpoint that wipes production databases is a catastrophic vulnerability. | `[Mentor review]` |
 | **10** | Account lock & session revocation were "Good to have" | Promoted to **Must-Have** core requirements | Essential to meeting the 30-second session revocation evaluation criteria. | Promoted |
-| **11** | Ambiguous stack ("JavaScript/Python") | Python (FastAPI) backend + Vanilla JS & Bootstrap 5 frontend | Clean responsibility split across the 2-student engineering team. | Accepted |
+| **11** | Ambiguous stack ("JavaScript/Python") | Python (FastAPI) backend + Bun, React 18, TypeScript, Tailwind CSS & Radix UI frontend | Clean responsibility split across the 2-student engineering team with modern production-grade tooling. | Accepted |
 
 ---
 
@@ -94,7 +94,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 * **Account Lockout:** 3 consecutive password failures set account to `LOCKED` for 5 minutes with atomic counter updates; auto-unlocks after 5 minutes or upon admin unlock.
 * **Enterprise Security Audit Log:** Immutable event logging (`LOGIN_SUCCESS`, `LOGIN_FAILURE`, `LOCKOUT`, `REVOCATION`, etc.) filterable by event type.
 * **PostgreSQL Persistence:** Multi-role schema (`vault_app`, `vault_migrator`, `vault_backup`) hosted on Supabase.
-* **Responsive Frontend Web Client:** Clean, accessible Bootstrap 5 UI hosted on Vercel with strict Content Security Policy headers.
+* **Responsive Frontend Web Client:** Production-grade Bun + React 18 + TypeScript + Tailwind CSS Single-Page Application (SPA) modeled after shadcn/ui and Cloudflare Zero-Trust, with strict Content Security Policy headers.
 
 ### 6.2 Prioritized Cut List (First to Cut → Last to Cut)
 1. **Expo Go Corporate Digital ID Card (Cut #1):** Lowest impact on core authentication and security objectives.
@@ -135,7 +135,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 ```mermaid
 flowchart LR
     subgraph Clients["Clients"]
-        WEB["Web Frontend: Static on Vercel<br>(HTML5, CSS3, Vanilla JS, Bootstrap 5)"]
+        WEB["Web Frontend: SPA on Vercel<br>(Bun, React 18, TypeScript, Tailwind CSS, Radix UI)"]
         EXPO["Expo Digital ID Card<br>(Optional Mobile Stretch)"]
     end
 
@@ -217,39 +217,127 @@ stateDiagram-v2
 
 ---
 
-## 9. Frontend Architecture & Client Engineering (Optimized)
+## 9. Frontend Architecture & Client Engineering (Bun + React + Tailwind)
 
-### 9.1 Single-Page Application (SPA) View State Architecture
-The frontend is engineered as a lightweight, modular Vanilla JavaScript Single Page Application with clean hash-based routing (`#/login`, `#/register`, `#/verify-email`, `#/2fa`, `#/dashboard`, `#/admin`, `#/concept/webauthn`):
+### 9.1 Single-Page Application (SPA) Component Architecture
+The frontend is engineered as a modern, high-assurance Single-Page Application (SPA) built with **Bun**, **React 18**, **TypeScript**, **Vite**, **Tailwind CSS**, and **Radix UI**. The UI architecture draws inspiration directly from **shadcn/ui** (`shadcn.com`), Linear, and Cloudflare Zero-Trust, featuring a trademark Cloudflare Safety Amber accent (`#F6821F`), restrained zinc/slate surfaces, 1px hairline borders, and full Dark/Light theme switching with zero Flash of Unstyled Content (FOUC).
 
-```
+```text
 vaultauth-frontend/
-├── index.html                # Semantic HTML5 entrypoint with view containers
-├── vercel.json               # Production CSP, SRI, and security response headers
-├── css/
-│   └── style.css             # Cybersecurity dark-mode theme, glowing status pills, OTP boxes
-├── js/
-│   ├── app.js                # Core state router & view coordinator
-│   ├── api.js                # Asynchronous API client with dual-mode adapter
-│   ├── auth.js               # Auth workflows, token lifecycle, and session guard
-│   ├── ui.js                 # DOM manipulators, spinners, modals, toasts
-│   └── components/
-│       ├── otpInput.js       # Auto-advancing split 6-digit numeric input
-│       ├── countdownTimer.js # Visual countdown ring for OTP expiry & lockout
-│       ├── sessionTable.js   # Active session manager with 1-click revocation buttons
-│       └── auditTable.js     # Admin audit log explorer with event filter
-└── docs/
-    ├── PRD_v2.0.md           # This document
-    └── VaultAuth_SSO_PRD_v2.0.pdf
+├── index.html                   # Zero-FOUC theme bootloader & semantic entrypoint
+├── package.json                 # Bun/Node package manifest (React 18, Radix UI, Lucide)
+├── tsconfig.json                # Strict TypeScript configuration ("strict": true)
+├── vite.config.ts               # Vite bundler configuration with @ path aliases
+├── tailwind.config.js           # Semantic HSL design tokens & darkMode: ["class"]
+├── postcss.config.js            # PostCSS pipeline (Tailwind & Autoprefixer)
+├── docs/
+│   ├── FRONTEND_PLANNER.md      # Phased delivery roadmap & component spec
+│   ├── PRD_v2.0.md              # Product Requirements Document (v2.0)
+│   └── VaultAuth_SSO_PRD_v2.0.pdf
+└── src/
+    ├── main.tsx                 # React DOM root entrypoint
+    ├── App.tsx                  # Application route registry with protected guards
+    ├── index.css                # Semantic HSL custom properties & theme tokens
+    ├── types/
+    │   └── api.ts               # Strict TypeScript contracts for all endpoints & errors
+    ├── lib/
+    │   ├── api.ts               # Typed fetch client, X-Request-ID & X-RateLimit-* parser
+    │   └── utils.ts             # cn(), formatters, User-Agent device parser, copyToClipboard
+    ├── context/
+    │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
+    │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
+    ├── components/
+    │   ├── ui/                  # shadcn-grade primitives
+    │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
+    │   │   ├── input.tsx        # High-assurance input with focus rings
+    │   │   ├── label.tsx        # Accessible form label
+    │   │   ├── card.tsx         # Hairline-bordered card containers
+    │   │   ├── badge.tsx        # Semantic status and role badges
+    │   │   ├── alert.tsx        # Contextual notification banners
+    │   │   ├── table.tsx        # Structured tabular views with uppercase mono headers
+    │   │   ├── dialog.tsx       # Radix UI accessible modal dialogs
+    │   │   ├── dropdown-menu.tsx# Radix UI popovers and action menus
+    │   │   ├── tabs.tsx         # Radix UI accessible segmented tabs
+    │   │   ├── separator.tsx    # Crisp 1px hairline dividers
+    │   │   ├── collapsible.tsx  # Expandable technical JSON drawers
+    │   │   ├── tooltip.tsx      # Hover technical details tooltips
+    │   │   ├── otp-input.tsx    # Accessible 6-cell segmented numeric OTP input
+    │   │   ├── copy-button.tsx  # 1-click clipboard copy with visual feedback
+    │   │   └── ThemeToggle.tsx  # Radix dropdown theme switcher (Light / Dark / System)
+    │   └── layout/
+    │       ├── AuthShell.tsx    # Constrained layout for authentication views
+    │       ├── DashboardShell.tsx# Unified dashboard with role-aware navigation
+    │       ├── TopBar.tsx       # Brand mark, live backend telemetry pill & user status
+    │       ├── RouteGuards.tsx  # Protected guards (RequireAuth, RequireAdmin, PublicOnly)
+    │       └── ErrorLayout.tsx  # Standardized error layout with technical diagnostics
+    └── pages/
+        ├── auth/
+        │   ├── LoginPage.tsx    # /login: Primary credentials with anti-enumeration handling
+        │   ├── RegisterPage.tsx # /register: NIST SP 800-63B policy validator (12-128 chars)
+        │   └── VerifyOtpPage.tsx# /verify-otp: 6-cell numeric OTP with 60s cooldown & attempt tracking
+        ├── dashboard/
+        │   ├── ProfileTab.tsx   # /dashboard/profile: User ID, role, status, and crypto specs
+        │   ├── SessionsTab.tsx  # /dashboard/sessions: Active employee sessions & 1-click self-revocation
+        │   └── admin/
+        │       ├── AppsTab.tsx  # /dashboard/admin/apps: OAuth clients + CRITICAL One-Time Secret Reveal
+        │       ├── UsersTab.tsx # /dashboard/admin/users: Directory search, 3-strike unlock & status controls
+        │       ├── AuditLogsTab.tsx # /dashboard/admin/audit-logs: Security audit trail & JSON drawer
+        │       └── GlobalSessionsTab.tsx # /dashboard/admin/sessions: Centralized kill-switch
+        └── errors/
+            ├── ForbiddenPage.tsx    # 403: ERR_FORBIDDEN (Administrator authority required)
+            ├── NotFoundPage.tsx     # 404: ERR_NOT_FOUND (Missing resource or route)
+            ├── RateLimitedPage.tsx  # 429: ERR_RATE_LIMITED (Live X-RateLimit-Reset countdown)
+            ├── ServerErrorPage.tsx  # 500/503: Offline / gateway unreachable
+            └── ErrorBoundary.tsx    # Global React ErrorBoundary wrapping root routes
 ```
 
-### 9.2 Key Frontend Optimizations & UX Enhancements
+### 9.2 Design System & Theming Tokens (shadcn/ui Standard)
+The visual styling is built around HSL CSS custom variables configured inside `index.css` and `tailwind.config.js`. It eschews trendy glassmorphism and non-standard animations in favor of clear information architecture, high-contrast typography, and strict 1px hairline borders:
 
-1. **Split 6-Digit OTP Box Component (`otpInput.js`):**
-   - Renders 6 distinct numeric input elements.
+* **Trademark Primary Accent:** Cloudflare Safety Amber (`hsl(28 92% 54%)` / `#F6821F`), conveying vigilance, security, and enterprise reliability.
+* **Surface Hierarchy:** Layered neutral shades (`--background`, `--card`, `--popover`, `--muted`) using calibrated Zinc/Slate tones with matching dark/light variants.
+* **Zero-FOUC Theme Management:** An inline script in `index.html` resolves the theme from `localStorage` (`vaultauth_theme`) or `prefers-color-scheme` before the first paint, eliminating flashing.
+* **Accessibility & Focus Rings:** High-visibility focus indicators (`ring-2 ring-ring ring-offset-2`) ensure WCAG 2.1 AA keyboard navigation compliance across all interactive elements.
+
+### 9.3 Unified 6-Tab Role-Gated Dashboard Specification
+The authenticated workspace consolidates employee self-service and enterprise administrative controls into a single, unified view (`/dashboard`) organized across six tab panels:
+
+1. **Profile Panel (`ProfileTab.tsx`):**
+   - Displays authenticated identity details: UUID, normalized email, cryptographic role (`user` vs `admin`), and verification status (`ACTIVE`).
+   - Technical metadata overview describing Argon2id password parameters (`m=65536, t=3, p=4`) and 256-bit token architecture.
+
+2. **Active Employee Sessions (`SessionsTab.tsx`):**
+   - Telemetry table detailing all active sessions belonging to the current user (device type parsed from User-Agent, client IP address, creation timestamp, and idle/absolute expiry counters).
+   - Instant 1-click self-revocation button (`DELETE /api/v1/sessions/{id}`) terminating rogue or stale sessions.
+
+3. **OAuth & OIDC Applications (`AppsTab.tsx` - Admin Only):**
+   - Complete lifecycle management for relying party client applications.
+   - Creation form specifying client name, allowed redirect URIs, and OAuth scopes (`openid`, `profile`, `email`).
+   - **One-Time Secret Reveal Modal:** When a client is created, the raw `client_secret` is displayed exactly once inside a high-assurance modal with single-click clipboard copying. The administrator must explicitly check a confirmation checkbox acknowledging that the secret cannot be retrieved again before dismissing the dialog.
+
+4. **User Governance & Directory (`UsersTab.tsx` - Admin Only):**
+   - Paginated user directory with search/filter capabilities.
+   - Status badge indicators (`ACTIVE`, `PENDING`, `LOCKED`, `DISABLED`).
+   - 3-strike brute-force lockout status display with manual administrative unlock trigger (`POST /api/v1/admin/users/{id}/unlock`).
+   - Role promotion (`user` ↔ `admin`) and account status controls with immediate session termination on disable.
+
+5. **Security Audit Trail (`AuditLogsTab.tsx` - Admin Only):**
+   - Immutable security event log table with real-time event filtering (`LOGIN_SUCCESS`, `LOGIN_FAILURE`, `LOCKOUT`, `REVOCATION`, etc.).
+   - Expandable Radix collapsible drawer displaying full JSON event context (IP, user agent, actor ID, request ID).
+   - Defense-in-depth HTML sanitization neutralizing stored XSS threats.
+
+6. **Global System Sessions (`GlobalSessionsTab.tsx` - Admin Only):**
+   - Centralized visibility into all active sessions across the enterprise.
+   - Emergency 1-click administrative kill-switch to terminate compromised sessions globally within the 30-second requirement (`DELETE /api/v1/sessions/{id}`).
+
+### 9.4 Key Frontend UX & Security Enhancements
+
+1. **Split 6-Digit OTP Box Component (`otp-input.tsx`):**
+   - Renders 6 distinct numeric input elements with focus management.
    - Automatically advances focus upon digit entry and reverses focus on backspace.
    - Intercepts clipboard paste events (e.g. pasting `"849201"` instantly populates all 6 inputs and triggers validation).
    - Enforces `inputmode="numeric"` and `pattern="[0-9]*"` for mobile virtual keyboards.
+   - Features a 60-second visual cooldown timer for OTP resend and tracks invalid verification attempts.
 
 2. **Render Cold-Start & Latency Defense:**
    - Free-tier server containers sleep after 15 minutes of inactivity and require ~50 seconds to wake up.
@@ -261,9 +349,9 @@ vaultauth-frontend/
    - **Zero Plaintext Ingestion:** Password fields are passed directly to `fetch()` over HTTPS/TLS and never logged or written to `localStorage`.
    - **Ephemeral In-Memory / `sessionStorage`:** Opaque Bearer tokens are kept in memory and synchronized to `sessionStorage` (cleared on browser tab close). Tokens are purged instantly upon clicking "Sign Out" or upon receiving any HTTP 401 response.
 
-4. **Defense-in-Depth XSS Sanitization:**
-   - Strict rule: Dynamic server-provided strings (emails, device user-agents, IP addresses, audit event descriptions) must **never** be rendered via `innerHTML`.
-   - All table cells and text elements are rendered using standard `element.textContent` and `document.createElement()`, neutralizing HTML/script injection vectors.
+4. **Standardized Diagnostic Error Pages:**
+   - Dedicated error views conforming to error codes: `403 Forbidden` (`ForbiddenPage.tsx`), `404 Not Found` (`NotFoundPage.tsx`), `429 Rate Limited` (`RateLimitedPage.tsx` with live countdown parsed from `X-RateLimit-Reset` header), and `500/503 Service Unavailable` (`ServerErrorPage.tsx`).
+   - Root React `ErrorBoundary.tsx` catching runtime exceptions with technical error diagnostics and safe recovery actions.
 
 5. **Production Content Security Policy (`vercel.json`):**
    ```json
@@ -272,7 +360,7 @@ vaultauth-frontend/
        {
          "source": "/(.*)",
          "headers": [
-           { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' https://cdn.jsdelivr.net; font-src 'self' https://cdn.jsdelivr.net; connect-src 'self' https://*.onrender.com; frame-ancestors 'none'; base-uri 'none';" },
+           { "key": "Content-Security-Policy", "value": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; connect-src 'self' https://*.onrender.com; frame-ancestors 'none'; base-uri 'none';" },
            { "key": "X-Frame-Options", "value": "DENY" },
            { "key": "X-Content-Type-Options", "value": "nosniff" },
            { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" },
@@ -283,8 +371,8 @@ vaultauth-frontend/
    }
    ```
 
-6. **Interactive WebAuthn/FIDO2 Architecture Card:**
-   - Dedicated reading-only modal highlighting FIDO2/WebAuthn public-key authentication, challenge-response mechanisms, and biometric integration to fulfill stretch learning goals.
+6. **Interactive WebAuthn/FIDO2 Architecture Modal:**
+   - Dedicated educational modal highlighting FIDO2/WebAuthn public-key authentication, challenge-response mechanisms, and biometric integration to fulfill stretch learning goals.
 
 ---
 
@@ -413,7 +501,12 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 | `DELETE /sessions/{id}` | Authenticated | Revoke session | Path param `id` (own session, or admin)| `200 { "message": "Session revoked" }` |
 | `GET /admin/sessions` | Admin Only | List all active sessions | Header `Authorization: Bearer <token>` | `200 [ { "id": "...", "user_email": "...", "device": "...", "ip": "..." } ]` |
 | `GET /admin/audit-logs` | Admin Only | Inspect audit trail | Query: `?event=LOGIN_FAILURE&limit=50` | `200 [ { "id": 1, "ts": "...", "event": "...", "ip": "..." } ]` |
+| `GET /admin/users` | Admin Only | List directory users | Query: `?search=...&status=ACTIVE` | `200 [ { "id": "...", "email": "...", "role": "...", "status": "..." } ]` |
 | `POST /admin/users/{id}/unlock`| Admin Only | Unlock locked user | Path param `id` | `200 { "message": "User unlocked" }` |
+| `PATCH /admin/users/{id}/status`| Admin Only | Modify user role / status | Body: `{ "role": "admin", "status": "ACTIVE" }` | `200 { "id": "...", "status": "...", "role": "..." }` |
+| `GET /admin/oauth/clients` | Admin Only | List registered OAuth clients | Header `Authorization: Bearer <token>` | `200 [ { "id": "...", "client_name": "...", "client_id": "..." } ]` |
+| `POST /admin/oauth/clients` | Admin Only | Register OAuth client | Body: `{ "client_name": "...", "redirect_uris": [...] }` | `201 { "client_id": "...", "client_secret": "..." (one-time) }` |
+| `DELETE /admin/oauth/clients/{id}` | Admin Only | Revoke OAuth client | Path param `id` | `200 { "message": "Client deleted" }` |
 | `GET /health` | Open | Health check / keepalive | None | `200 { "status": "ok", "db": "healthy" }` |
 
 ---
@@ -438,10 +531,10 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 
 | Week | Backend & DevSecOps Deliverables (Shaurya Jain) | Frontend & Security Architecture (Apoorva Bhardwaj) |
 | :---: | :--- | :--- |
-| **Week 1** | • Git repository setup (`vaultauth-backend`).<br>• Alembic migrations & PostgreSQL schema implementation.<br>• Argon2id hashing integration & `/auth/register`.<br>• OpenAPI spec generation & CI test pipeline setup. | • Git repository setup (`vaultauth-frontend`).<br>• Responsive Bootstrap 5 layout & cyber theme.<br>• Client SPA router & view containers.<br>• Dual-mode `api.js` client adapter & registration view. |
-| **Week 2** | • Out-of-band email OTP via Resend.<br>• Opaque 256-bit session token minting.<br>• Primary login authentication & generic error contract.<br>• 3-strike account lockout atomic DB logic. | • Split 6-digit auto-advancing OTP input component.<br>• Email verification & login views.<br>• Ephemeral session token storage (`sessionStorage`).<br>• Countdown timers for OTP expiry and account lockout. |
-| **Week 3** | • Session revocation endpoints (`DELETE /sessions/{id}`).<br>• Admin endpoints (`/admin/sessions`, `/admin/audit-logs`).<br>• 30-day retention purge & CI keepalive ping.<br>• Standby database sync job & Render deployment. | • User Dashboard with Corporate Digital ID Card view.<br>• Admin Console with real-time session kill-switch table.<br>• Security audit log table with XSS sanitization.<br>• Vercel deployment with production CSP security headers. |
-| **Week 4 (Buffer)**| • Automated failover drill & recovery test.<br>• Complete CI test suite verification.<br>• Final security audit & backend documentation. | • Cross-browser verification (Chrome, Safari, Firefox).<br>• Mobile responsive polish & viewport testing (375px).<br>• WebAuthn reading-only concept modal.<br>• Final demonstration walkthrough video recording. |
+| **Week 1** | • Git repository setup (`vaultauth-backend`).<br>• Alembic migrations & PostgreSQL schema implementation.<br>• Argon2id hashing integration & `/auth/register`.<br>• OpenAPI spec generation & CI test pipeline setup. | • Git repository setup (`vaultauth-frontend`).<br>• Modern Bun + React 18 + TypeScript + Vite project bootstrap.<br>• shadcn/ui design tokens & Cloudflare Amber `#F6821F` styling.<br>• Base layout shells (`AuthShell`, `DashboardShell`, `TopBar`). |
+| **Week 2** | • Out-of-band email OTP via Resend.<br>• Opaque 256-bit session token minting.<br>• Primary login authentication & generic error contract.<br>• 3-strike account lockout atomic DB logic. | • Split 6-digit numeric `OtpInput` with auto-advance & paste routing.<br>• Dual auth views (`LoginPage`, `RegisterPage`, `VerifyOtpPage`).<br>• Ephemeral session management (`sessionStorage` + React Context).<br>• 60s cooldown timers & live brute-force countdowns. |
+| **Week 3** | • Session revocation endpoints (`DELETE /sessions/{id}`).<br>• Admin endpoints (`/admin/sessions`, `/admin/audit-logs`).<br>• User governance & OAuth client APIs.<br>• Standby database sync job & Render deployment. | • Unified 6-Tab Dashboard (`ProfileTab`, `SessionsTab`, `AppsTab`, `UsersTab`, `AuditLogsTab`, `GlobalSessionsTab`).<br>• One-Time Secret Reveal modal for OAuth client creation.<br>• 3-strike user unlock interface & role/status toggles.<br>• Audit trail explorer with JSON inspection drawers. |
+| **Week 4 (Buffer)**| • Automated failover drill & recovery test.<br>• Complete CI test suite verification.<br>• Final security audit & backend documentation. | • Standardized error pages (`403`, `404`, `429`, `500/503`) & ErrorBoundary.<br>• Cross-browser testing & mobile responsive polish.<br>• Production CSP security headers deployment on Vercel.<br>• Final walkthrough demonstration recording. |
 
 ---
 
