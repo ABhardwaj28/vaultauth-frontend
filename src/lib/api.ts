@@ -471,6 +471,8 @@ class ApiClient {
       device: s.device || s.user_agent || "Unknown Device",
       user_email: s.user_email || s.email || "Unknown User",
       email: s.email || s.user_email || "Unknown User",
+      last_active_at: s.last_active_at || s.last_seen_at || s.created_at,
+      expires_at: s.expires_at || s.idle_expires_at || s.absolute_expires_at,
     }));
   }
 }
