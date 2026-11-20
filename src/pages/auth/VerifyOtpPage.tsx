@@ -114,9 +114,9 @@ export function VerifyOtpPage() {
   return (
     <AuthShell>
       <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1 pb-4 text-center">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-md border border-border bg-muted/50 mb-2">
-            <KeyRound className="h-5 w-5 text-primary" />
+        <CardHeader className="space-y-1.5 pb-4 text-center">
+          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-[#F6821F] text-white shadow-sm mb-2">
+            <KeyRound className="h-5 w-5" />
           </div>
           <CardTitle className="text-xl font-bold tracking-tight text-foreground">
             Two-Factor Verification

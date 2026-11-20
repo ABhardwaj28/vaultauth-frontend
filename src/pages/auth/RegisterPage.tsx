@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -79,9 +79,14 @@ export function RegisterPage() {
   return (
     <AuthShell>
       <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1 pb-4">
+        <CardHeader className="space-y-1.5 pb-4 text-center">
+          <div className="flex justify-center mb-1">
+            <div className="w-10 h-10 rounded-lg bg-[#F6821F] flex items-center justify-center text-white shadow-sm">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
           <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-            Create Account
+            Create an Account
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
             Provision a new corporate identity on the VaultAuth SSO realm.

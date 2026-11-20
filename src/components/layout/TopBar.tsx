@@ -9,22 +9,34 @@ export function TopBar() {
   const { user, logout } = useAuth();
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-border bg-background/95 backdrop-blur-none">
+    <header className="sticky top-0 z-40 w-full border-b border-border bg-card/95 backdrop-blur-sm transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
         {/* Brand & Logo */}
-        <Link to="/dashboard" className="flex items-center space-x-2.5 group">
-          <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary text-primary-foreground shadow-sm">
-            <ShieldCheck className="w-4 h-4" />
-          </div>
-          <div className="flex items-baseline space-x-1.5">
-            <span className="font-semibold text-sm tracking-tight text-foreground">
-              VaultAuth
+        <div className="flex items-center space-x-6">
+          <Link to="/dashboard" className="flex items-center space-x-2.5 group">
+            {/* Cloudflare-inspired Safety Amber Icon */}
+            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-[#F6821F] text-white shadow-sm transition-transform group-hover:scale-105">
+              <ShieldCheck className="w-4 h-4" />
+            </div>
+            <div className="flex items-baseline space-x-1.5">
+              <span className="font-semibold text-sm tracking-tight text-foreground">
+                VaultAuth
+              </span>
+              <span className="text-[10px] font-mono font-medium text-[#F6821F] uppercase tracking-wider">
+                SSO
+              </span>
+            </div>
+          </Link>
+
+          {/* Cloudflare Operational Status Pill */}
+          <div className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono">
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            <span className="text-[10px] font-mono font-medium text-muted-foreground uppercase tracking-wider">
-              SSO
-            </span>
+            <span className="font-medium">Gateway Operational</span>
           </div>
-        </Link>
+        </div>
 
         {/* Right Control Hub */}
         <div className="flex items-center space-x-3">

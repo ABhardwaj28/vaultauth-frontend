@@ -14,28 +14,28 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       default:
-        "bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm border border-transparent active:scale-[0.985]",
+        "bg-[#F6821F] hover:bg-[#E56D0E] text-white shadow-sm border border-[#F6821F] hover:border-[#E56D0E] active:bg-[#CC5600] active:scale-[0.99] transition-all",
       destructive:
-        "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent active:scale-[0.985]",
+        "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent active:scale-[0.99] transition-all",
       outline:
-        "border border-input bg-background hover:bg-muted/50 hover:text-accent-foreground shadow-sm active:scale-[0.985]",
+        "border border-border bg-card hover:bg-muted text-foreground hover:border-border/80 shadow-sm active:scale-[0.99] transition-all",
       secondary:
-        "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-transparent shadow-sm active:scale-[0.985]",
-      ghost: "hover:bg-muted/50 hover:text-accent-foreground",
-      link: "text-primary underline-offset-4 hover:underline",
+        "bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border/40 shadow-sm active:scale-[0.99] transition-all",
+      ghost: "hover:bg-muted/70 hover:text-foreground text-muted-foreground transition-colors",
+      link: "text-primary hover:text-primary/90 underline-offset-4 hover:underline font-medium p-0 h-auto",
     };
 
     const sizeClasses = {
-      default: "h-9 px-4 py-2 text-sm",
-      sm: "h-8 rounded-md px-3 text-xs",
-      lg: "h-10 rounded-md px-6 text-base",
-      icon: "h-9 w-9 p-0",
+      default: "h-9 px-4 py-2 text-xs font-medium rounded-md",
+      sm: "h-8 rounded-md px-3 text-xs font-medium",
+      lg: "h-10 rounded-md px-6 text-sm font-medium",
+      icon: "h-8 w-8 p-0 rounded-md",
     };
 
     return (
       <Comp
         className={cn(
-          "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-colors duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 select-none",
+          "inline-flex items-center justify-center whitespace-nowrap rounded-md font-medium transition-all duration-150 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 select-none",
           variantClasses[variant],
           sizeClasses[size],
           className

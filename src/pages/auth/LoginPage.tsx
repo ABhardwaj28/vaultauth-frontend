@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Clock } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Clock, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -136,12 +136,17 @@ export function LoginPage() {
   return (
     <AuthShell>
       <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1 pb-4">
+        <CardHeader className="space-y-1.5 pb-4 text-center">
+          <div className="flex justify-center mb-1">
+            <div className="w-10 h-10 rounded-lg bg-[#F6821F] flex items-center justify-center text-white shadow-sm">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+          </div>
           <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-            Sign In
+            Log in to VaultAuth
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
-            Enter your corporate credentials to access your session.
+            Enter your enterprise credentials to access your protected session.
           </CardDescription>
         </CardHeader>
 
@@ -166,7 +171,7 @@ export function LoginPage() {
 
             {/* Email Field */}
             <div className="space-y-1.5">
-              <Label htmlFor="email">Corporate Email</Label>
+              <Label htmlFor="email" className="text-xs font-medium">Corporate Email</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -178,7 +183,7 @@ export function LoginPage() {
                   placeholder="name@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 font-sans text-sm"
+                  className="pl-9 text-xs"
                   disabled={loading}
                 />
               </div>
@@ -187,8 +192,8 @@ export function LoginPage() {
             {/* Password Field */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password">Password</Label>
-                <span className="text-[11px] text-muted-foreground font-mono hover:text-foreground cursor-pointer">
+                <Label htmlFor="password" className="text-xs font-medium">Password</Label>
+                <span className="text-[11px] text-muted-foreground font-mono hover:text-[#F6821F] cursor-pointer transition-colors">
                   Recovery Key
                 </span>
               </div>
@@ -202,7 +207,7 @@ export function LoginPage() {
                   placeholder="••••••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 pr-9 font-sans text-sm"
+                  className="pl-9 pr-9 text-xs"
                   disabled={loading}
                 />
                 <button
@@ -218,7 +223,7 @@ export function LoginPage() {
 
             {/* Live Rate Limit Alert */}
             {rateLimitTimer && rateLimitTimer > 0 && (
-              <div className="flex items-center space-x-1.5 text-xs text-amber-500 font-mono">
+              <div className="flex items-center space-x-1.5 text-xs text-[#F6821F] font-mono">
                 <Clock className="w-3.5 h-3.5" />
                 <span>Retry window opens in {rateLimitTimer}s</span>
               </div>
@@ -229,7 +234,7 @@ export function LoginPage() {
             <Button
               type="submit"
               disabled={loading || Boolean(rateLimitTimer && rateLimitTimer > 0)}
-              className="w-full h-10 font-medium"
+              className="w-full h-9 font-medium"
             >
               {loading ? (
                 <span className="flex items-center space-x-2">
@@ -237,7 +242,7 @@ export function LoginPage() {
                   <span>Verifying Credentials...</span>
                 </span>
               ) : (
-                <span>Sign In</span>
+                <span>Log In</span>
               )}
             </Button>
 
@@ -247,7 +252,7 @@ export function LoginPage() {
                 to="/register"
                 className="text-primary hover:underline font-medium underline-offset-4"
               >
-                Register
+                Sign up
               </Link>
             </div>
           </CardFooter>

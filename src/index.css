@@ -3,67 +3,75 @@
 @tailwind utilities;
 
 @layer base {
+  /* Cloudflare Dashboard Light Theme */
   :root {
-    --background: 0 0% 100%;
-    --foreground: 240 10% 3.9%;
+    /* Soft cool grey background for natural card contrast */
+    --background: 216 18% 97%; /* #F5F7FA */
+    --foreground: 222 47% 11%; /* #0F172A */
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 3.9%;
+    /* Pure white elevated cards */
+    --card: 0 0% 100%; /* #FFFFFF */
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 3.9%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Trademark Enterprise Accent: Cloudflare Safety Amber (#F6821F) */
+    /* Trademark Cloudflare Safety Amber / Orange (#F6821F) */
     --primary: 28 92% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 4.8% 95.9%;
-    --secondary-foreground: 240 5.9% 10%;
+    --secondary: 218 16% 93%; /* #EEF1F5 */
+    --secondary-foreground: 222 47% 11%;
 
-    --muted: 240 4.8% 95.9%;
-    --muted-foreground: 240 3.8% 46.1%;
+    --muted: 218 14% 94%; /* #EEF0F4 */
+    --muted-foreground: 215 16% 47%; /* #64748B */
 
-    --accent: 240 4.8% 95.9%;
-    --accent-foreground: 240 5.9% 10%;
+    --accent: 28 95% 96%;
+    --accent-foreground: 28 92% 40%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84% 60%; /* #EF4444 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 5.9% 90%;
-    --input: 240 5.9% 90%;
+    /* Signature Cloudflare 1px crisp hairline borders */
+    --border: 218 14% 88%; /* #DCE1E8 */
+    --input: 218 14% 88%; /* #DCE1E8 */
     --ring: 28 92% 54%;
 
-    --radius: 0.5rem;
+    --radius: 0.375rem; /* 6px industrial precision radius */
   }
 
+  /* Cloudflare Zero Trust / Cloudflare Dashboard Dark Theme */
   .dark {
-    --background: 240 10% 3.9%;
-    --foreground: 0 0% 98%;
+    /* Deep carbon obsidian slate canvas */
+    --background: 232 15% 9%; /* #13141A */
+    --foreground: 220 14% 96%; /* #F3F4F6 */
 
-    --card: 240 10% 5.5%;
-    --card-foreground: 0 0% 98%;
+    /* Elevated slate card surfaces */
+    --card: 232 14% 13%; /* #1B1C24 */
+    --card-foreground: 220 14% 96%;
 
-    --popover: 240 10% 5.5%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 232 14% 13%;
+    --popover-foreground: 220 14% 96%;
 
-    /* Trademark Enterprise Accent: Cloudflare Safety Amber (#F6821F) */
+    /* Trademark Cloudflare Safety Amber / Orange (#F6821F) */
     --primary: 28 92% 54%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 3.7% 14%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 232 14% 18%; /* #252733 */
+    --secondary-foreground: 220 14% 96%;
 
-    --muted: 240 3.7% 14%;
-    --muted-foreground: 240 5% 64.9%;
+    --muted: 232 14% 16%; /* #22242E */
+    --muted-foreground: 215 20% 65%; /* #94A3B8 */
 
-    --accent: 240 3.7% 14%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 232 14% 18%;
+    --accent-foreground: 220 14% 96%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%; /* #DC2626 */
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 240 3.7% 15.9%;
-    --input: 240 3.7% 15.9%;
+    /* Crisp 1px hairline slate border */
+    --border: 232 14% 21%; /* #2E313E */
+    --input: 232 14% 21%; /* #2E313E */
     --ring: 28 92% 54%;
   }
 }
@@ -73,12 +81,12 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    @apply bg-background text-foreground antialiased font-sans transition-colors duration-150;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
   }
 }
 
-/* Custom subtle scrollbar */
+/* Cloudflare-style subtle precision scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -91,5 +99,5 @@
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: hsl(var(--primary) / 0.5);
 }
