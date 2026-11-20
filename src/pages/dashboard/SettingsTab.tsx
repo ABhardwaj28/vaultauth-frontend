@@ -315,7 +315,7 @@ export function SettingsTab() {
               </CardTitle>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
-              Calibrated Cloudflare Safety Amber palette with high-contrast surfaces in Light and Dark modes.
+              High-contrast surfaces with amber accent in Light and Dark modes.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-3 text-xs">

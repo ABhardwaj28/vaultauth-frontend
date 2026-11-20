@@ -70,7 +70,7 @@ export function DashboardShell() {
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150">
       <TopBar />
 
-      {/* Cloudflare-Style Sub-Header Navigation Bar */}
+      {/* Sub-Header Navigation Bar */}
       <div className="w-full border-b border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <nav className="flex items-center space-x-1 sm:space-x-1.5 overflow-x-auto py-1.5 -mb-px">
@@ -131,13 +131,13 @@ export function DashboardShell() {
         <Outlet />
       </main>
 
-      {/* Cloudflare-Style Minimal Footer */}
+      {/* Minimal Footer */}
       <footer className="border-t border-border py-4 px-4 text-center text-xs text-muted-foreground font-mono bg-card">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <div className="flex items-center space-x-2">
             <span className="font-semibold text-foreground">VaultAuth SSO</span>
             <span className="text-border">|</span>
-            <span>Cloudflare-Calibrated Identity Gateway</span>
+            <span>Enterprise Identity Gateway</span>
           </div>
           <div className="flex items-center space-x-3 text-[11px]">
             <span>Argon2id Memory-Hard</span>

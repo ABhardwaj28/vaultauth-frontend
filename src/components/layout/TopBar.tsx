@@ -14,7 +14,7 @@ export function TopBar() {
         {/* Brand & Logo */}
         <div className="flex items-center space-x-6">
           <Link to="/dashboard" className="flex items-center space-x-2.5 group">
-            {/* Cloudflare-inspired Safety Amber Icon */}
+            {/* Safety Amber Icon */}
             <div className="flex items-center justify-center w-7 h-7 rounded-md bg-[#F6821F] text-white shadow-sm transition-transform group-hover:scale-105">
               <ShieldCheck className="w-4 h-4" />
             </div>
@@ -28,7 +28,7 @@ export function TopBar() {
             </div>
           </Link>
 
-          {/* Cloudflare Operational Status Pill */}
+          {/* Operational Status Pill */}
           <div className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono">
             <span className="relative flex h-2 w-2">
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
