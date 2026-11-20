@@ -161,14 +161,17 @@ The frontend communicates with [vaultauth-backend](https://github.com/ProPlays23
 git clone https://github.com/ABhardwaj28/vaultauth-frontend.git
 cd vaultauth-frontend
 
-# 2. Run locally with any static web server
-# Option A: Python
-python3 -m http.server 3000
+# 2. Install dependencies with Bun
+bun install
 
-# Option B: Node / npx
-npx serve .
+# 3. Environment configuration
+# Default backend points to: https://api.vaultauth.proplays2312.eu.org
+cp .env.example .env
+
+# 4. Start high-performance development server
+bun dev
 ```
-Visit `http://localhost:3000` in your web browser.
+Visit `http://localhost:3000` in your web browser. Production API target: `https://api.vaultauth.proplays2312.eu.org`.
 
 ---
 
