@@ -24,6 +24,11 @@ import {
 const DEFAULT_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://api.vaultauth.proplays2312.eu.org";
 
+export interface RequestOptions extends RequestInit {
+  skipAuthExpiredEvent?: boolean;
+  timeoutMs?: number;
+}
+
 class ApiClient {
   public baseUrl: string;
 
@@ -53,11 +58,11 @@ class ApiClient {
   }
 
   /**
-   * Typed request dispatcher
+   * Typed request dispatcher with strict timeout and lifecycle guards
    */
   async request<T>(
     endpoint: string,
-    options: RequestInit = {}
+    options: RequestOptions = {}
   ): Promise<{ data: T; headers: Headers; rateLimit?: { limit?: number; remaining?: number; reset?: number } }> {
     const url = `${this.baseUrl}${endpoint}`;
     const requestId = crypto.randomUUID();
@@ -74,21 +79,37 @@ class ApiClient {
       headers.set("Authorization", `Bearer ${token}`);
     }
 
+    const timeoutMs = options.timeoutMs ?? 10000;
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+
+    if (options.signal) {
+      options.signal.addEventListener("abort", () => controller.abort());
+    }
+
     let response: Response;
     try {
       response = await fetch(url, {
         ...options,
         headers,
+        signal: controller.signal,
       });
     } catch (err: unknown) {
+      const isAbort = err instanceof Error && err.name === "AbortError";
       const netErr: ApiError = {
         status: 0,
-        code: "ERR_NETWORK",
-        message: err instanceof Error ? err.message : "Network offline or service unreachable.",
+        code: isAbort ? "ERR_TIMEOUT" : "ERR_NETWORK",
+        message: isAbort
+          ? "Request timed out after waiting for server response."
+          : err instanceof Error
+          ? err.message
+          : "Network offline or service unreachable.",
         requestId,
         timestamp: new Date().toISOString(),
       };
       throw netErr;
+    } finally {
+      clearTimeout(timer);
     }
 
     // Rate Limit Header Extraction
@@ -117,11 +138,12 @@ class ApiClient {
       const responseRequestId =
         response.headers.get("X-Request-ID") || responseBody?.error?.request_id || requestId;
 
-      // Handle 401 Unauthorized globally (except login / logout)
+      // Handle 401 Unauthorized globally (except login / logout or when explicitly bypassed during hydration)
       if (
         response.status === 401 &&
         endpoint !== "/api/v1/auth/login" &&
-        endpoint !== "/api/v1/auth/logout"
+        endpoint !== "/api/v1/auth/logout" &&
+        !options.skipAuthExpiredEvent
       ) {
         this.clearToken();
         if (typeof window !== "undefined") {
@@ -178,33 +200,39 @@ class ApiClient {
   async checkHealth(): Promise<{ ok: boolean; status: string; latency: number; details?: HealthCheckResponse }> {
     const startTime = performance.now();
     try {
-      let res: Response | null = null;
-      try {
-        res = await fetch(`${this.baseUrl}/health`, {
-          method: "GET",
-          headers: { Accept: "application/json" },
-        });
-      } catch {
-        res = null;
-      }
+      const endpoints = [
+        "/health",
+        "/api/v1/health",
+        "/.well-known/openid-configuration",
+        "/",
+      ];
 
-      if (!res || !res.ok) {
+      let res: Response | null = null;
+      for (const ep of endpoints) {
         try {
-          res = await fetch(`${this.baseUrl}/api/v1/health`, {
+          const controller = new AbortController();
+          const timer = setTimeout(() => controller.abort(), 3500);
+          const response = await fetch(`${this.baseUrl}${ep}`, {
             method: "GET",
             headers: { Accept: "application/json" },
+            signal: controller.signal,
           });
+          clearTimeout(timer);
+          // If server responded with ANY HTTP status below 500 (200, 301, 302, 401, 403, 404), the host is alive!
+          if (response.status < 500) {
+            res = response;
+            break;
+          }
         } catch {
-          res = null;
+          // try next endpoint
         }
       }
 
       const latency = Math.round(performance.now() - startTime);
-      if (!res || !res.ok) {
-        return { ok: false, status: res ? `HTTP ${res.status}` : "offline", latency };
+      if (!res) {
+        return { ok: false, status: "offline", latency };
       }
-      const data = await res.json().catch(() => ({ status: "ok" }));
-      return { ok: true, status: data.status || "healthy", latency, details: data };
+      return { ok: true, status: "healthy", latency };
     } catch {
       const latency = Math.round(performance.now() - startTime);
       return { ok: false, status: "offline", latency };
@@ -304,8 +332,8 @@ class ApiClient {
   }
 
   // --- Profile & User Sessions ---
-  async getMe(): Promise<UserProfile> {
-    const res = await this.request<UserProfile>("/api/v1/me", { method: "GET" });
+  async getMe(options?: RequestOptions): Promise<UserProfile> {
+    const res = await this.request<UserProfile>("/api/v1/me", { method: "GET", ...options });
     return res.data;
   }
 

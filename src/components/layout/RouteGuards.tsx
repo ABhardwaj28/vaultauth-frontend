@@ -9,10 +9,7 @@ export function RequireAuth() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center space-y-2">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          <span className="text-xs font-mono text-muted-foreground">Hydrating Session...</span>
-        </div>
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
       </div>
     );
   }

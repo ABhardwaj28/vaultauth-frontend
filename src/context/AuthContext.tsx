@@ -20,20 +20,8 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => api.getToken());
-  const [user, setUser] = useState<UserProfile | null>(() => {
-    if (typeof window !== "undefined") {
-      const stored = sessionStorage.getItem("vaultauth_user");
-      if (stored) {
-        try {
-          return JSON.parse(stored);
-        } catch {
-          return null;
-        }
-      }
-    }
-    return null;
-  });
+  const [token, setToken] = useState<string | null>(null);
+  const [user, setUser] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isServiceUnavailable, setIsServiceUnavailable] = useState<boolean>(false);
   const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
@@ -111,22 +99,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // 2. Hydrate Existing Session if token exists
       const existingToken = api.getToken();
       if (!existingToken) {
-        if (isMounted) setIsLoading(false);
+        if (isMounted) {
+          setToken(null);
+          setUser(null);
+          setIsLoading(false);
+        }
         return;
       }
 
-      setToken(existingToken);
       try {
-        const profile = await api.getMe();
+        const profile = await api.getMe({ skipAuthExpiredEvent: true, timeoutMs: 5000 });
         if (isMounted) {
+          setToken(existingToken);
           setUser(profile);
           sessionStorage.setItem("vaultauth_user", JSON.stringify(profile));
         }
-      } catch (err: unknown) {
-        const status = (err as { status?: number })?.status;
-        if (isMounted && status === 401) {
-          logout();
-          setSessionExpiredNotice("Your active session was invalidated. Please sign in again.");
+      } catch {
+        // Stale or invalid token from prior session — silently clear it!
+        // Never throw an authentication error or show an expired notice on initial startup.
+        api.clearToken();
+        if (isMounted) {
+          setToken(null);
+          setUser(null);
+          setSessionExpiredNotice(null);
         }
       } finally {
         if (isMounted) setIsLoading(false);
@@ -138,7 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Listen to global session_expired events dispatched from ApiClient
     const handleSessionExpired = (e: Event) => {
       const customEvent = e as CustomEvent<{ message?: string }>;
-      logout();
+      api.clearToken();
+      setToken(null);
+      setUser(null);
+      sessionStorage.removeItem("vaultauth_user");
       setSessionExpiredNotice(
         customEvent.detail?.message || "Your session has expired. Please sign in again."
       );

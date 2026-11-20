@@ -182,7 +182,11 @@ export function LoginPage() {
                   autoComplete="email"
                   placeholder="name@company.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (error) setError(null);
+                    if (sessionExpiredNotice) setSessionExpiredNotice(null);
+                  }}
                   className="pl-9 text-xs"
                   disabled={loading}
                 />
@@ -206,7 +210,11 @@ export function LoginPage() {
                   autoComplete="current-password"
                   placeholder="••••••••••••"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (error) setError(null);
+                    if (sessionExpiredNotice) setSessionExpiredNotice(null);
+                  }}
                   className="pl-9 pr-9 text-xs"
                   disabled={loading}
                 />

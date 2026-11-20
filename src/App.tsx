@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { Loader2 } from "lucide-react";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/pages/errors/ErrorBoundary";
@@ -29,6 +30,20 @@ import { RateLimitedPage } from "@/pages/errors/RateLimitedPage";
 import { ServerErrorPage } from "@/pages/errors/ServerErrorPage";
 import { ServiceUnavailablePage } from "@/pages/errors/ServiceUnavailablePage";
 
+function RootRedirect() {
+  const { isAuthenticated, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
+}
+
 function AppRoutes() {
   const { isServiceUnavailable, checkServiceAvailability } = useAuth();
   const [retrying, setRetrying] = useState(false);
@@ -50,8 +65,8 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root redirect */}
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
+        {/* Root redirect: cleanly route to dashboard if logged in, or login if not */}
+        <Route path="/" element={<RootRedirect />} />
 
         {/* Public-Only Auth Routes */}
         <Route element={<PublicOnly />}>
