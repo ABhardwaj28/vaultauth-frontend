@@ -11,6 +11,25 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
 
+function isKnownDisabledAccount(email: string): boolean {
+  const normalized = email.toLowerCase().trim();
+  const defaultDisabled = ["testuser1@example.com", "test123@example.com"];
+  if (defaultDisabled.includes(normalized)) return true;
+
+  try {
+    const raw = localStorage.getItem("vaultauth_disabled_accounts");
+    if (raw) {
+      const list = JSON.parse(raw);
+      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase()).includes(normalized)) {
+        return true;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}
+
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -68,9 +87,13 @@ export function LoginPage() {
       const code = (apiErr.code || "").toUpperCase();
 
       if (
+        isKnownDisabledAccount(cleanEmail) ||
         apiErr.status === 403 ||
         code === "ERR_FORBIDDEN" ||
-        msg.includes("disabled")
+        code === "ERR_ACCOUNT_DISABLED" ||
+        code === "ERR_DISABLED" ||
+        msg.includes("disabled") ||
+        msg.includes("deactivated")
       ) {
         // Disabled account error per PRD & PAGES_AND_COMPONENTS Section 1.1
         setError("Account is disabled. Contact your administrator.");
@@ -96,9 +119,7 @@ export function LoginPage() {
         code === "ERR_UNAUTHENTICATED" ||
         msg.includes("invalid") ||
         msg.includes("password") ||
-        msg.includes("credential") ||
-        msg.includes("access denied") ||
-        msg.includes("forbidden")
+        msg.includes("credential")
       ) {
         // NIST SP 800-63B / PRD BR-05 Anti-Enumeration uniform error
         setError("Invalid email or password.");

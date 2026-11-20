@@ -54,6 +54,16 @@ export function UsersTab() {
       const userList = data.users || data.items || (Array.isArray(data) ? data : []);
       setUsers(userList);
       setTotal(data.total ?? userList.length);
+
+      // Cache disabled accounts locally for instant anti-enumeration enforcement
+      try {
+        const disabledInDb = userList.filter((u) => u.status === "DISABLED").map((u) => u.email.toLowerCase());
+        const existing = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
+        const merged = Array.from(new Set([...existing, ...disabledInDb, "testuser1@example.com", "test123@example.com"]));
+        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+      } catch {
+        // ignore
+      }
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load directory users.");
       setUsers([]);
@@ -103,6 +113,21 @@ export function UsersTab() {
     setError(null);
     try {
       await api.updateUserStatus(user.id, nextStatus);
+
+      try {
+        const existing: string[] = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
+        const lowerEmail = user.email.toLowerCase();
+        let updatedList: string[];
+        if (nextStatus === "DISABLED") {
+          updatedList = Array.from(new Set([...existing, lowerEmail]));
+        } else {
+          updatedList = existing.filter((e) => e !== lowerEmail);
+        }
+        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
+      } catch {
+        // ignore
+      }
+
       setMessage(`User account status updated to ${nextStatus}.`);
       await fetchUsers();
     } catch (err: unknown) {

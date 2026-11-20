@@ -91,20 +91,6 @@ export function ProfileTab() {
                 <CopyButton value={effectiveUser?.id || ""} className="h-5 px-1 text-[10px]" />
               </div>
             </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Account Status:</span>
-              <Badge
-                variant={
-                  effectiveUser?.status === "ACTIVE"
-                    ? "success"
-                    : effectiveUser?.status === "LOCKED"
-                    ? "warning"
-                    : "destructive"
-                }
-              >
-                {effectiveUser?.status || "ACTIVE"}
-              </Badge>
-            </div>
           </CardContent>
         </Card>
 
@@ -127,12 +113,6 @@ export function ProfileTab() {
               <Badge variant={effectiveUser?.role === "admin" ? "default" : "secondary"}>
                 {effectiveUser?.role?.toUpperCase() || "USER"}
               </Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Admin Console:</span>
-              <span className="font-mono text-foreground font-medium">
-                {effectiveUser?.role === "admin" ? "Authorized" : "Restricted (403)"}
-              </span>
             </div>
           </CardContent>
         </Card>

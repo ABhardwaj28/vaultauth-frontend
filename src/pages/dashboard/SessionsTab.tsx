@@ -108,16 +108,16 @@ export function SessionsTab() {
           </div>
         </CardHeader>
 
-        <CardContent className="p-0">
+        <CardContent className="p-0 overflow-x-auto">
           <TooltipProvider>
-            <Table>
+            <Table className="min-w-[760px]">
               <TableHeader>
                 <TableRow>
-                  <TableHead className="w-[280px]">Device & Client</TableHead>
-                  <TableHead>IP Address</TableHead>
-                  <TableHead>Last Active</TableHead>
-                  <TableHead>Created</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
+                  <TableHead className="min-w-[300px]">Device & Client</TableHead>
+                  <TableHead className="min-w-[140px]">IP Address</TableHead>
+                  <TableHead className="min-w-[120px]">Last Active</TableHead>
+                  <TableHead className="min-w-[160px]">Created</TableHead>
+                  <TableHead className="min-w-[100px] text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -138,28 +138,28 @@ export function SessionsTab() {
                     return (
                       <TableRow key={session.id || index}>
                         <TableCell>
-                          <div className="flex items-center space-x-2.5">
-                            <div className="p-1.5 rounded-md border border-border bg-muted/30">
+                          <div className="flex items-center space-x-3 py-1">
+                            <div className="p-2 rounded-md border border-border bg-muted/30 shrink-0">
                               {parsed.isMobile ? (
                                 <Smartphone className="h-4 w-4 text-muted-foreground" />
                               ) : (
                                 <Laptop className="h-4 w-4 text-primary" />
                               )}
                             </div>
-                            <div className="flex flex-col">
-                              <div className="flex items-center space-x-1.5">
-                                <span className="font-medium text-xs text-foreground">
+                            <div className="flex flex-col min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium text-xs text-foreground whitespace-nowrap">
                                   {parsed.device}
                                 </span>
                                 {isCurrent && (
-                                  <Badge variant="success" className="text-[10px] py-0 px-1.5">
+                                  <Badge variant="success" className="text-[10px] py-0 px-1.5 shrink-0 whitespace-nowrap">
                                     Current Device
                                   </Badge>
                                 )}
                               </div>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[220px] cursor-help">
+                                  <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[260px] cursor-help block mt-0.5">
                                     {rawUa}
                                   </span>
                                 </TooltipTrigger>
@@ -171,22 +171,22 @@ export function SessionsTab() {
                           </div>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs">
+                        <TableCell className="font-mono text-xs whitespace-nowrap">
                           <span className="flex items-center text-muted-foreground">
-                            <Globe className="h-3 w-3 mr-1 opacity-70" />
+                            <Globe className="h-3.5 w-3.5 mr-1.5 opacity-70 shrink-0" />
                             {rawIp}
                           </span>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground">
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                           {formatRelativeTime(session.last_active_at || session.created_at)}
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground">
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
                           {formatDateTime(session.created_at)}
                         </TableCell>
 
-                        <TableCell className="text-right">
+                        <TableCell className="text-right whitespace-nowrap">
                           {!isCurrent ? (
                             <Button
                               variant="destructive"

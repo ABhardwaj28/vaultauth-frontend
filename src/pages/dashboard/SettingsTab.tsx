@@ -1,7 +1,7 @@
 import { useState } from "react";
 import {
   ShieldCheck,
-  Clock,
+  KeyRound,
   Laptop,
   CheckCircle2,
   AlertCircle,
@@ -9,6 +9,9 @@ import {
   Moon,
   Sun,
   Monitor,
+  Eye,
+  EyeOff,
+  Loader2,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
@@ -16,14 +19,28 @@ import { api } from "@/lib/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 export function SettingsTab() {
   const { user, refreshProfile } = useAuth();
   const { theme, setTheme } = useTheme();
 
+  // Revoke other sessions state
   const [revokingAll, setRevokingAll] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Change password form state
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [updatingPassword, setUpdatingPassword] = useState(false);
+  const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const handleRevokeAllOtherSessions = async () => {
     setRevokingAll(true);
@@ -52,6 +69,50 @@ export function SettingsTab() {
     }
   };
 
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPasswordSuccess(null);
+    setPasswordError(null);
+
+    if (!currentPassword) {
+      setPasswordError("Please enter your current password.");
+      return;
+    }
+
+    if (newPassword.length < 12) {
+      setPasswordError("New password must be at least 12 characters in compliance with NIST SP 800-63B.");
+      return;
+    }
+
+    if (newPassword.length > 128) {
+      setPasswordError("New password exceeds maximum length of 128 characters.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setPasswordError("New password and confirmation do not match.");
+      return;
+    }
+
+    if (currentPassword === newPassword) {
+      setPasswordError("New password cannot be identical to your current password.");
+      return;
+    }
+
+    setUpdatingPassword(true);
+    try {
+      const res = await api.changePassword(currentPassword, newPassword);
+      setPasswordSuccess(res.message || "Password updated successfully. Your new credentials are active.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: unknown) {
+      setPasswordError((err as { message?: string })?.message || "Failed to update password. Please check your current password.");
+    } finally {
+      setUpdatingPassword(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -61,12 +122,12 @@ export function SettingsTab() {
             Account & Security Settings
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your authentication security policies, session limits, and interface preferences.
+            Manage your authentication credentials, multi-factor policy, and interface preferences.
           </p>
         </div>
       </div>
 
-      {/* Notifications */}
+      {/* Global Notifications */}
       {successMsg && (
         <div className="p-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
@@ -82,49 +143,129 @@ export function SettingsTab() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Card 1: Security & Session Invariants */}
+        {/* Card 1: Change Password Form */}
         <Card className="border-border">
           <CardHeader className="pb-3">
             <div className="flex items-center space-x-2">
-              <Clock className="h-4 w-4 text-primary" />
+              <KeyRound className="h-4 w-4 text-primary" />
               <CardTitle className="text-sm font-semibold text-foreground">
-                Session Lifecycle & Security Invariants
+                Change Password
               </CardTitle>
             </div>
             <CardDescription className="text-xs text-muted-foreground">
-              Automated zero-trust session boundaries enforced by the identity engine.
+              Update your corporate credentials per NIST SP 800-63B guidelines (minimum 12 characters).
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">Idle Session Timeout</span>
-                <span className="text-[11px] text-muted-foreground">Inactivity threshold before automatic revocation</span>
-              </div>
-              <Badge variant="outline" className="font-mono text-[11px]">
-                30 Minutes
-              </Badge>
-            </div>
+          <CardContent>
+            <form onSubmit={handleChangePassword} className="space-y-3.5 text-xs">
+              {passwordSuccess && (
+                <div className="p-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
+                  <CheckCircle2 className="h-4 w-4 shrink-0" />
+                  <span>{passwordSuccess}</span>
+                </div>
+              )}
 
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">Absolute Session Maximum</span>
-                <span className="text-[11px] text-muted-foreground">Hard expiry requiring credential re-authentication</span>
-              </div>
-              <Badge variant="outline" className="font-mono text-[11px]">
-                8 Hours
-              </Badge>
-            </div>
+              {passwordError && (
+                <div className="p-2.5 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+                  <AlertCircle className="h-4 w-4 shrink-0" />
+                  <span>{passwordError}</span>
+                </div>
+              )}
 
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">3-Strike Lockout Defense</span>
-                <span className="text-[11px] text-muted-foreground">Consecutive failed login threshold</span>
+              <div className="space-y-1">
+                <Label htmlFor="current-password" className="text-xs">
+                  Current Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="current-password"
+                    type={showCurrentPassword ? "text" : "password"}
+                    value={currentPassword}
+                    onChange={(e) => setCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="h-8 text-xs pr-8"
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
               </div>
-              <Badge variant="outline" className="font-mono text-[11px]">
-                5 Min Lock
-              </Badge>
-            </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="new-password" className="text-xs">
+                  New Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="new-password"
+                    type={showNewPassword ? "text" : "password"}
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minimum 12 characters"
+                    className="h-8 text-xs pr-8"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowNewPassword(!showNewPassword)}
+                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Must be at least 12 characters and hashed server-side with Argon2id.
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <Label htmlFor="confirm-password" className="text-xs">
+                  Confirm New Password
+                </Label>
+                <div className="relative">
+                  <Input
+                    id="confirm-password"
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Repeat new password"
+                    className="h-8 text-xs pr-8"
+                    autoComplete="new-password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    tabIndex={-1}
+                  >
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              <Button
+                type="submit"
+                size="sm"
+                disabled={updatingPassword || !currentPassword || !newPassword || !confirmPassword}
+                className="w-full h-8 text-xs font-medium mt-2"
+              >
+                {updatingPassword ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                    <span>Updating Credentials...</span>
+                  </>
+                ) : (
+                  <span>Update Password</span>
+                )}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
@@ -160,16 +301,6 @@ export function SettingsTab() {
               <span className="font-mono text-[11px] text-foreground">
                 {user?.email || "—"}
               </span>
-            </div>
-
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">FIDO2 / WebAuthn Biometrics</span>
-                <span className="text-[11px] text-muted-foreground">Public-key hardware security keys</span>
-              </div>
-              <Badge variant="secondary" className="text-[11px]">
-                READY
-              </Badge>
             </div>
           </CardContent>
         </Card>
