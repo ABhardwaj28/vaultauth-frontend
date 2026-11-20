@@ -22,12 +22,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { CopyButton } from "@/components/ui/copy-button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { formatDateTime, formatRelativeTime, parseUserAgent } from "@/lib/utils";
 
 interface UserSessionGroup {
-  email: string;
-  userId?: string;
+  userId: string;
+  email?: string;
   latestSession: SessionItem;
   restSessions: SessionItem[];
   allSessions: SessionItem[];
@@ -82,17 +83,17 @@ export function GlobalSessionsTab() {
     }
   };
 
-  const handleRevokeAllForUser = async (userEmail: string, userSessions: SessionItem[]) => {
-    setRevokingUser(userEmail);
+  const handleRevokeAllForUser = async (userId: string, userSessions: SessionItem[]) => {
+    setRevokingUser(userId);
     setMessage(null);
     setError(null);
     try {
       for (const s of userSessions) {
         await api.revokeSession(s.id);
       }
-      setMessage(`Terminated all ${userSessions.length} session(s) belonging to ${userEmail}.`);
+      setMessage(`Terminated all ${userSessions.length} session(s) for User ID ${userId}.`);
       setSessions((prev) =>
-        prev.filter((s) => (s.email || s.user_email || s.user_id || "corporate_user") !== userEmail)
+        prev.filter((s) => (s.user_id || s.email || s.user_email || "anonymous_user") !== userId)
       );
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to terminate all sessions for user.");
@@ -101,19 +102,20 @@ export function GlobalSessionsTab() {
     }
   };
 
-  // Group sessions user-wise, keeping latest/current as displayable one
+  // Group sessions strictly by user_id, keeping latest/current as displayable one
   const groupedSessions = useMemo<UserSessionGroup[]>(() => {
     const map = new Map<string, SessionItem[]>();
     for (const session of sessions) {
-      const email = session.email || session.user_email || session.user_id || "corporate_user";
-      const existing = map.get(email) || [];
+      // Group by user_id primarily
+      const userId = session.user_id || session.email || session.user_email || "anonymous_user";
+      const existing = map.get(userId) || [];
       existing.push(session);
-      map.set(email, existing);
+      map.set(userId, existing);
     }
 
     const groups: UserSessionGroup[] = Array.from(map.entries())
       .filter(([_, userSessions]) => userSessions.length > 0)
-      .map(([email, userSessions]) => {
+      .map(([userId, userSessions]) => {
         // Sort chronologically descending, prioritizing is_current
         const sorted = [...userSessions].sort((a, b) => {
           if (a.is_current || a.current) return -1;
@@ -123,11 +125,13 @@ export function GlobalSessionsTab() {
 
         const latestSession = sorted[0]!;
         const restSessions = sorted.slice(1);
-        const userId = userSessions.find((s) => s.user_id)?.user_id;
+        const email =
+          userSessions.find((s) => s.email || s.user_email)?.email ||
+          userSessions.find((s) => s.email || s.user_email)?.user_email;
 
         return {
-          email,
           userId,
+          email,
           latestSession,
           restSessions,
           allSessions: sorted,
@@ -139,8 +143,8 @@ export function GlobalSessionsTab() {
     const q = searchQuery.toLowerCase().trim();
     return groups.filter(
       (g) =>
-        g.email.toLowerCase().includes(q) ||
-        (g.userId && g.userId.toLowerCase().includes(q)) ||
+        g.userId.toLowerCase().includes(q) ||
+        (g.email && g.email.toLowerCase().includes(q)) ||
         g.allSessions.some(
           (s) =>
             (s.ip || s.ip_address || "").toLowerCase().includes(q) ||
@@ -150,25 +154,25 @@ export function GlobalSessionsTab() {
   }, [sessions, searchQuery]);
 
   const uniqueUserCount = useMemo(() => {
-    return new Set(sessions.map((s) => s.email || s.user_email || s.user_id || "corporate_user")).size;
+    return new Set(sessions.map((s) => s.user_id || s.email || s.user_email || "anonymous_user")).size;
   }, [sessions]);
 
-  const toggleUserExpand = (email: string) => {
+  const toggleUserExpand = (userId: string) => {
     setExpandedUsers((prev) => ({
       ...prev,
-      [email]: !prev[email],
+      [userId]: !prev[userId],
     }));
   };
 
   const toggleAllExpand = () => {
-    const anyExpanded = groupedSessions.some((g) => expandedUsers[g.email]);
+    const anyExpanded = groupedSessions.some((g) => expandedUsers[g.userId]);
     if (anyExpanded) {
       setExpandedUsers({});
     } else {
       const next: Record<string, boolean> = {};
       for (const g of groupedSessions) {
         if (g.restSessions.length > 0) {
-          next[g.email] = true;
+          next[g.userId] = true;
         }
       }
       setExpandedUsers(next);
@@ -187,11 +191,11 @@ export function GlobalSessionsTab() {
           <div className="flex items-center space-x-2">
             <Layers className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold tracking-tight text-foreground">
-              User-Grouped Active Sessions
+              User ID Grouped Active Sessions
             </h1>
           </div>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Every user account appears once displaying their latest/current session, with on-demand access to older sessions.
+            Sessions grouped strictly by User ID. Displays primary/current session with expandable view for secondary sessions.
           </p>
         </div>
 
@@ -203,7 +207,7 @@ export function GlobalSessionsTab() {
               onClick={toggleAllExpand}
               className="h-8 text-xs font-mono text-muted-foreground hover:text-foreground"
             >
-              {groupedSessions.some((g) => expandedUsers[g.email]) ? "Collapse All Extra Sessions" : "Expand All Extra Sessions"}
+              {groupedSessions.some((g) => expandedUsers[g.userId]) ? "Collapse All Extra Sessions" : "Expand All Extra Sessions"}
             </Button>
           )}
 
@@ -240,7 +244,7 @@ export function GlobalSessionsTab() {
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search by user email, IP address, or workstation..."
+            placeholder="Search by User ID, email, IP address, or device..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-9 h-8 text-xs bg-card"
@@ -249,7 +253,7 @@ export function GlobalSessionsTab() {
 
         <div className="flex items-center space-x-2">
           <Badge variant="outline" className="font-mono text-xs border-primary/30 text-foreground bg-primary/5">
-            {uniqueUserCount} Authenticated {uniqueUserCount === 1 ? "User" : "Users"}
+            {uniqueUserCount} Unique {uniqueUserCount === 1 ? "User ID" : "User IDs"}
           </Badge>
           <Badge variant="secondary" className="font-mono text-xs">
             {sessions.length} Live {sessions.length === 1 ? "Session" : "Sessions"}
@@ -262,7 +266,7 @@ export function GlobalSessionsTab() {
         <Card className="border-border">
           <CardContent className="h-36 flex flex-col items-center justify-center text-xs text-muted-foreground space-y-2">
             <RefreshCw className="h-5 w-5 animate-spin text-primary" />
-            <span className="font-mono">Loading and grouping active sessions user-wise...</span>
+            <span className="font-mono">Grouping active sessions by User ID across directory...</span>
           </CardContent>
         </Card>
       ) : groupedSessions.length === 0 ? (
@@ -276,8 +280,8 @@ export function GlobalSessionsTab() {
         <div className="space-y-4">
           <TooltipProvider>
             {groupedSessions.map((group) => {
-              const isRevokingThisUser = revokingUser === group.email;
-              const isExpanded = Boolean(expandedUsers[group.email]);
+              const isRevokingThisUser = revokingUser === group.userId;
+              const isExpanded = Boolean(expandedUsers[group.userId]);
               const latest = group.latestSession;
               const hasMultiple = group.restSessions.length > 0;
 
@@ -288,7 +292,7 @@ export function GlobalSessionsTab() {
               const isLatestRevoking = revokingId === latest.id;
 
               return (
-                <Card key={group.email} className="border-border shadow-sm overflow-hidden bg-card">
+                <Card key={group.userId} className="border-border shadow-sm overflow-hidden bg-card">
                   {/* User Primary Header */}
                   <CardHeader className="py-2.5 px-4 bg-muted/25 border-b border-border">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
@@ -299,9 +303,13 @@ export function GlobalSessionsTab() {
 
                         <div className="flex flex-col min-w-0">
                           <div className="flex items-center space-x-2">
-                            <span className="font-mono text-sm font-semibold text-foreground truncate">
-                              {group.email}
+                            <span className="text-[11px] font-mono text-muted-foreground uppercase font-semibold">
+                              User ID:
                             </span>
+                            <span className="font-mono text-sm font-semibold text-foreground truncate">
+                              {group.userId}
+                            </span>
+                            <CopyButton value={group.userId} className="h-5 px-1 text-[10px]" />
                             <Badge
                               variant="outline"
                               className={`font-mono text-[10px] py-0 px-1.5 shrink-0 ${
@@ -314,9 +322,9 @@ export function GlobalSessionsTab() {
                             </Badge>
                           </div>
 
-                          {group.userId && (
+                          {group.email && (
                             <span className="text-[11px] font-mono text-muted-foreground truncate">
-                              ID: {group.userId}
+                              Account: <span className="text-foreground">{group.email}</span>
                             </span>
                           )}
                         </div>
@@ -329,7 +337,7 @@ export function GlobalSessionsTab() {
                             variant="destructive"
                             size="sm"
                             disabled={isRevokingThisUser}
-                            onClick={() => handleRevokeAllForUser(group.email, group.allSessions)}
+                            onClick={() => handleRevokeAllForUser(group.userId, group.allSessions)}
                             className="h-7 px-2.5 text-xs font-mono"
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
@@ -443,13 +451,13 @@ export function GlobalSessionsTab() {
                         </Table>
                       </div>
 
-                      {/* "More Sessions" Button for this User */}
+                      {/* "More Sessions" Button for this User ID */}
                       {hasMultiple && (
                         <div className="mt-3 pt-2.5 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => toggleUserExpand(group.email)}
+                            onClick={() => toggleUserExpand(group.userId)}
                             className="h-7 px-3 text-xs font-mono border-primary/40 text-primary hover:bg-primary/10 hover:text-primary flex items-center space-x-1.5 self-start"
                           >
                             {isExpanded ? (
@@ -461,7 +469,7 @@ export function GlobalSessionsTab() {
                               <>
                                 <ChevronDown className="h-3.5 w-3.5" />
                                 <span>
-                                  +{group.restSessions.length} more {group.restSessions.length === 1 ? "session" : "sessions"} on this user
+                                  +{group.restSessions.length} more {group.restSessions.length === 1 ? "session" : "sessions"} on this user ID
                                 </span>
                               </>
                             )}
@@ -470,7 +478,7 @@ export function GlobalSessionsTab() {
                           <span className="text-[11px] text-muted-foreground font-mono">
                             {isExpanded
                               ? `Expanded ${group.restSessions.length} secondary session(s)`
-                              : `User has ${group.restSessions.length} additional background/device session(s)`}
+                              : `User ID has ${group.restSessions.length} additional background/device session(s)`}
                           </span>
                         </div>
                       )}
@@ -481,7 +489,7 @@ export function GlobalSessionsTab() {
                       <div className="border-t border-border bg-muted/20 px-4 py-3">
                         <div className="flex items-center space-x-1.5 mb-2 text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
                           <Layers className="h-3.5 w-3.5 text-primary" />
-                          <span>Secondary / Older Active Sessions ({group.restSessions.length})</span>
+                          <span>Secondary / Older Active Sessions for User ID ({group.restSessions.length})</span>
                         </div>
 
                         <div className="overflow-x-auto rounded border border-border bg-card">
