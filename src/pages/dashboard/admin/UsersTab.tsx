@@ -62,6 +62,7 @@ export function UsersTab() {
           role: roleFilter !== "All" ? roleFilter : undefined,
           status: statusFilter !== "All" ? statusFilter : undefined,
           limit: 100,
+          fetchAll: true,
         }),
         api.getGlobalSessions(100).catch(() => [] as SessionItem[]),
       ]);
@@ -80,7 +81,7 @@ export function UsersTab() {
         sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
 
         // Background sync of all disabled accounts across all pages
-        api.getAdminUsers({ status: "DISABLED", limit: 200 }).then((res) => {
+        api.getAdminUsers({ status: "DISABLED", limit: 100 }).then((res) => {
           const allDisabled = (res.users || []).map((u) => u.email.toLowerCase().trim());
           const latestMerged = Array.from(new Set([...merged, ...allDisabled]));
           localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(latestMerged));
@@ -168,44 +169,91 @@ export function UsersTab() {
     setActionLoadingId(user.id);
     setMessage(null);
     setError(null);
+
+    // Optimistic UI state update
+    setUsers((prev) =>
+      prev.map((u) =>
+        u.id === user.id
+          ? {
+              ...u,
+              status: nextStatus,
+              failed_attempts: nextStatus === "ACTIVE" ? 0 : u.failed_attempts,
+            }
+          : u
+      )
+    );
+
+    // Keep anti-enumeration cache synchronized immediately
+    try {
+      const existing: string[] = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
+      const lowerEmail = user.email.toLowerCase().trim();
+      let updatedList: string[];
+      if (nextStatus === "DISABLED") {
+        updatedList = Array.from(new Set([...existing, lowerEmail]));
+      } else {
+        updatedList = existing.filter((e) => e !== lowerEmail);
+      }
+      localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
+      sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
+    } catch {
+      // ignore
+    }
+
     try {
       await api.updateUserStatus(user.id, nextStatus);
 
-      try {
-        const existing: string[] = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
-        const lowerEmail = user.email.toLowerCase().trim();
-        let updatedList: string[];
-        if (nextStatus === "DISABLED") {
-          updatedList = Array.from(new Set([...existing, lowerEmail]));
-        } else {
-          updatedList = existing.filter((e) => e !== lowerEmail);
-        }
-        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
-        sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
-      } catch {
-        // ignore
+      // If activating a user that was locked, also invoke backend unlock to reset strikes
+      if (nextStatus === "ACTIVE" && (user.status === "LOCKED" || (user.failed_attempts || 0) >= 3)) {
+        await api.unlockUser(user.id).catch(() => {});
       }
 
-      setMessage(`User account ${user.email} updated to ${nextStatus}.`);
+      setMessage(
+        nextStatus === "DISABLED"
+          ? `User account ${user.email} disabled successfully. All active sessions terminated.`
+          : `User account ${user.email} enabled successfully. Account is now ACTIVE.`
+      );
       await fetchUsersAndSessions();
     } catch (err: unknown) {
-      setError((err as { message?: string })?.message || "Failed to update account status.");
+      // Rollback optimistic state on backend rejection
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, status: user.status, failed_attempts: user.failed_attempts } : u))
+      );
+      setError((err as { message?: string })?.message || "Failed to update account status on backend.");
     } finally {
       setActionLoadingId(null);
     }
   };
 
   const handleChangeRole = async (user: AdminUserListItem) => {
+    if (user.id === currentUser?.id) {
+      setError("You cannot alter your own administrative authority.");
+      return;
+    }
+    if (user.status !== "ACTIVE") {
+      setError("Only ACTIVE user accounts can have their authority role altered. Please enable the user first.");
+      return;
+    }
+
     const nextRole = user.role === "admin" ? "user" : "admin";
     setActionLoadingId(user.id);
     setMessage(null);
     setError(null);
+
+    // Optimistic UI state update
+    setUsers((prev) =>
+      prev.map((u) => (u.id === user.id ? { ...u, role: nextRole } : u))
+    );
+
     try {
       await api.updateUserRole(user.id, nextRole);
-      setMessage(`User ${user.email} role updated to ${nextRole.toUpperCase()}.`);
+      setMessage(`User ${user.email} authority role updated to ${nextRole.toUpperCase()} on backend.`);
       await fetchUsersAndSessions();
     } catch (err: unknown) {
-      setError((err as { message?: string })?.message || "Failed to alter authority role.");
+      // Rollback optimistic state on backend rejection
+      setUsers((prev) =>
+        prev.map((u) => (u.id === user.id ? { ...u, role: user.role } : u))
+      );
+      setError((err as { message?: string })?.message || "Failed to alter authority role on backend.");
     } finally {
       setActionLoadingId(null);
     }
@@ -523,7 +571,11 @@ export function UsersTab() {
                       <TableCell className="font-mono text-xs tabular-nums">
                         <span
                           className={
-                            (item.failed_attempts || 0) > 0 ? "text-amber-500 font-semibold" : "text-muted-foreground"
+                            isLocked
+                              ? "text-destructive font-bold"
+                              : (item.failed_attempts || 0) > 0
+                              ? "text-amber-500 font-semibold"
+                              : "text-muted-foreground"
                           }
                         >
                           {item.failed_attempts || 0} / 3
@@ -581,16 +633,23 @@ export function UsersTab() {
 
                             <DropdownMenuSeparator />
 
-                            {/* Change Role */}
+                            {/* Change Role (Only allowed on ACTIVE accounts by backend) */}
                             <DropdownMenuItem
-                              disabled={isCurrent}
+                              disabled={isCurrent || item.status !== "ACTIVE"}
                               onClick={() => handleChangeRole(item)}
                               className="cursor-pointer text-xs"
                             >
                               <Shield className="h-3.5 w-3.5 mr-2 text-primary" />
-                              <span>
-                                {item.role === "admin" ? "Demote to User" : "Promote to Admin"}
-                              </span>
+                              <div className="flex flex-col">
+                                <span>
+                                  {item.role === "admin" ? "Demote to User" : "Promote to Admin"}
+                                </span>
+                                {item.status !== "ACTIVE" && (
+                                  <span className="text-[10px] text-muted-foreground/80 font-normal">
+                                    Requires ACTIVE status
+                                  </span>
+                                )}
+                              </div>
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>

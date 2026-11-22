@@ -439,7 +439,8 @@ class ApiClient {
     if (filter?.q) params.set("q", filter.q);
     if (filter?.role && filter.role !== "All") params.set("role", filter.role);
     if (filter?.status && filter.status !== "All") params.set("status", filter.status);
-    if (filter?.limit) params.set("limit", filter.limit.toString());
+    const limit = Math.min(filter?.limit || 100, 100);
+    params.set("limit", limit.toString());
     if (filter?.offset) params.set("offset", filter.offset.toString());
 
     const queryString = params.toString() ? `?${params.toString()}` : "";
@@ -448,7 +449,7 @@ class ApiClient {
       { method: "GET" }
     );
 
-    const userList: AdminUserListItem[] =
+    let userList: AdminUserListItem[] =
       res.data?.users ||
       res.data?.items ||
       (Array.isArray(res.data) ? res.data : []);
@@ -456,11 +457,35 @@ class ApiClient {
     const totalCount =
       typeof res.data?.total === "number" ? res.data.total : userList.length;
 
+    // If fetchAll is requested, automatically paginate until the full directory is assembled
+    if (filter?.fetchAll && totalCount > userList.length) {
+      let currentOffset = userList.length;
+      while (currentOffset < totalCount) {
+        params.set("offset", currentOffset.toString());
+        params.set("limit", "100");
+        try {
+          const nextRes = await this.request<any>(
+            `/api/v1/admin/users?${params.toString()}`,
+            { method: "GET" }
+          );
+          const nextBatch: AdminUserListItem[] =
+            nextRes.data?.users ||
+            nextRes.data?.items ||
+            (Array.isArray(nextRes.data) ? nextRes.data : []);
+          if (nextBatch.length === 0) break;
+          userList = [...userList, ...nextBatch];
+          currentOffset += nextBatch.length;
+        } catch {
+          break;
+        }
+      }
+    }
+
     return {
       users: userList,
       items: userList,
       total: totalCount,
-      limit: filter?.limit || 50,
+      limit: filter?.limit || 100,
       offset: filter?.offset || 0,
     };
   }
@@ -586,28 +611,11 @@ class ApiClient {
       // ignore
     }
 
-    // 3. Live check against backend disabled user directory
+    // 3. Live check against backend disabled user directory IF already authenticated as admin
     try {
-      let adminToken = this.getToken();
-      if (!adminToken) {
-        // Fallback directory authentication
-        try {
-          const authRes = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email: "shaurya@example.com", password: "Password12345!" }),
-          });
-          if (authRes.ok) {
-            const data = await authRes.json();
-            adminToken = data.token;
-          }
-        } catch {
-          // ignore
-        }
-      }
-
+      const adminToken = this.getToken();
       if (adminToken) {
-        const res = await fetch(`${this.baseUrl}/api/v1/admin/users?status=DISABLED&limit=200`, {
+        const res = await fetch(`${this.baseUrl}/api/v1/admin/users?status=DISABLED&limit=100`, {
           headers: {
             Authorization: `Bearer ${adminToken}`,
             "Content-Type": "application/json",

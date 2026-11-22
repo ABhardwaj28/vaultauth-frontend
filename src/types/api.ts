@@ -34,6 +34,7 @@ export interface AdminUsersFilter {
   status?: string;
   limit?: number;
   offset?: number;
+  fetchAll?: boolean;
 }
 
 export interface AdminUsersResponse {

@@ -81,6 +81,12 @@ export function LoginPage() {
       return;
     }
 
+    // Proactively check if account is marked as disabled (prevents invalid credentials attempt from triggering failed strike count)
+    if (isKnownDisabledAccount(cleanEmail)) {
+      setError("Account is disabled. Contact your administrator.");
+      return;
+    }
+
     setLoading(true);
 
     try {
