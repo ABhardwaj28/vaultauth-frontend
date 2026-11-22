@@ -26,27 +26,48 @@ const AUDIT_EVENTS = [
 
 export function AuditLogsTab() {
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
+  const [usersMap, setUsersMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState("All");
   const [limit, setLimit] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await api.getAdminUsers({ limit: 100, fetchAll: true });
+      const list = res.users || res.items || [];
+      const map: Record<string, string> = {};
+      for (const u of list) {
+        if (u.id && u.email) {
+          map[u.id] = u.email;
+          map[u.email.toLowerCase().trim()] = u.id;
+        }
+      }
+      setUsersMap((prev) => ({ ...prev, ...map }));
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getAuditLogs({
-        event: selectedEvent !== "All" ? selectedEvent : undefined,
-        limit,
-      });
-      setLogs(data);
+      const [logsData] = await Promise.all([
+        api.getAuditLogs({
+          event: selectedEvent !== "All" ? selectedEvent : undefined,
+          limit,
+        }),
+        fetchUsers(),
+      ]);
+      setLogs(logsData);
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to query security audit trail.");
     } finally {
       setLoading(false);
     }
-  }, [selectedEvent, limit]);
+  }, [selectedEvent, limit, fetchUsers]);
 
   useEffect(() => {
     fetchLogs();
@@ -173,11 +194,41 @@ export function AuditLogsTab() {
                   const isExpanded = expandedId === log.id;
                   const rawIp = (log.ip_address || log.ip || "—").replace(/\/32$/, "");
                   const timestampStr = log.ts || (log as any).created_at || (log as any).timestamp;
-                  const principal =
-                    log.actor_user_id ||
-                    log.target_user_id ||
-                    (log.details && (log.details.email || log.details.user_id || log.details.user_email)) ||
-                    "Anonymous / System";
+                  const details = (log.details as Record<string, any>) || {};
+
+                  const actorId = log.actor_user_id || details.actor_user_id || details.user_id;
+                  const targetId = log.target_user_id || details.target_user_id;
+
+                  // Resolve primary email & user ID
+                  let primaryEmail: string | null =
+                    (actorId && usersMap[actorId]) ||
+                    details.actor_email ||
+                    details.email ||
+                    details.user_email ||
+                    null;
+
+                  let primaryId: string | null = actorId || null;
+
+                  if (!primaryEmail && primaryId && primaryId.includes("@")) {
+                    primaryEmail = primaryId;
+                    primaryId = usersMap[primaryId.toLowerCase().trim()] || null;
+                  }
+
+                  if (primaryEmail && !primaryId && usersMap[primaryEmail.toLowerCase().trim()]) {
+                    primaryId = usersMap[primaryEmail.toLowerCase().trim()] || null;
+                  }
+
+                  // Resolve target email & user ID
+                  const targetEmail: string | null =
+                    (targetId && usersMap[targetId]) ||
+                    details.target_email ||
+                    null;
+
+                  const hasDifferentTarget = Boolean(
+                    targetId &&
+                    primaryId &&
+                    targetId !== primaryId
+                  );
 
                   return (
                     <React.Fragment key={log.id}>
@@ -211,9 +262,68 @@ export function AuditLogsTab() {
                         </TableCell>
 
                         <TableCell className="font-mono text-xs text-foreground">
-                          <span className="truncate max-w-[220px] block">
-                            {String(principal)}
-                          </span>
+                          {primaryEmail || primaryId ? (
+                            <div className="flex flex-col space-y-1">
+                              {/* Primary User Email */}
+                              <div className="flex items-center space-x-1.5">
+                                <span
+                                  className="font-semibold text-xs text-foreground truncate max-w-[220px]"
+                                  title={primaryEmail || primaryId || "Principal"}
+                                >
+                                  {primaryEmail || primaryId}
+                                </span>
+                                {primaryEmail && (
+                                  <CopyButton
+                                    value={primaryEmail}
+                                    className="h-4 px-1 text-[9px] rounded opacity-70 hover:opacity-100"
+                                  />
+                                )}
+                              </div>
+
+                              {/* User ID */}
+                              {primaryId && (
+                                <div className="flex items-center space-x-1.5 text-[11px] text-muted-foreground">
+                                  <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">ID:</span>
+                                  <span className="truncate max-w-[150px]" title={primaryId}>
+                                    {primaryId}
+                                  </span>
+                                  <CopyButton
+                                    value={primaryId}
+                                    className="h-4 px-1 text-[9px] rounded opacity-70 hover:opacity-100"
+                                  />
+                                </div>
+                              )}
+
+                              {/* Target User if distinct from actor */}
+                              {hasDifferentTarget && (
+                                <div className="pt-1 mt-0.5 border-t border-border/50 flex flex-col space-y-0.5 text-[10px]">
+                                  <span className="text-[9px] uppercase font-semibold text-amber-500/90">
+                                    Target:
+                                  </span>
+                                  <span
+                                    className="text-foreground/90 font-medium truncate max-w-[200px]"
+                                    title={targetEmail || targetId || ""}
+                                  >
+                                    {targetEmail || targetId}
+                                  </span>
+                                  {targetId && targetEmail && (
+                                    <div className="flex items-center space-x-1 text-[10px] text-muted-foreground">
+                                      <span className="text-[9px] uppercase text-muted-foreground/70">ID:</span>
+                                      <span className="truncate max-w-[130px]">{targetId}</span>
+                                      <CopyButton
+                                        value={targetId}
+                                        className="h-3.5 px-1 text-[8px] rounded opacity-70 hover:opacity-100"
+                                      />
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground italic text-xs">
+                              Anonymous / System
+                            </span>
+                          )}
                         </TableCell>
 
                         <TableCell className="font-mono text-xs text-foreground">
