@@ -8,7 +8,6 @@ import {
   RefreshCw,
   AlertCircle,
   KeyRound,
-  AppWindow,
   Lock,
   Globe,
   Search,
@@ -165,24 +164,16 @@ export function AppsTab() {
     });
   }, [clients, searchQuery, typeFilter]);
 
-  const confidentialCount = useMemo(() => {
-    return clients.filter((c) => c.client_type === "confidential").length;
-  }, [clients]);
-
-  const publicCount = useMemo(() => {
-    return clients.filter((c) => c.client_type === "public").length;
-  }, [clients]);
-
   return (
     <div className="space-y-6">
       {/* Header & Main Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            Application Management
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            OAuth 2.0 / OIDC Applications
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Register and administer OAuth 2.0 / OpenID Connect clients, relying parties, and Single Sign-On integrations.
+            Registered Single Sign-On relying parties, public SPAs, and confidential server clients.
           </p>
         </div>
 
@@ -240,48 +231,15 @@ export function AppsTab() {
         </div>
       )}
 
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="rounded-xl border border-border/80 bg-card p-3.5 flex items-center justify-between shadow-xs">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Total Applications</p>
-            <p className="text-xl font-bold text-foreground font-mono">{clients.length}</p>
-          </div>
-          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
-            <AppWindow className="h-4 w-4" />
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/80 bg-card p-3.5 flex items-center justify-between shadow-xs">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Confidential Clients</p>
-            <p className="text-xl font-bold text-foreground font-mono">{confidentialCount}</p>
-          </div>
-          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
-            <Lock className="h-4 w-4" />
-          </div>
-        </div>
-
-        <div className="rounded-xl border border-border/80 bg-card p-3.5 flex items-center justify-between shadow-xs">
-          <div className="space-y-0.5">
-            <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Public Clients (SPA)</p>
-            <p className="text-xl font-bold text-foreground font-mono">{publicCount}</p>
-          </div>
-          <div className="w-9 h-9 rounded-lg bg-secondary border border-border text-foreground flex items-center justify-center">
-            <Globe className="h-4 w-4" />
-          </div>
-        </div>
-      </div>
-
-      {/* Search & Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+      {/* Filter & Search Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
             placeholder="Search by application, client ID, or URI..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 rounded-lg bg-background/50 focus:bg-background text-xs"
+            className="pl-9 h-9 rounded-lg bg-background/50 focus:bg-background text-xs"
           />
           {searchQuery && (
             <button
@@ -293,104 +251,69 @@ export function AppsTab() {
           )}
         </div>
 
-        {/* Client Type Filter Tabs */}
-        <div className="flex items-center space-x-1.5 self-start sm:self-auto bg-muted/30 p-1 rounded-lg border border-border/60">
-          <button
-            onClick={() => setTypeFilter("all")}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-              typeFilter === "all"
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
+        <div className="flex items-center space-x-2 self-start sm:self-auto">
+          <span className="text-xs text-muted-foreground font-medium">Type:</span>
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value as "all" | "confidential" | "public")}
+            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
           >
-            All ({clients.length})
-          </button>
-          <button
-            onClick={() => setTypeFilter("confidential")}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-              typeFilter === "confidential"
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Confidential ({confidentialCount})
-          </button>
-          <button
-            onClick={() => setTypeFilter("public")}
-            className={`px-2.5 py-1 text-xs rounded-md font-medium transition-colors ${
-              typeFilter === "public"
-                ? "bg-background text-foreground shadow-xs font-semibold"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            Public ({publicCount})
-          </button>
+            <option value="all">All Types ({clients.length})</option>
+            <option value="confidential">Confidential</option>
+            <option value="public">Public (SPA)</option>
+          </select>
         </div>
       </div>
 
       {/* Applications Directory Table Card */}
       <TooltipProvider delayDuration={150}>
-        <div className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)]">
+        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
+          <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
+            <div className="flex items-center space-x-3.5">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                  Registered Clients Directory
+                </h2>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Authorized identity relying parties capable of initiating SSO authorization flows.
+                </p>
+              </div>
+            </div>
+            <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
+              {clients.length} Registered
+            </Badge>
+          </div>
+
           <div className="overflow-x-auto">
-            <Table className="min-w-[760px]">
+            <Table>
               <TableHeader>
-                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <TableHead className="py-2.5 min-w-[200px]">Application</TableHead>
-                  <TableHead className="py-2.5 min-w-[140px]">Client ID</TableHead>
-                  <TableHead className="py-2.5 min-w-[110px]">Type</TableHead>
-                  <TableHead className="py-2.5 min-w-[200px]">Redirect URIs</TableHead>
-                  <TableHead className="py-2.5 min-w-[160px]">Allowed Scopes</TableHead>
-                  <TableHead className="py-2.5 min-w-[130px]">Created</TableHead>
-                  <TableHead className="py-2.5 min-w-[90px] text-right">Action</TableHead>
+                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
+                  <TableHead className="w-[240px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Application Name</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client ID</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client Type</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Allowed Scopes</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Redirect URIs</TableHead>
+                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Created</TableHead>
+                  <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Action</TableHead>
                 </TableRow>
               </TableHeader>
 
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-32 text-center text-muted-foreground text-xs">
-                      <div className="flex flex-col items-center justify-center space-y-2">
-                        <RefreshCw className="h-5 w-5 animate-spin text-primary" />
-                        <span>Loading registered applications...</span>
-                      </div>
+                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
+                      Loading registered applications...
                     </TableCell>
                   </TableRow>
                 ) : filteredClients.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-36 text-center text-muted-foreground text-xs">
-                      <div className="flex flex-col items-center justify-center space-y-2 py-4">
-                        <AppWindow className="h-8 w-8 text-muted-foreground/40 stroke-1" />
-                        {searchQuery || typeFilter !== "all" ? (
-                          <>
-                            <p className="font-medium text-foreground">No matching applications</p>
-                            <p className="text-[11px] text-muted-foreground">Try adjusting your search query or filters.</p>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => {
-                                setSearchQuery("");
-                                setTypeFilter("all");
-                              }}
-                              className="h-7 px-2.5 text-xs text-primary mt-1"
-                            >
-                              Reset Filters
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-medium text-foreground">No applications registered</p>
-                            <p className="text-[11px] text-muted-foreground">Register your first OAuth 2.0 / OpenID Connect application to enable SSO.</p>
-                            <Button
-                              size="sm"
-                              onClick={() => setIsCreateOpen(true)}
-                              className="h-8 px-3 text-xs font-semibold rounded-lg mt-2"
-                            >
-                              <Plus className="h-3.5 w-3.5 mr-1" />
-                              <span>Register Application</span>
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
+                      {searchQuery || typeFilter !== "all"
+                        ? "No applications match the current filter."
+                        : "No OAuth applications found."}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -406,58 +329,52 @@ export function AppsTab() {
                         className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
                       >
                         {/* Application Name */}
-                        <TableCell className="py-2.5">
-                          <div className="flex items-center space-x-2.5">
-                            <div
-                              className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
-                                isConfidential
-                                  ? "bg-primary/10 border-primary/20 text-primary"
-                                  : "bg-secondary border-border text-foreground"
-                              }`}
-                            >
-                              {isConfidential ? (
-                                <Lock className="h-3.5 w-3.5" />
-                              ) : (
-                                <Globe className="h-3.5 w-3.5" />
-                              )}
-                            </div>
-                            <div className="flex flex-col min-w-0">
-                              <span className="font-semibold text-xs text-foreground truncate max-w-[200px]" title={client.client_name}>
-                                {client.client_name}
-                              </span>
-                              <span className="text-[10px] text-muted-foreground font-mono">
-                                {isConfidential ? "Confidential Client" : "Public Client (SPA)"}
-                              </span>
-                            </div>
+                        <TableCell className="font-semibold text-xs text-foreground py-3">
+                          <div className="flex items-center space-x-2">
+                            <span>{client.client_name}</span>
                           </div>
                         </TableCell>
 
                         {/* Client ID */}
-                        <TableCell className="py-2.5 font-mono text-xs">
+                        <TableCell className="font-mono text-xs py-3">
                           <div className="flex items-center space-x-1.5">
-                            <span className="truncate max-w-[120px] text-muted-foreground font-mono" title={client.client_id}>
+                            <span className="truncate max-w-[140px] text-muted-foreground">
                               {client.client_id}
                             </span>
-                            <CopyButton value={client.client_id} className="h-5 px-1 text-[10px] rounded" />
+                            <CopyButton value={client.client_id} className="h-5 px-1.5 text-[10px] rounded" />
                           </div>
                         </TableCell>
 
                         {/* Client Type */}
-                        <TableCell className="py-2.5">
+                        <TableCell className="py-3">
                           <Badge
                             variant={isConfidential ? "default" : "secondary"}
-                            className="rounded-md text-[10px] py-0 px-2 font-semibold capitalize flex items-center w-fit gap-1"
+                            className="rounded-md text-[10px] py-0 px-2 font-semibold uppercase flex items-center w-fit gap-1"
                           >
                             {isConfidential ? <Lock className="h-2.5 w-2.5" /> : <Globe className="h-2.5 w-2.5" />}
                             <span>{client.client_type}</span>
                           </Badge>
                         </TableCell>
 
-                        {/* Redirect URIs (Compact with +N more tooltip) */}
-                        <TableCell className="py-2.5 font-mono text-xs">
+                        {/* Allowed Scopes */}
+                        <TableCell className="py-3">
+                          <div className="flex flex-wrap gap-1">
+                            {(client.allowed_scopes || ["openid"]).map((s) => (
+                              <span
+                                key={s}
+                                className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/80"
+                              >
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        </TableCell>
+
+                        {/* Redirect URIs (Compact with +N tooltip) */}
+                        <TableCell className="font-mono text-xs py-3">
                           {primaryUri ? (
                             <div className="flex items-center space-x-1.5">
-                              <span className="font-mono text-foreground text-[11px] truncate max-w-[180px]" title={primaryUri}>
+                              <span className="font-mono text-foreground text-[11px] truncate max-w-[200px]" title={primaryUri}>
                                 {primaryUri}
                               </span>
                               <CopyButton value={primaryUri} className="h-4 px-1 text-[9px] rounded shrink-0 opacity-70 hover:opacity-100" />
@@ -489,33 +406,18 @@ export function AppsTab() {
                           )}
                         </TableCell>
 
-                        {/* Allowed Scopes */}
-                        <TableCell className="py-2.5">
-                          <div className="flex flex-wrap gap-1">
-                            {(client.allowed_scopes || ["openid"]).map((s) => (
-                              <span
-                                key={s}
-                                className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/80"
-                              >
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        </TableCell>
-
                         {/* Created Date */}
-                        <TableCell className="py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap py-3">
                           {formatDateTime(client.created_at)}
                         </TableCell>
 
                         {/* Action */}
-                        <TableCell className="py-2.5 text-right whitespace-nowrap">
+                        <TableCell className="text-right py-3">
                           <Button
                             variant="destructive"
                             size="sm"
                             onClick={() => setRevokingClient(client)}
                             className="h-7 px-2.5 text-xs rounded-lg font-medium"
-                            title="Revoke this application"
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
                             <span>Revoke</span>
@@ -533,21 +435,21 @@ export function AppsTab() {
 
       {/* Register Application Modal */}
       <Dialog open={isCreateOpen} onOpenChange={(open) => (!open ? closeCreateModal() : setIsCreateOpen(true))}>
-        <DialogContent className="sm:max-w-lg">
+        <DialogContent className="sm:max-w-md">
           {createdClient ? (
             /* CRITICAL ONE-TIME SECRET VIEW */
             <div className="space-y-4">
               <DialogHeader>
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
-                    <ShieldCheck className="h-5 w-5" />
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="h-4 w-4" />
                   </div>
                   <div>
                     <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
-                      Client Credentials Generated
+                      Credentials Generated
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground pt-0.5">
-                      Save these credentials now. The client secret will not be displayed again.
+                      Save these credentials now. The client secret will never be displayed again.
                     </DialogDescription>
                   </div>
                 </div>
@@ -555,7 +457,7 @@ export function AppsTab() {
 
               <Alert variant="destructive" className="py-2.5 rounded-lg">
                 <AlertTriangle className="h-4 w-4" />
-                <AlertTitle className="text-xs font-semibold">One-Time Secret Notice</AlertTitle>
+                <AlertTitle className="text-xs font-semibold">Important Security Notice</AlertTitle>
                 <AlertDescription className="text-[11px] leading-normal mt-0.5">
                   The <span className="font-mono font-semibold">client_secret</span> cannot be recovered after this dialog closes.
                 </AlertDescription>
@@ -597,7 +499,7 @@ export function AppsTab() {
                 <Button
                   onClick={closeCreateModal}
                   disabled={!acknowledgedSecret}
-                  className="w-full h-10 font-semibold rounded-lg shadow-xs"
+                  className="w-full h-9 font-semibold rounded-lg shadow-xs"
                 >
                   Done & Close
                 </Button>
@@ -608,15 +510,15 @@ export function AppsTab() {
             <form onSubmit={handleCreateSubmit} className="space-y-4">
               <DialogHeader>
                 <div className="flex items-center space-x-2.5">
-                  <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-                    <KeyRound className="h-5 w-5" />
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
+                    <KeyRound className="h-4 w-4" />
                   </div>
                   <div>
                     <DialogTitle className="text-base sm:text-lg font-bold text-foreground">
                       Register New Application
                     </DialogTitle>
                     <DialogDescription className="text-xs text-muted-foreground pt-0.5">
-                      Configure an OAuth 2.0 / OpenID Connect client profile and credentials.
+                      Configure an OAuth 2.0 / OpenID Connect relying party client.
                     </DialogDescription>
                   </div>
                 </div>
@@ -629,14 +531,14 @@ export function AppsTab() {
                 </Alert>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3.5">
                 {/* Application Name */}
                 <div className="space-y-1.5">
                   <Label htmlFor="clientName" className="text-xs font-medium">Application Name</Label>
                   <Input
                     id="clientName"
                     required
-                    placeholder="e.g. Internal Analytics Dashboard"
+                    placeholder="e.g. Internal Payroll Portal"
                     value={clientName}
                     onChange={(e) => setClientName(e.target.value)}
                     disabled={creating}
@@ -644,44 +546,19 @@ export function AppsTab() {
                   />
                 </div>
 
-                {/* Client Profile Type Selector (Segmented Cards) */}
+                {/* Client Profile Type */}
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-medium">Client Profile Type</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div
-                      onClick={() => !creating && setClientType("confidential")}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all flex flex-col space-y-1 ${
-                        clientType === "confidential"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border/80 bg-background/50 hover:bg-muted/20"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-1.5">
-                        <Lock className={`h-3.5 w-3.5 ${clientType === "confidential" ? "text-primary" : "text-muted-foreground"}`} />
-                        <span className="font-semibold text-xs text-foreground">Confidential</span>
-                      </div>
-                      <span className="text-[11px] text-muted-foreground leading-snug">
-                        Backend service or server with a secure client secret
-                      </span>
-                    </div>
-
-                    <div
-                      onClick={() => !creating && setClientType("public")}
-                      className={`p-3 rounded-lg border cursor-pointer transition-all flex flex-col space-y-1 ${
-                        clientType === "public"
-                          ? "border-primary bg-primary/5 ring-1 ring-primary"
-                          : "border-border/80 bg-background/50 hover:bg-muted/20"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-1.5">
-                        <Globe className={`h-3.5 w-3.5 ${clientType === "public" ? "text-primary" : "text-muted-foreground"}`} />
-                        <span className="font-semibold text-xs text-foreground">Public (SPA)</span>
-                      </div>
-                      <span className="text-[11px] text-muted-foreground leading-snug">
-                        Single-page web client or mobile native app (PKCE)
-                      </span>
-                    </div>
-                  </div>
+                  <Label htmlFor="clientType" className="text-xs font-medium">Client Profile Type</Label>
+                  <select
+                    id="clientType"
+                    value={clientType}
+                    onChange={(e) => setClientType(e.target.value as ClientType)}
+                    className="flex h-9 w-full rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring font-medium"
+                    disabled={creating}
+                  >
+                    <option value="confidential">Confidential (Backend Service / Secure Server)</option>
+                    <option value="public">Public (SPA Web Client / Mobile Native App)</option>
+                  </select>
                 </div>
 
                 {/* Redirect URIs */}
@@ -705,28 +582,17 @@ export function AppsTab() {
                 {/* Scopes */}
                 <div className="space-y-1.5">
                   <Label className="text-xs font-medium">Authorized Scopes</Label>
-                  <div className="flex flex-wrap items-center gap-3 pt-1">
-                    {[
-                      { id: "openid", label: "openid", desc: "OpenID Connect" },
-                      { id: "email", label: "email", desc: "Corporate Email" },
-                      { id: "profile", label: "profile", desc: "Profile Information" },
-                    ].map((scope) => (
-                      <label
-                        key={scope.id}
-                        className={`flex items-center space-x-2 px-2.5 py-1.5 rounded-lg border cursor-pointer select-none transition-colors ${
-                          allowedScopes.includes(scope.id)
-                            ? "border-primary/40 bg-primary/10 text-foreground"
-                            : "border-border/80 text-muted-foreground hover:bg-muted/20"
-                        }`}
-                      >
+                  <div className="flex items-center space-x-4 pt-1">
+                    {["openid", "email", "profile"].map((scope) => (
+                      <label key={scope} className="flex items-center space-x-2 text-xs text-muted-foreground cursor-pointer select-none">
                         <input
                           type="checkbox"
-                          checked={allowedScopes.includes(scope.id)}
-                          onChange={() => handleScopeToggle(scope.id)}
-                          className="rounded border-input text-primary focus:ring-ring h-3.5 w-3.5"
+                          checked={allowedScopes.includes(scope)}
+                          onChange={() => handleScopeToggle(scope)}
+                          className="rounded border-input text-primary focus:ring-ring h-4 w-4"
                           disabled={creating}
                         />
-                        <span className="font-mono text-xs font-medium">{scope.label}</span>
+                        <span className="font-mono">{scope}</span>
                       </label>
                     ))}
                   </div>
@@ -763,7 +629,7 @@ export function AppsTab() {
               <span className="font-semibold text-foreground">
                 "{revokingClient?.client_name}"
               </span>
-              ? All active tokens and SSO login requests for this client ID will fail immediately.
+              ? All live tokens and SSO login requests for this client ID will fail immediately.
             </DialogDescription>
           </DialogHeader>
 
