@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Safety Amber / Orange (#F6821F) */
-    --primary: 28 92% 54%;
+    /* Executive Royal Cobalt Blue (Light Theme: #2563EB) */
+    --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 95%; /* #F1F3F6 */
@@ -26,8 +26,8 @@
     --muted: 220 14% 95%; /* #F1F3F6 */
     --muted-foreground: 215 16% 45%; /* #64748B */
 
-    --accent: 28 100% 97%; /* #FFF7ED */
-    --accent-foreground: 28 92% 40%;
+    --accent: 221 100% 97%; /* #EFF6FF */
+    --accent-foreground: 224 76% 48%; /* #1D4ED8 */
 
     --destructive: 0 84% 60%; /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
@@ -35,7 +35,7 @@
     /* Soft, elegant hairline border */
     --border: 220 13% 90%; /* #E2E5E9 */
     --input: 220 13% 90%; /* #E2E5E9 */
-    --ring: 28 92% 54%;
+    --ring: 221 83% 53%;
 
     --radius: 0.5rem; /* 8px modern luxury precision radius */
   }
@@ -53,7 +53,7 @@
     --popover: 228 14% 11%;
     --popover-foreground: 220 14% 96%;
 
-    /* Safety Amber / Orange (#F6821F) */
+    /* Safety Amber / Orange (#F6821F) - Preserved in Dark Mode */
     --primary: 28 92% 54%;
     --primary-foreground: 0 0% 100%;
 
@@ -97,7 +97,4 @@
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
   border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--primary) / 0.5);
 }

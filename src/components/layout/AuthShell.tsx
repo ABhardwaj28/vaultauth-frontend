@@ -9,7 +9,7 @@ interface AuthShellProps {
 
 export function AuthShell({ children }: AuthShellProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(246,130,31,0.025),transparent_70%)] before:pointer-events-none">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,hsl(var(--primary)/0.03),transparent_70%)] before:pointer-events-none">
       {/* Top Utility Bar */}
       <header className="w-full border-b border-border bg-card/90 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
@@ -21,7 +21,7 @@ export function AuthShell({ children }: AuthShellProps) {
               <span className="font-semibold text-sm tracking-tight text-foreground">
                 VaultAuth
               </span>
-              <span className="text-[10px] font-mono font-medium text-[#F6821F] uppercase tracking-wider">
+              <span className="text-[10px] font-mono font-medium text-primary uppercase tracking-wider">
                 SSO
               </span>
             </div>

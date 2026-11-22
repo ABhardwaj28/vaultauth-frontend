@@ -14,7 +14,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 
     const variantClasses = {
       default:
-        "bg-[#F6821F] hover:bg-[#E56D0E] text-white shadow-sm border border-[#F6821F] hover:border-[#E56D0E] active:bg-[#CC5600] active:scale-[0.99] transition-all",
+        "bg-primary hover:bg-primary/90 text-primary-foreground shadow-xs border border-transparent active:scale-[0.99] transition-all",
       destructive:
         "bg-destructive text-destructive-foreground hover:bg-destructive/90 shadow-sm border border-transparent active:scale-[0.99] transition-all",
       outline:

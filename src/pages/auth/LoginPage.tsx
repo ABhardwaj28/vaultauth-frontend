@@ -196,7 +196,7 @@ export function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Session Expired Notice */}
           {sessionExpiredNotice && (
-            <div className="p-3 rounded-lg bg-[#F6821F]/10 border border-[#F6821F]/25 text-[#F6821F] text-xs flex items-center space-x-2.5">
+            <div className="p-3 rounded-lg bg-primary/10 border border-primary/25 text-primary text-xs flex items-center space-x-2.5">
               <AlertCircle className="h-4 w-4 shrink-0" />
               <span className="font-medium">{sessionExpiredNotice}</span>
             </div>

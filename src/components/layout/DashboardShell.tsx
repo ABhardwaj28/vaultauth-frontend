@@ -67,7 +67,7 @@ export function DashboardShell() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(246,130,31,0.02),transparent_70%)] before:pointer-events-none">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,hsl(var(--primary)/0.03),transparent_70%)] before:pointer-events-none">
       <TopBar />
 
       {/* Sub-Header Navigation Bar */}
@@ -84,11 +84,11 @@ export function DashboardShell() {
                   className={cn(
                     "inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap",
                     item.isActive
-                      ? "bg-[#F6821F]/10 text-[#F6821F] border border-[#F6821F]/30 font-semibold shadow-xs"
+                      ? "bg-primary/10 text-primary border border-primary/25 font-semibold shadow-xs"
                       : "text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-transparent"
                   )}
                 >
-                  <Icon className={cn("w-3.5 h-3.5 mr-1.5", item.isActive ? "text-[#F6821F]" : "opacity-70")} />
+                  <Icon className={cn("w-3.5 h-3.5 mr-1.5", item.isActive ? "text-primary" : "opacity-70")} />
                   <span>{item.name}</span>
                 </NavLink>
               );
@@ -99,7 +99,7 @@ export function DashboardShell() {
               <>
                 <div className="h-4 w-px bg-border mx-2 shrink-0" />
                 <div className="hidden sm:inline-flex items-center px-1.5 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-                  <Shield className="w-3 h-3 mr-1 text-[#F6821F]" />
+                  <Shield className="w-3 h-3 mr-1 text-primary" />
                   Admin
                 </div>
                 {adminNavItems.map((item) => {
@@ -111,11 +111,11 @@ export function DashboardShell() {
                       className={cn(
                         "inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap",
                         item.isActive
-                          ? "bg-[#F6821F]/10 text-[#F6821F] border border-[#F6821F]/30 font-semibold shadow-xs"
+                          ? "bg-primary/10 text-primary border border-primary/25 font-semibold shadow-xs"
                           : "text-muted-foreground hover:bg-muted/70 hover:text-foreground border border-transparent"
                       )}
                     >
-                      <Icon className={cn("w-3.5 h-3.5 mr-1.5", item.isActive ? "text-[#F6821F]" : "opacity-70")} />
+                      <Icon className={cn("w-3.5 h-3.5 mr-1.5", item.isActive ? "text-primary" : "opacity-70")} />
                       <span>{item.name}</span>
                     </NavLink>
                   );

@@ -12,7 +12,7 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
     destructive: "border-destructive/20 bg-destructive/10 text-destructive",
     outline: "text-foreground border-border bg-card",
     success: "border-emerald-500/25 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
-    warning: "border-[#F6821F]/30 bg-[#F6821F]/10 text-[#F6821F]",
+    warning: "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400",
   };
 
   return (

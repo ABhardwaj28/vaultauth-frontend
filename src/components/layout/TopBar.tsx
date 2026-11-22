@@ -14,15 +14,15 @@ export function TopBar() {
         {/* Brand & Logo */}
         <div className="flex items-center space-x-6">
           <Link to="/dashboard" className="flex items-center space-x-2.5 group">
-            {/* Safety Amber Icon */}
-            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-[#F6821F] text-white shadow-sm transition-transform group-hover:scale-105">
+            {/* Brand Logo Icon */}
+            <div className="flex items-center justify-center w-7 h-7 rounded-md bg-primary text-primary-foreground shadow-xs transition-transform group-hover:scale-105">
               <ShieldCheck className="w-4 h-4" />
             </div>
             <div className="flex items-baseline space-x-1.5">
               <span className="font-semibold text-sm tracking-tight text-foreground">
                 VaultAuth
               </span>
-              <span className="text-[10px] font-mono font-medium text-[#F6821F] uppercase tracking-wider">
+              <span className="text-[10px] font-mono font-medium text-primary uppercase tracking-wider">
                 SSO
               </span>
             </div>
