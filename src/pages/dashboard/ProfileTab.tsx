@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { User, Shield, Key, Lock, RefreshCw, AlertCircle } from "lucide-react";
+import { User, Shield, Key, RefreshCw, AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { UserProfile } from "@/types/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -33,17 +32,18 @@ export function ProfileTab() {
   }, []);
 
   const effectiveUser = profile || authUser;
+  const isAdmin = effectiveUser?.role === "admin";
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
-            User Profile & Governance
+            Profile & Identity
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Cryptographic identity and authorization claims bound to your active session.
+            Identity claims, role-based authorization governance, and multi-factor security credentials.
           </p>
         </div>
 
@@ -52,152 +52,217 @@ export function ProfileTab() {
           size="sm"
           onClick={loadProfile}
           disabled={loading}
-          className="h-8 text-xs font-mono self-start sm:self-auto"
+          className="h-8 px-3 text-xs font-medium self-start sm:self-auto border-border hover:bg-muted/60"
         >
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
+          <span>Refresh Identity</span>
         </Button>
       </div>
 
       {error && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {/* Main Identity Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {/* Card 1: Principal Identity */}
-        <Card className="border-border">
-          <CardHeader className="pb-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        {/* Card 1: Principal Identity (User) */}
+        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
+          <div>
+            {/* Header with matching icon & status indicator */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <User className="w-5 h-5 text-primary" />
+              </div>
+              <Badge variant="success" className="gap-1 font-mono text-[10px] uppercase tracking-wider">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                Active
+              </Badge>
+            </div>
+
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Principal Identity
               </span>
-              <User className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-base sm:text-lg font-bold text-foreground truncate mt-0.5" title={effectiveUser?.email}>
+                {effectiveUser?.email || "—"}
+              </h2>
             </div>
-            <CardTitle className="text-base font-semibold truncate mt-1">
-              {effectiveUser?.email || "—"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-2 text-xs">
-            <div className="flex items-center justify-between font-mono">
-              <span className="text-muted-foreground">User ID:</span>
-              <div className="flex items-center">
-                <span className="truncate max-w-[120px] text-foreground mr-1">
-                  {effectiveUser?.id || "usr_identity"}
+
+            {/* Detailed Metadata Rows */}
+            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
+              <div>
+                <span className="text-[11px] text-muted-foreground font-medium block">Unique User ID</span>
+                <div className="flex items-center justify-between mt-1 p-1.5 rounded bg-muted/40 border border-border/60">
+                  <span className="font-mono text-[11px] text-foreground truncate mr-2">
+                    {effectiveUser?.id || "usr_identity"}
+                  </span>
+                  <CopyButton value={effectiveUser?.id || ""} className="h-6 px-1.5 text-[10px] shrink-0" />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Directory Realm</span>
+                <span className="text-foreground font-mono font-medium">corporate-sso</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Member Since</span>
+                <span className="text-foreground font-mono">
+                  {formatDateTime(effectiveUser?.created_at)}
                 </span>
-                <CopyButton value={effectiveUser?.id || ""} className="h-5 px-1 text-[10px]" />
+              </div>
+
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground font-medium">Verification Status</span>
+                <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Email Verified</span>
+                </div>
               </div>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Card 2: Role & Authority */}
-        <Card className="border-border">
-          <CardHeader className="pb-2">
+        {/* Card 2: RBAC Authority (Shield) */}
+        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
+          <div>
+            {/* Header with matching icon & Role badge */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
-                RBAC Authority
-              </span>
-              <Shield className="h-4 w-4 text-primary" />
-            </div>
-            <CardTitle className="text-base font-semibold mt-1">
-              {effectiveUser?.role === "admin" ? "Enterprise Administrator" : "Standard Employee"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Assigned Role:</span>
-              <Badge variant={effectiveUser?.role === "admin" ? "default" : "secondary"}>
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <Shield className="w-5 h-5 text-primary" />
+              </div>
+              <Badge variant={isAdmin ? "default" : "secondary"} className="font-mono text-[10px] tracking-wider uppercase">
                 {effectiveUser?.role?.toUpperCase() || "USER"}
               </Badge>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Card 3: Security & 2FA State */}
-        <Card className="border-border">
-          <CardHeader className="pb-2">
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                RBAC Authority
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                {isAdmin ? "Enterprise Administrator" : "Standard Employee"}
+              </h2>
+            </div>
+
+            {/* Detailed Scope Rows */}
+            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Clearance Level</span>
+                <span className="text-foreground font-semibold">
+                  {isAdmin ? "Tier-1 Governance" : "Tier-2 Employee"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Access Scope</span>
+                <span className="text-foreground font-medium">
+                  {isAdmin ? "Full System Control" : "Self-Service Workspace"}
+                </span>
+              </div>
+
+              <div>
+                <span className="text-[11px] text-muted-foreground font-medium block mb-1.5">Authorized Capabilities</span>
+                <div className="space-y-1.5">
+                  {isAdmin ? (
+                    <>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>User lifecycle governance (create, lock, promote)</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>OAuth / OIDC application client registration</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>System-wide audit logs & cross-tenant telemetry</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>Global session termination & emergency revoking</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>Identity profile inspection & credential review</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>Self active device & browser session management</span>
+                      </div>
+                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
+                        <span className="w-1 h-1 rounded-full bg-primary" />
+                        <span>Enterprise Single Sign-On (SSO) authentication</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Card 3: 2FA & Credentials (Key) */}
+        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
+          <div>
+            {/* Header with matching icon & Enforced badge */}
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <Key className="w-5 h-5 text-primary" />
+              </div>
+              <Badge variant="warning" className="font-mono text-[10px] tracking-wider uppercase">
+                Enforced
+              </Badge>
+            </div>
+
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 2FA & Credentials
               </span>
-              <Key className="h-4 w-4 text-muted-foreground" />
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                Multi-Factor Authentication
+              </h2>
             </div>
-            <CardTitle className="text-base font-semibold mt-1">
-              Multi-Factor Authentication
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-2 text-xs">
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Two-Factor OTP:</span>
-              <Badge variant="success">Enforced (Email OTP)</Badge>
+
+            {/* Detailed Security & Policy Rows */}
+            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Second Factor (2FA)</span>
+                <span className="text-foreground font-medium">Email Challenge (OTP)</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Code Expiration</span>
+                <div className="flex items-center space-x-1 font-mono text-[11px] text-foreground">
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  <span>10 Minutes</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Idle Session Timeout</span>
+                <span className="text-foreground font-mono font-medium">30 Minutes</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Absolute Session Cap</span>
+                <span className="text-foreground font-mono font-medium">8 Hours</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground font-medium">Lockout Threshold</span>
+                <span className="text-foreground font-medium">3 Consecutive Strikes</span>
+              </div>
             </div>
-            <div className="flex items-center justify-between font-mono">
-              <span className="text-muted-foreground">Member Since:</span>
-              <span className="text-foreground">
-                {formatDateTime(effectiveUser?.created_at)}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
-
-      {/* Cryptographic Architecture Card */}
-      <Card className="border-border bg-card">
-        <CardHeader className="pb-3">
-          <div className="flex items-center space-x-2">
-            <Lock className="h-4 w-4 text-primary" />
-            <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
-              Zero-Trust Cryptographic Enforcement
-            </CardTitle>
-          </div>
-          <CardDescription className="text-xs text-muted-foreground">
-            Technical assurances implemented by the backend authentication engine per PRD v2.0.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-            <div className="p-3 rounded-md border border-border bg-muted/20">
-              <div className="font-mono text-[10px] text-muted-foreground uppercase">
-                Password Hashing
-              </div>
-              <div className="font-semibold text-foreground mt-0.5">
-                Argon2id Memory-Hard
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Zero cleartext storage or plaintext logs.
-              </p>
-            </div>
-
-            <div className="p-3 rounded-md border border-border bg-muted/20">
-              <div className="font-mono text-[10px] text-muted-foreground uppercase">
-                Session Tokens
-              </div>
-              <div className="font-semibold text-foreground mt-0.5">
-                Opaque 256-Bit Bearer
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Persisted exclusively as SHA-256 database hashes.
-              </p>
-            </div>
-
-            <div className="p-3 rounded-md border border-border bg-muted/20">
-              <div className="font-mono text-[10px] text-muted-foreground uppercase">
-                Revocation Boundary
-              </div>
-              <div className="font-semibold text-primary mt-0.5">
-                Instant (&lt;30s SLA)
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-1">
-                Evaluated per request in PostgreSQL transactions.
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }

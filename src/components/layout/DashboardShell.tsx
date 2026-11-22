@@ -67,7 +67,7 @@ export function DashboardShell() {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,rgba(246,130,31,0.02),transparent_70%)] before:pointer-events-none">
       <TopBar />
 
       {/* Sub-Header Navigation Bar */}
@@ -140,7 +140,7 @@ export function DashboardShell() {
             <span>Enterprise Identity Gateway</span>
           </div>
           <div className="flex items-center space-x-3 text-[11px]">
-            <span>Argon2id Memory-Hard</span>
+            <span>Enterprise Identity Platform</span>
             <span className="text-border">•</span>
             <span>NIST SP 800-63B</span>
             <span className="text-border">•</span>

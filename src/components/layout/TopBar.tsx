@@ -28,14 +28,15 @@ export function TopBar() {
             </div>
           </Link>
 
-          {/* Operational Status Pill */}
-          <div className="hidden lg:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[11px] font-mono">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            <span className="font-medium">Gateway Operational</span>
-          </div>
+          {/* Brief User Session Detail */}
+          {user && (
+            <div className="hidden sm:flex items-center space-x-2 px-2.5 py-1 rounded-md bg-muted/60 border border-border/80 text-[11px] font-mono text-muted-foreground">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span className="text-foreground font-medium">Session Active</span>
+              <span className="text-muted-foreground/40">•</span>
+              <span>{user.role === "admin" ? "Admin Session" : "User Session"}</span>
+            </div>
+          )}
         </div>
 
         {/* Right Control Hub */}
