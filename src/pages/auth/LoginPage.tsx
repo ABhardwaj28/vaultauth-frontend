@@ -2,11 +2,9 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Clock, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
@@ -159,114 +157,118 @@ export function LoginPage() {
 
   return (
     <AuthShell>
-      <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1.5 pb-4 text-center">
-          <div className="flex justify-center mb-1">
-            <div className="w-10 h-10 rounded-lg bg-[#F6821F] flex items-center justify-center text-white shadow-sm">
-              <ShieldCheck className="w-5 h-5" />
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_2px_12px_rgba(15,23,42,0.05),0_1px_3px_rgba(15,23,42,0.03)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.45)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.04] before:via-transparent before:to-transparent before:pointer-events-none transition-all">
+        {/* Header */}
+        <div className="text-center space-y-1.5 pb-5">
+          <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto mb-2.5 shadow-xs">
+            <ShieldCheck className="w-5 h-5 text-primary" />
+          </div>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            Sign In to VaultAuth
+          </h1>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Enter your enterprise credentials to access protected single sign-on applications.
+          </p>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Session Expired Notice */}
+          {sessionExpiredNotice && (
+            <div className="p-3 rounded-lg bg-[#F6821F]/10 border border-[#F6821F]/25 text-[#F6821F] text-xs flex items-center space-x-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0" />
+              <span className="font-medium">{sessionExpiredNotice}</span>
+            </div>
+          )}
+
+          {/* Error Banner */}
+          {error && (
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-start space-x-2.5">
+              <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+              <div className="space-y-0.5">
+                <span className="font-semibold block text-[11px] uppercase tracking-wider">Authentication Error</span>
+                <span className="text-xs leading-relaxed block">{error}</span>
+              </div>
+            </div>
+          )}
+
+          {/* Email Field */}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium text-foreground">
+              Corporate Email
+            </Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                required
+                autoFocus
+                autoComplete="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (error) setError(null);
+                  if (sessionExpiredNotice) setSessionExpiredNotice(null);
+                }}
+                className="pl-9 h-10 text-xs rounded-lg border-border/80 bg-background/50 focus:bg-background transition-colors"
+                disabled={loading}
+              />
             </div>
           </div>
-          <CardTitle className="text-xl font-bold tracking-tight text-foreground">
-            Log in to VaultAuth
-          </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">
-            Enter your enterprise credentials to access your protected session.
-          </CardDescription>
-        </CardHeader>
 
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {/* Session Expired Notice */}
-            {sessionExpiredNotice && (
-              <Alert variant="warning" className="text-xs py-2 px-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>{sessionExpiredNotice}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Error Banner */}
-            {error && (
-              <Alert variant="destructive" className="text-xs py-2 px-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle className="text-xs font-semibold">Authentication Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
-
-            {/* Email Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email" className="text-xs font-medium">Corporate Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  autoFocus
-                  autoComplete="email"
-                  placeholder="name@company.com"
-                  value={email}
-                  onChange={(e) => {
-                    setEmail(e.target.value);
-                    if (error) setError(null);
-                    if (sessionExpiredNotice) setSessionExpiredNotice(null);
-                  }}
-                  className="pl-9 text-xs"
-                  disabled={loading}
-                />
-              </div>
+          {/* Password Field */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-xs font-medium text-foreground">
+                Password
+              </Label>
+              <span className="text-[11px] text-muted-foreground hover:text-primary cursor-pointer transition-colors font-medium">
+                Recovery Key
+              </span>
             </div>
-
-            {/* Password Field */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-xs font-medium">Password</Label>
-                <span className="text-[11px] text-muted-foreground font-mono hover:text-[#F6821F] cursor-pointer transition-colors">
-                  Recovery Key
-                </span>
-              </div>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  autoComplete="current-password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => {
-                    setPassword(e.target.value);
-                    if (error) setError(null);
-                    if (sessionExpiredNotice) setSessionExpiredNotice(null);
-                  }}
-                  className="pl-9 pr-9 text-xs"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground focus:outline-none"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="current-password"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (error) setError(null);
+                  if (sessionExpiredNotice) setSessionExpiredNotice(null);
+                }}
+                className="pl-9 pr-9 h-10 text-xs rounded-lg border-border/80 bg-background/50 focus:bg-background transition-colors"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
+          </div>
 
-            {/* Live Rate Limit Alert */}
-            {rateLimitTimer && rateLimitTimer > 0 && (
-              <div className="flex items-center space-x-1.5 text-xs text-[#F6821F] font-mono">
-                <Clock className="w-3.5 h-3.5" />
-                <span>Retry window opens in {rateLimitTimer}s</span>
-              </div>
-            )}
-          </CardContent>
+          {/* Live Rate Limit Alert */}
+          {rateLimitTimer && rateLimitTimer > 0 && (
+            <div className="flex items-center justify-center space-x-1.5 p-2 rounded-lg bg-primary/10 border border-primary/20 text-xs text-primary font-mono font-medium">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Cooldown active: Retry in {rateLimitTimer}s</span>
+            </div>
+          )}
 
-          <CardFooter className="flex flex-col space-y-3 pt-2">
+          {/* Submit Button & Links */}
+          <div className="space-y-3 pt-2">
             <Button
               type="submit"
               disabled={loading || Boolean(rateLimitTimer && rateLimitTimer > 0)}
-              className="w-full h-9 font-medium"
+              className="w-full h-10 rounded-lg text-xs font-semibold shadow-xs transition-all"
             >
               {loading ? (
                 <span className="flex items-center space-x-2">
@@ -274,11 +276,11 @@ export function LoginPage() {
                   <span>Verifying Credentials...</span>
                 </span>
               ) : (
-                <span>Log In</span>
+                <span>Sign In</span>
               )}
             </Button>
 
-            <div className="text-center text-xs text-muted-foreground">
+            <div className="text-center text-xs text-muted-foreground pt-1">
               Don't have an enterprise account?{" "}
               <Link
                 to="/register"
@@ -287,9 +289,9 @@ export function LoginPage() {
                 Sign up
               </Link>
             </div>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </div>
     </AuthShell>
   );
 }
