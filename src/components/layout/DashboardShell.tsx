@@ -7,7 +7,6 @@ import {
   Users,
   FileText,
   Radio,
-  Shield,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { TopBar } from "./TopBar";
@@ -97,10 +96,11 @@ export function DashboardShell() {
             {/* Admin Navigation Links */}
             {isAdmin && (
               <>
-                <div className="h-4 w-px bg-border mx-2 shrink-0" />
-                <div className="hidden sm:inline-flex items-center px-1.5 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-                  <Shield className="w-3 h-3 mr-1 text-primary" />
-                  Admin
+                <div className="flex items-center space-x-2 mx-2 shrink-0 select-none pointer-events-none">
+                  <div className="h-4 w-px bg-border" />
+                  <span className="hidden sm:inline-block text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                    Admin
+                  </span>
                 </div>
                 {adminNavItems.map((item) => {
                   const Icon = item.icon;
