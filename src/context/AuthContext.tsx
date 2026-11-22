@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const checkServiceAvailability = useCallback(async (): Promise<boolean> => {
-    const health = await api.checkHealth();
+    const health = await api.checkHealth({ timeoutMs: 4000, retries: 2 });
     if (health.ok) {
       setIsServiceUnavailable(false);
       return true;
@@ -76,9 +76,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
 
     async function initialize() {
-      // 1. Initial Service Connectivity Handshake
+      // 1. Initial Service Connectivity Handshake (Parallel Fast Probes)
       try {
-        const health = await api.checkHealth();
+        const health = await api.checkHealth({ timeoutMs: 3500, retries: 2 });
         if (!health.ok) {
           if (isMounted) {
             setIsServiceUnavailable(true);

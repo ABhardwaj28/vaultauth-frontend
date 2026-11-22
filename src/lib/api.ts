@@ -196,47 +196,71 @@ class ApiClient {
     };
   }
 
-  // --- Health Handshake ---
-  async checkHealth(): Promise<{ ok: boolean; status: string; latency: number; details?: HealthCheckResponse }> {
+  // --- High-Speed Parallel Health Handshake with Cold-Start Resilience ---
+  async checkHealth(options?: { timeoutMs?: number; retries?: number }): Promise<{ ok: boolean; status: string; latency: number; details?: HealthCheckResponse }> {
     const startTime = performance.now();
-    try {
-      const endpoints = [
-        "/health",
-        "/api/v1/health",
-        "/.well-known/openid-configuration",
-        "/",
-      ];
+    const timeoutMs = options?.timeoutMs ?? 4000;
+    const maxRetries = options?.retries ?? 2;
 
-      let res: Response | null = null;
-      for (const ep of endpoints) {
-        try {
-          const controller = new AbortController();
-          const timer = setTimeout(() => controller.abort(), 3500);
-          const response = await fetch(`${this.baseUrl}${ep}`, {
-            method: "GET",
-            headers: { Accept: "application/json" },
-            signal: controller.signal,
+    const endpoints = [
+      "/.well-known/openid-configuration",
+      "/health",
+      "/api/v1/health",
+      "/",
+    ];
+
+    const probeOnce = async (timeout: number): Promise<boolean> => {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), timeout);
+
+      try {
+        return await new Promise<boolean>((resolve) => {
+          let settledCount = 0;
+          let hasSucceeded = false;
+
+          endpoints.forEach(async (ep) => {
+            try {
+              const res = await fetch(`${this.baseUrl}${ep}`, {
+                method: "GET",
+                headers: { Accept: "application/json" },
+                signal: controller.signal,
+              });
+              // Any HTTP response < 500 confirms host is awake & reachable
+              if (res.status < 500 && !hasSucceeded) {
+                hasSucceeded = true;
+                resolve(true);
+                return;
+              }
+            } catch {
+              // ignore probe error
+            }
+
+            settledCount++;
+            if (settledCount === endpoints.length && !hasSucceeded) {
+              resolve(false);
+            }
           });
-          clearTimeout(timer);
-          // If server responded with ANY HTTP status below 500 (200, 301, 302, 401, 403, 404), the host is alive!
-          if (response.status < 500) {
-            res = response;
-            break;
-          }
-        } catch {
-          // try next endpoint
-        }
+        });
+      } finally {
+        clearTimeout(timer);
+        controller.abort();
       }
+    };
 
-      const latency = Math.round(performance.now() - startTime);
-      if (!res) {
-        return { ok: false, status: "offline", latency };
-      }
-      return { ok: true, status: "healthy", latency };
-    } catch {
-      const latency = Math.round(performance.now() - startTime);
+    // Attempt 1: Fast parallel probe across all standard endpoints
+    let isAlive = await probeOnce(timeoutMs);
+
+    // Attempt 2: If sleeping host is still warming up, wait 1.2s and probe again with a wider window
+    if (!isAlive && maxRetries > 1) {
+      await new Promise((r) => setTimeout(r, 1200));
+      isAlive = await probeOnce(timeoutMs + 2500);
+    }
+
+    const latency = Math.round(performance.now() - startTime);
+    if (!isAlive) {
       return { ok: false, status: "offline", latency };
     }
+    return { ok: true, status: "healthy", latency };
   }
 
   // --- Authentication ---

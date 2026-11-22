@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { ServerOff, RefreshCw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,6 +9,24 @@ interface ServiceUnavailablePageProps {
 }
 
 export function ServiceUnavailablePage({ onRetry, retrying }: ServiceUnavailablePageProps) {
+  const [countdown, setCountdown] = useState(5);
+
+  useEffect(() => {
+    if (retrying) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          onRetry?.();
+          return 5;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [onRetry, retrying]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground p-4 sm:p-6">
       <Card className="max-w-md w-full border-border shadow-sm text-center">
@@ -25,7 +44,7 @@ export function ServiceUnavailablePage({ onRetry, retrying }: ServiceUnavailable
 
         <CardContent className="space-y-4 text-xs">
           <p className="text-muted-foreground leading-relaxed">
-            The authentication gateway could not establish a connection to the backend server. The service may be offline, undergoing maintenance, or your network connection might be interrupted.
+            The authentication gateway could not establish a connection to the backend server. The service may be offline, undergoing cold-start wake up, or your network connection might be interrupted.
           </p>
 
           <div className="p-2.5 rounded-md bg-muted/40 border border-border text-left font-mono text-[11px] space-y-1">
@@ -39,7 +58,11 @@ export function ServiceUnavailablePage({ onRetry, retrying }: ServiceUnavailable
             className="w-full h-9 text-xs font-medium"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${retrying ? "animate-spin" : ""}`} />
-            <span>{retrying ? "Checking connectivity..." : "Retry Connection"}</span>
+            <span>
+              {retrying
+                ? "Connecting to gateway..."
+                : `Auto-reconnecting in ${countdown}s (or Retry Now)`}
+            </span>
           </Button>
         </CardContent>
       </Card>
