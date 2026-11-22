@@ -1,6 +1,6 @@
 # VaultAuth SSO — Frontend Web Client
 
-> **Enterprise Single Sign-On (SSO) Portal with Multi-Factor Verification, Active Session Telemetry, and Instant 1-Click Revocation.**
+> **Enterprise Single Sign-On (SSO) Portal with Two-Factor Verification (2FA), Active Session Telemetry, and Instant 1-Click Revocation.**
 
 [![Project Status](https://img.shields.io/badge/Project%20Status-Active%20Development-blue.svg)](https://github.com/ABhardwaj28/vaultauth-frontend)
 [![PRD Version](https://img.shields.io/badge/PRD-v2.0%20(Optimized)-success.svg)](docs/PRD_v2.0.md)

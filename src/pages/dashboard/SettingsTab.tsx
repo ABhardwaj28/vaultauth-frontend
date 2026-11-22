@@ -121,7 +121,7 @@ export function SettingsTab() {
             Account & Security Settings
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your authentication credentials, multi-factor security, and interface preferences.
+            Manage your authentication credentials, two-factor security, and interface preferences.
           </p>
         </div>
       </div>
@@ -295,7 +295,7 @@ export function SettingsTab() {
                 Secondary Verification
               </span>
               <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Multi-Factor Authentication (MFA)
+                Two-Factor Authentication (2FA)
               </h2>
               <p className="text-xs text-muted-foreground mt-1">
                 Out-of-band verification required for all corporate logins.

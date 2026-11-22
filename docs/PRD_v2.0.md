@@ -50,7 +50,7 @@ v1.0 was a client-only demo (`localStorage`, SHA-256 in the browser). That desig
 
 ## 4. Problem Statement & Root Cause Analysis
 
-Organizations frequently store credentials weakly, omit multi-factor authentication checks, and lack immediate kill-switches to sever compromised employee sessions.
+Organizations frequently store credentials weakly, omit two-factor authentication (2FA) checks, and lack immediate kill-switches to sever compromised employee sessions.
 
 ### Concrete Pain Points
 1. **Password Exposure:** Inadequate password hashing algorithms (e.g. cleartext, MD5, or unsalted SHA-256) expose corporate credentials to instant offline rainbow table and dictionary attacks.
@@ -98,7 +98,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 
 ### 6.2 Prioritized Cut List (First to Cut → Last to Cut)
 1. **Expo Go Corporate Digital ID Card (Cut #1):** Lowest impact on core authentication and security objectives.
-2. **TOTP Authenticator App Enrollment (Cut #2):** Email OTP already satisfies all MFA requirements.
+2. **TOTP Authenticator App Enrollment (Cut #2):** Email OTP already satisfies all 2FA requirements.
 3. **Neon Fallback Sync Job (Cut #3):** Kept as long as possible for disaster recovery redundancy; cut only if CI runtime exceeds limits.
 
 ### 6.3 Out of Scope

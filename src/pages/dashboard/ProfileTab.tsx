@@ -43,7 +43,7 @@ export function ProfileTab() {
             Profile & Identity
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Identity claims, role-based authorization governance, and multi-factor security credentials.
+            Identity claims, role-based authorization governance, and two-factor security credentials.
           </p>
         </div>
 
@@ -226,7 +226,7 @@ export function ProfileTab() {
                 2FA & Credentials
               </span>
               <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Multi-Factor Authentication
+                Two-Factor Authentication (2FA)
               </h2>
             </div>
 
