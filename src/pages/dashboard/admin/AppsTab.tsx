@@ -257,7 +257,7 @@ export function AppsTab() {
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Confidential Clients</p>
             <p className="text-xl font-bold text-foreground font-mono">{confidentialCount}</p>
           </div>
-          <div className="w-9 h-9 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center">
             <Lock className="h-4 w-4" />
           </div>
         </div>
@@ -267,7 +267,7 @@ export function AppsTab() {
             <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">Public Clients (SPA)</p>
             <p className="text-xl font-bold text-foreground font-mono">{publicCount}</p>
           </div>
-          <div className="w-9 h-9 rounded-lg bg-sky-500/10 border border-sky-500/20 text-sky-500 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-lg bg-secondary border border-border text-foreground flex items-center justify-center">
             <Globe className="h-4 w-4" />
           </div>
         </div>
@@ -411,8 +411,8 @@ export function AppsTab() {
                             <div
                               className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border ${
                                 isConfidential
-                                  ? "bg-indigo-500/10 border-indigo-500/20 text-indigo-500"
-                                  : "bg-sky-500/10 border-sky-500/20 text-sky-500"
+                                  ? "bg-primary/10 border-primary/20 text-primary"
+                                  : "bg-secondary border-border text-foreground"
                               }`}
                             >
                               {isConfidential ? (
@@ -445,12 +445,8 @@ export function AppsTab() {
                         {/* Client Type */}
                         <TableCell className="py-2.5">
                           <Badge
-                            variant="outline"
-                            className={`rounded-md text-[10px] py-0 px-2 font-semibold capitalize flex items-center w-fit gap-1 ${
-                              isConfidential
-                                ? "border-indigo-500/30 text-indigo-600 dark:text-indigo-400 bg-indigo-500/10"
-                                : "border-sky-500/30 text-sky-600 dark:text-sky-400 bg-sky-500/10"
-                            }`}
+                            variant={isConfidential ? "default" : "secondary"}
+                            className="rounded-md text-[10px] py-0 px-2 font-semibold capitalize flex items-center w-fit gap-1"
                           >
                             {isConfidential ? <Lock className="h-2.5 w-2.5" /> : <Globe className="h-2.5 w-2.5" />}
                             <span>{client.client_type}</span>
