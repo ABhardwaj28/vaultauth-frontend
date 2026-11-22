@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   Laptop,
   Smartphone,
@@ -11,9 +11,9 @@ import {
   Search,
   ShieldAlert,
   ChevronDown,
-  ChevronUp,
-  Layers,
-  Sparkles,
+  ChevronRight,
+  Clock,
+  Calendar,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { SessionItem } from "@/types/api";
@@ -23,6 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { formatDateTime, formatRelativeTime, parseUserAgent } from "@/lib/utils";
 
 interface UserSessionGroup {
@@ -42,6 +48,7 @@ function getSessionTimestamp(s: SessionItem): number {
 
 export function GlobalSessionsTab() {
   const [sessions, setSessions] = useState<SessionItem[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [revokingId, setRevokingId] = useState<string | null>(null);
@@ -50,11 +57,31 @@ export function GlobalSessionsTab() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchGlobalSessions = async () => {
+  // Fetch full directory to map user_id -> corporate email
+  const fetchUsers = useCallback(async () => {
+    try {
+      const res = await api.getAdminUsers({ limit: 100, fetchAll: true });
+      const list = res.users || res.items || [];
+      const map: Record<string, string> = {};
+      for (const u of list) {
+        if (u.id && u.email) {
+          map[u.id] = u.email;
+        }
+      }
+      setUserMap((prev) => ({ ...prev, ...map }));
+    } catch {
+      // ignore
+    }
+  }, []);
+
+  const fetchGlobalSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const data = await api.getGlobalSessions(100);
+      const [data] = await Promise.all([
+        api.getGlobalSessions(100),
+        fetchUsers(),
+      ]);
       const now = Date.now();
       const activeSessions = (data || []).filter((s) => {
         const isStatusActive = !s.status || s.status.toUpperCase() === "ACTIVE";
@@ -69,11 +96,11 @@ export function GlobalSessionsTab() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [fetchUsers]);
 
   useEffect(() => {
     fetchGlobalSessions();
-  }, []);
+  }, [fetchGlobalSessions]);
 
   const handleRevoke = async (sessionId: string) => {
     setRevokingId(sessionId);
@@ -119,7 +146,7 @@ export function GlobalSessionsTab() {
     }
   };
 
-  // Group sessions strictly by user_id, keeping latest/current as displayable one
+  // Group sessions by user_id
   const groupedSessions = useMemo<UserSessionGroup[]>(() => {
     const map = new Map<string, SessionItem[]>();
     for (const session of sessions) {
@@ -142,7 +169,8 @@ export function GlobalSessionsTab() {
         const restSessions = sorted.slice(1);
         const email =
           userSessions.find((s) => s.email || s.user_email)?.email ||
-          userSessions.find((s) => s.email || s.user_email)?.user_email;
+          userSessions.find((s) => s.email || s.user_email)?.user_email ||
+          userMap[userId];
 
         return {
           userId,
@@ -166,11 +194,15 @@ export function GlobalSessionsTab() {
             (s.device || s.user_agent || "").toLowerCase().includes(q)
         )
     );
-  }, [sessions, searchQuery]);
+  }, [sessions, searchQuery, userMap]);
 
   const uniqueUserCount = useMemo(() => {
     return new Set(sessions.map((s) => s.user_id || s.email || s.user_email || "anonymous_user")).size;
   }, [sessions]);
+
+  const usersWithMultipleSessions = useMemo(() => {
+    return groupedSessions.filter((g) => g.restSessions.length > 0);
+  }, [groupedSessions]);
 
   const toggleUserExpand = (userId: string) => {
     setExpandedUsers((prev) => ({
@@ -194,14 +226,10 @@ export function GlobalSessionsTab() {
     }
   };
 
-  const usersWithMultipleSessions = useMemo(() => {
-    return groupedSessions.filter((g) => g.restSessions.length > 0);
-  }, [groupedSessions]);
-
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/80">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             Global Active Sessions
@@ -217,9 +245,9 @@ export function GlobalSessionsTab() {
               variant="ghost"
               size="sm"
               onClick={toggleAllExpand}
-              className="h-8 px-3 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground"
+              className="h-8 px-2.5 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground"
             >
-              {groupedSessions.some((g) => expandedUsers[g.userId]) ? "Collapse All Extra" : "Expand All Extra"}
+              {groupedSessions.some((g) => expandedUsers[g.userId]) ? "Collapse Secondary" : "Expand All Secondary"}
             </Button>
           )}
 
@@ -238,28 +266,28 @@ export function GlobalSessionsTab() {
 
       {/* Notifications */}
       {message && (
-        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2.5">
+        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span className="font-medium">{message}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2.5">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span className="font-medium">{error}</span>
         </div>
       )}
 
-      {/* Controls & Filter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+      {/* Filter & Counter Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search by User ID, email, IP address, or device..."
+            placeholder="Search by User ID, email, IP, or device..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-lg bg-background/50 focus:bg-background text-xs"
+            className="pl-8 h-8 rounded-lg bg-background/50 focus:bg-background text-xs"
           />
         </div>
 
@@ -273,330 +301,407 @@ export function GlobalSessionsTab() {
         </div>
       </div>
 
-      {/* Grouped User Sessions */}
-      {loading ? (
-        <div className="rounded-xl border border-border/80 bg-card p-12 flex flex-col items-center justify-center text-xs text-muted-foreground space-y-2">
-          <RefreshCw className="h-5 w-5 animate-spin text-primary" />
-          <span className="font-medium">Querying active sessions across enterprise directory...</span>
-        </div>
-      ) : groupedSessions.length === 0 ? (
-        <div className="rounded-xl border border-border/80 bg-card p-12 flex flex-col items-center justify-center text-xs text-muted-foreground space-y-1.5 text-center">
-          <ShieldAlert className="h-6 w-6 text-muted-foreground mb-1" />
-          <span className="font-medium text-foreground">
-            {searchQuery ? "No sessions match your filter criteria." : "No active sessions found across the system."}
-          </span>
-          <span className="text-[11px] text-muted-foreground">Only active and valid credentials appear here.</span>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          <TooltipProvider>
-            {groupedSessions.map((group) => {
-              const isRevokingThisUser = revokingUser === group.userId;
-              const isExpanded = Boolean(expandedUsers[group.userId]);
-              const latest = group.latestSession;
-              const hasMultiple = group.restSessions.length > 0;
+      {/* Compact Master Sessions Table */}
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
+        <TooltipProvider>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <TableHead className="w-8 py-2.5 px-2 text-center"></TableHead>
+                  <TableHead className="min-w-[190px] py-2.5">User Account</TableHead>
+                  <TableHead className="min-w-[160px] py-2.5">Active Sessions (Drop Down)</TableHead>
+                  <TableHead className="min-w-[210px] py-2.5">Primary Device</TableHead>
+                  <TableHead className="min-w-[120px] py-2.5">Client IP</TableHead>
+                  <TableHead className="min-w-[110px] py-2.5">Last Active</TableHead>
+                  <TableHead className="min-w-[120px] py-2.5 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
 
-              // Telemetry for latest session
-              const rawUa = latest.device || latest.user_agent || "Corporate Workstation";
-              const rawIp = (latest.ip || latest.ip_address || "—").replace(/\/32$/, "");
-              const parsed = parseUserAgent(rawUa);
-              const isLatestRevoking = revokingId === latest.id;
-
-              return (
-                <div key={group.userId} className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
-                  {/* User Primary Header */}
-                  <div className="py-3 px-4 sm:px-5 bg-muted/20 border-b border-border/80">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center space-x-3.5 min-w-0 flex-1">
-                        <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                          <User className="h-4 w-4" />
-                        </div>
-
-                        <div className="flex flex-col min-w-0">
-                          <div className="flex items-center space-x-2">
-                            <span className="text-xs font-semibold text-foreground truncate">
-                              {group.email || group.userId}
-                            </span>
-                            <CopyButton value={group.userId} className="h-5 px-1.5 text-[10px] rounded" />
-                            <Badge
-                              variant="outline"
-                              className={`font-mono text-[10px] py-0 px-2 rounded-md shrink-0 ${
-                                hasMultiple
-                                  ? "border-primary/40 bg-primary/10 text-primary font-semibold"
-                                  : "text-muted-foreground"
-                              }`}
-                            >
-                              {group.allSessions.length} {group.allSessions.length === 1 ? "Session" : "Sessions"}
-                            </Badge>
-                          </div>
-
-                          {group.email && (
-                            <span className="text-[11px] font-mono text-muted-foreground truncate">
-                              ID: {group.userId}
-                            </span>
-                          )}
-                        </div>
+              <TableBody>
+                {loading ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
+                      <div className="flex items-center justify-center space-x-2">
+                        <RefreshCw className="h-4 w-4 animate-spin text-primary" />
+                        <span>Querying active sessions across enterprise directory...</span>
                       </div>
-
-                      {/* Bulk Kill-Switch for this User */}
-                      {hasMultiple && (
-                        <div className="flex items-center space-x-2 self-start sm:self-auto shrink-0">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            disabled={isRevokingThisUser}
-                            onClick={() => handleRevokeAllForUser(group.userId, group.allSessions)}
-                            className="h-7 px-2.5 text-xs rounded-lg font-medium"
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            <span>
-                              {isRevokingThisUser
-                                ? "Terminating All..."
-                                : `Terminate All (${group.allSessions.length})`}
-                            </span>
-                          </Button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Main Displayable Session (Latest / Current) */}
-                  <div className="p-4 sm:p-5">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-2">
-                        <span className="text-xs font-semibold text-foreground flex items-center">
-                          <Sparkles className="h-3.5 w-3.5 text-primary mr-1.5" />
-                          Primary Device Session
+                    </TableCell>
+                  </TableRow>
+                ) : groupedSessions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
+                      <div className="flex flex-col items-center justify-center space-y-1">
+                        <ShieldAlert className="h-5 w-5 text-muted-foreground mb-0.5" />
+                        <span className="font-medium text-foreground">
+                          {searchQuery ? "No sessions match filter criteria." : "No active sessions found across enterprise directory."}
                         </span>
-                        <span className="inline-flex items-center space-x-1 px-2 py-0.5 rounded-md text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mr-1 animate-pulse" />
-                          {latest.is_current || latest.current ? "Current Device" : "Active"}
-                        </span>
+                        <span className="text-[11px] text-muted-foreground">Only active and valid sessions appear here.</span>
                       </div>
-                    </div>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  groupedSessions.map((group) => {
+                    const isExpanded = Boolean(expandedUsers[group.userId]);
+                    const latest = group.latestSession;
+                    const hasMultiple = group.restSessions.length > 0;
+                    const isRevokingThisUser = revokingUser === group.userId;
+                    const isLatestRevoking = revokingId === latest.id;
 
-                    {/* Primary Session Table View */}
-                    <div className="overflow-x-auto">
-                      <Table className="min-w-[700px]">
-                        <TableHeader>
-                          <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
-                            <TableHead className="min-w-[260px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                              Client Device
-                            </TableHead>
-                            <TableHead className="min-w-[130px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                              IP Address
-                            </TableHead>
-                            <TableHead className="min-w-[120px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                              Last Active
-                            </TableHead>
-                            <TableHead className="min-w-[130px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                              Expiration
-                            </TableHead>
-                            <TableHead className="min-w-[100px] text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                              Action
-                            </TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          <TableRow className="border-b border-border/60 hover:bg-muted/20">
-                            <TableCell>
-                              <div className="flex items-center space-x-2.5 py-0.5">
-                                <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
-                                  {parsed.isMobile ? (
-                                    <Smartphone className="h-3.5 w-3.5" />
-                                  ) : (
-                                    <Laptop className="h-3.5 w-3.5" />
-                                  )}
-                                </div>
-                                <div className="flex flex-col min-w-0">
-                                  <span className="text-xs text-foreground font-semibold whitespace-nowrap">
-                                    {parsed.device}
-                                  </span>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <span className="text-[11px] font-mono text-muted-foreground truncate max-w-[250px] cursor-help block">
-                                        {rawUa}
-                                      </span>
-                                    </TooltipTrigger>
-                                    <TooltipContent className="max-w-xs break-all font-mono text-[11px]">
-                                      {rawUa}
-                                    </TooltipContent>
-                                  </Tooltip>
-                                </div>
-                              </div>
-                            </TableCell>
+                    const rawUa = latest.device || latest.user_agent || "Corporate Workstation";
+                    const rawIp = (latest.ip || latest.ip_address || "—").replace(/\/32$/, "");
+                    const parsed = parseUserAgent(rawUa);
+                    const emailDisplay = group.email || userMap[group.userId] || null;
 
-                            <TableCell className="font-mono text-xs text-foreground whitespace-nowrap">
-                              <span className="flex items-center">
-                                <Globe className="h-3 w-3 mr-1.5 text-primary opacity-80 shrink-0" />
-                                {rawIp}
-                              </span>
-                            </TableCell>
-
-                            <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                              {formatRelativeTime(latest.last_active_at || latest.created_at)}
-                            </TableCell>
-
-                            <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                              {latest.expires_at ? formatDateTime(latest.expires_at) : "Active"}
-                            </TableCell>
-
-                            <TableCell className="text-right whitespace-nowrap">
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                disabled={isLatestRevoking}
-                                onClick={() => handleRevoke(latest.id)}
-                                className="h-7 px-2.5 text-xs rounded-lg font-medium"
+                    return (
+                      <React.Fragment key={group.userId}>
+                        {/* Compact Master User Row */}
+                        <TableRow className={`border-b border-border/60 hover:bg-muted/20 transition-colors ${isExpanded ? "bg-muted/15" : ""}`}>
+                          {/* Chevron: Inline Dropdown Toggle */}
+                          <TableCell className="w-8 py-2 px-2 text-center">
+                            {hasMultiple ? (
+                              <button
+                                type="button"
+                                onClick={() => toggleUserExpand(group.userId)}
+                                className="p-1 rounded hover:bg-muted/60 text-muted-foreground hover:text-foreground transition-colors"
+                                title={isExpanded ? "Collapse secondary sessions" : `Drop down ${group.restSessions.length} more sessions inline`}
                               >
-                                <Trash2 className="h-3 w-3 mr-1" />
-                                <span>{isLatestRevoking ? "Terminating..." : "Terminate"}</span>
-                              </Button>
-                            </TableCell>
-                          </TableRow>
-                        </TableBody>
-                      </Table>
-                    </div>
+                                {isExpanded ? (
+                                  <ChevronDown className="h-3.5 w-3.5 text-primary" />
+                                ) : (
+                                  <ChevronRight className="h-3.5 w-3.5" />
+                                )}
+                              </button>
+                            ) : null}
+                          </TableCell>
 
-                    {/* "More Sessions" Button for this User ID */}
-                    {hasMultiple && (
-                      <div className="mt-3.5 pt-3 border-t border-border/70 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => toggleUserExpand(group.userId)}
-                          className="h-7 px-3 text-xs rounded-lg font-medium border-primary/40 text-primary hover:bg-primary/10 hover:text-primary flex items-center space-x-1.5 self-start"
-                        >
-                          {isExpanded ? (
-                            <>
-                              <ChevronUp className="h-3.5 w-3.5" />
-                              <span>Hide older sessions ({group.restSessions.length})</span>
-                            </>
-                          ) : (
-                            <>
-                              <ChevronDown className="h-3.5 w-3.5" />
-                              <span>
-                                +{group.restSessions.length} more {group.restSessions.length === 1 ? "session" : "sessions"} on this account
+                          {/* User Account Column */}
+                          <TableCell className="py-2">
+                            <div className="flex flex-col space-y-0.5">
+                              <span
+                                className="font-semibold text-xs text-foreground font-mono truncate max-w-[180px]"
+                                title={emailDisplay || group.userId}
+                              >
+                                {emailDisplay || group.userId}
                               </span>
-                            </>
-                          )}
-                        </Button>
+                              <div className="flex items-center space-x-1 text-[10px] font-mono text-muted-foreground">
+                                <span className="text-[9px] uppercase font-semibold text-muted-foreground/70">ID:</span>
+                                <span className="truncate max-w-[120px]">{group.userId}</span>
+                                <CopyButton value={group.userId} className="h-3.5 px-1 text-[8px] rounded" />
+                              </div>
+                            </div>
+                          </TableCell>
 
-                        <span className="text-[11px] text-muted-foreground">
-                          {isExpanded
-                            ? `Showing all ${group.restSessions.length} secondary session(s)`
-                            : `Account has ${group.restSessions.length} additional active session(s)`}
-                        </span>
-                      </div>
-                    )}
-                  </div>
+                          {/* Active Sessions Dropdown Menu Column */}
+                          <TableCell className="py-2">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className={`h-7 px-2.5 text-xs font-mono rounded-lg transition-all flex items-center space-x-1.5 ${
+                                    hasMultiple
+                                      ? "border-primary/40 bg-primary/10 text-primary font-semibold hover:bg-primary/20"
+                                      : "border-border/80 bg-muted/30 text-foreground hover:bg-muted/60"
+                                  }`}
+                                >
+                                  <span
+                                    className={`h-1.5 w-1.5 rounded-full ${
+                                      hasMultiple ? "bg-primary animate-pulse" : "bg-emerald-500"
+                                    }`}
+                                  />
+                                  <span>
+                                    {group.allSessions.length}{" "}
+                                    {group.allSessions.length === 1 ? "Session" : "Sessions"}
+                                  </span>
+                                  <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
+                                </Button>
+                              </DropdownMenuTrigger>
 
-                  {/* Expandable Section: Rest of the Sessions */}
-                  {hasMultiple && isExpanded && (
-                    <div className="border-t border-border/80 bg-muted/10 p-4 sm:p-5">
-                      <div className="flex items-center space-x-1.5 mb-2.5 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        <Layers className="h-3.5 w-3.5 text-primary" />
-                        <span>Secondary Active Sessions ({group.restSessions.length})</span>
-                      </div>
-
-                      <div className="overflow-x-auto rounded-lg border border-border/80 bg-card">
-                        <Table className="min-w-[680px]">
-                          <TableHeader>
-                            <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
-                              <TableHead className="min-w-[240px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                                Secondary Device
-                              </TableHead>
-                              <TableHead className="min-w-[130px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                                IP Address
-                              </TableHead>
-                              <TableHead className="min-w-[120px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                                Last Active
-                              </TableHead>
-                              <TableHead className="min-w-[130px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                                Expiration
-                              </TableHead>
-                              <TableHead className="min-w-[90px] text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-2.5">
-                                Action
-                              </TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            {group.restSessions.map((session, rIdx) => {
-                              const subRawUa = session.device || session.user_agent || "Secondary Client";
-                              const subRawIp = (session.ip || session.ip_address || "—").replace(/\/32$/, "");
-                              const subParsed = parseUserAgent(subRawUa);
-                              const isSubRevoking = revokingId === session.id;
-
-                              return (
-                                <TableRow key={session.id || rIdx} className="border-b border-border/60 hover:bg-muted/20">
-                                  <TableCell>
-                                    <div className="flex items-center space-x-2 py-0.5">
-                                      <div className="p-1 rounded-md bg-muted/40 text-muted-foreground border border-border/80 shrink-0">
-                                        {subParsed.isMobile ? (
-                                          <Smartphone className="h-3 w-3" />
-                                        ) : (
-                                          <Laptop className="h-3 w-3" />
-                                        )}
-                                      </div>
-                                      <div className="flex flex-col min-w-0">
-                                        <span className="text-xs text-foreground font-medium whitespace-nowrap">
-                                          {subParsed.device}
-                                        </span>
-                                        <Tooltip>
-                                          <TooltipTrigger asChild>
-                                            <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[220px] cursor-help block">
-                                              {subRawUa}
-                                            </span>
-                                          </TooltipTrigger>
-                                          <TooltipContent className="max-w-xs break-all font-mono text-[11px]">
-                                            {subRawUa}
-                                          </TooltipContent>
-                                        </Tooltip>
-                                      </div>
+                              {/* Drop Down Menu with Complete Unreduced Details */}
+                              <DropdownMenuContent
+                                align="start"
+                                className="w-[430px] p-3 text-xs rounded-xl border border-border/80 shadow-2xl bg-card max-h-[85vh] overflow-y-auto"
+                              >
+                                <DropdownMenuLabel className="p-0 pb-2.5 mb-2 border-b border-border/70 flex items-center justify-between">
+                                  <div className="flex flex-col space-y-0.5 min-w-0 flex-1 pr-2">
+                                    <div className="flex items-center space-x-1.5">
+                                      <User className="h-3.5 w-3.5 text-primary shrink-0" />
+                                      <span className="font-semibold text-xs text-foreground truncate">
+                                        {emailDisplay || group.userId}
+                                      </span>
                                     </div>
-                                  </TableCell>
-
-                                  <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                                    <span className="flex items-center">
-                                      <Globe className="h-3 w-3 mr-1 opacity-70 shrink-0" />
-                                      {subRawIp}
+                                    <span className="text-[10px] font-mono text-muted-foreground truncate">
+                                      User ID: {group.userId}
                                     </span>
-                                  </TableCell>
+                                  </div>
 
-                                  <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                                    {formatRelativeTime(session.last_active_at || session.created_at)}
-                                  </TableCell>
-
-                                  <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
-                                    {session.expires_at ? formatDateTime(session.expires_at) : "Active"}
-                                  </TableCell>
-
-                                  <TableCell className="text-right whitespace-nowrap">
+                                  {hasMultiple && (
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      disabled={isSubRevoking}
-                                      onClick={() => handleRevoke(session.id)}
-                                      className="h-6 px-2 text-[11px] rounded-md font-medium"
+                                      disabled={isRevokingThisUser}
+                                      onClick={() => handleRevokeAllForUser(group.userId, group.allSessions)}
+                                      className="h-6 px-2 text-[10px] rounded font-medium shrink-0"
+                                      title="Terminate all active sessions for this user"
                                     >
                                       <Trash2 className="h-2.5 w-2.5 mr-1" />
-                                      <span>{isSubRevoking ? "..." : "Terminate"}</span>
+                                      <span>{isRevokingThisUser ? "Terminating..." : `Terminate All (${group.allSessions.length})`}</span>
                                     </Button>
-                                  </TableCell>
-                                </TableRow>
-                              );
-                            })}
-                          </TableBody>
-                        </Table>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </TooltipProvider>
-        </div>
-      )}
+                                  )}
+                                </DropdownMenuLabel>
+
+                                {/* List of Full Detailed Sessions Inside Drop Down */}
+                                <div className="space-y-2.5 divide-y divide-border/50">
+                                  {group.allSessions.map((session, sIdx) => {
+                                    const sRawUa = session.device || session.user_agent || "Client Device";
+                                    const sRawIp = (session.ip || session.ip_address || "—").replace(/\/32$/, "");
+                                    const sParsed = parseUserAgent(sRawUa);
+                                    const isSubRevoking = revokingId === session.id;
+                                    const isCurrent = Boolean(session.current ?? session.is_current ?? (sIdx === 0 && !hasMultiple));
+
+                                    return (
+                                      <div key={session.id || sIdx} className="pt-2.5 first:pt-0 space-y-2">
+                                        {/* Device & Status Row */}
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center space-x-2 min-w-0">
+                                            <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                              {sParsed.isMobile ? (
+                                                <Smartphone className="h-3.5 w-3.5" />
+                                              ) : (
+                                                <Laptop className="h-3.5 w-3.5" />
+                                              )}
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                              <div className="flex items-center space-x-1.5">
+                                                <span className="font-semibold text-xs text-foreground truncate">
+                                                  {sParsed.device}
+                                                </span>
+                                                {isCurrent && (
+                                                  <Badge variant="outline" className="text-[9px] py-0 px-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                                                    Current
+                                                  </Badge>
+                                                )}
+                                              </div>
+                                              <span className="text-[10px] font-mono text-muted-foreground truncate">
+                                                ID: {session.id}
+                                              </span>
+                                            </div>
+                                          </div>
+
+                                          <Button
+                                            variant="destructive"
+                                            size="sm"
+                                            disabled={isSubRevoking}
+                                            onClick={() => handleRevoke(session.id)}
+                                            className="h-6 px-2 text-[10px] font-mono rounded shrink-0"
+                                            title="Terminate this session"
+                                          >
+                                            <Trash2 className="h-2.5 w-2.5 mr-1" />
+                                            <span>{isSubRevoking ? "..." : "Terminate"}</span>
+                                          </Button>
+                                        </div>
+
+                                        {/* Raw User Agent Box with Copy Button */}
+                                        <div className="p-1.5 rounded-md bg-muted/40 border border-border/70 flex items-center justify-between text-[10px] font-mono text-muted-foreground">
+                                          <span className="truncate pr-2 select-all" title={sRawUa}>
+                                            {sRawUa}
+                                          </span>
+                                          <CopyButton value={sRawUa} className="h-4 px-1 text-[8px] rounded shrink-0" />
+                                        </div>
+
+                                        {/* IP, Last Active & Expiration Telemetry */}
+                                        <div className="grid grid-cols-2 gap-1.5 text-[10px] font-mono text-muted-foreground">
+                                          <div className="flex items-center space-x-1">
+                                            <Globe className="h-3 w-3 text-primary opacity-70 shrink-0" />
+                                            <span className="text-foreground">{sRawIp}</span>
+                                          </div>
+                                          <div className="flex items-center space-x-1 justify-end">
+                                            <Clock className="h-3 w-3 text-primary opacity-70 shrink-0" />
+                                            <span title={session.last_active_at || session.created_at || ""}>
+                                              {formatRelativeTime(session.last_active_at || session.created_at)}
+                                            </span>
+                                          </div>
+                                          {session.created_at && (
+                                            <div className="flex items-center space-x-1 col-span-2 text-[10px]">
+                                              <Calendar className="h-3 w-3 text-muted-foreground opacity-60 shrink-0" />
+                                              <span>Signed In: {formatDateTime(session.created_at)}</span>
+                                            </div>
+                                          )}
+                                          {session.expires_at && (
+                                            <div className="flex items-center space-x-1 col-span-2 text-[10px]">
+                                              <span className="text-muted-foreground opacity-70 font-semibold">Expires:</span>
+                                              <span>{formatDateTime(session.expires_at)}</span>
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
+
+                          {/* Primary Device Column */}
+                          <TableCell className="py-2">
+                            <div className="flex items-center space-x-2">
+                              <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                {parsed.isMobile ? (
+                                  <Smartphone className="h-3.5 w-3.5" />
+                                ) : (
+                                  <Laptop className="h-3.5 w-3.5" />
+                                )}
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <div className="flex items-center space-x-1.5">
+                                  <span className="text-xs text-foreground font-medium truncate max-w-[160px]" title={parsed.device}>
+                                    {parsed.device}
+                                  </span>
+                                  {(latest.is_current || latest.current) && (
+                                    <Badge variant="outline" className="text-[9px] py-0 px-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10">
+                                      Current
+                                    </Badge>
+                                  )}
+                                </div>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[180px] cursor-help block">
+                                      {rawUa}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent className="max-w-xs break-all font-mono text-[10px]">
+                                    {rawUa}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </div>
+                            </div>
+                          </TableCell>
+
+                          {/* Client IP Column */}
+                          <TableCell className="py-2 font-mono text-xs text-foreground whitespace-nowrap">
+                            <span className="flex items-center">
+                              <Globe className="h-3 w-3 mr-1 text-primary opacity-80 shrink-0" />
+                              {rawIp}
+                            </span>
+                          </TableCell>
+
+                          {/* Last Active Column */}
+                          <TableCell className="py-2 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                            <span title={latest.last_active_at || latest.created_at || ""}>
+                              {formatRelativeTime(latest.last_active_at || latest.created_at)}
+                            </span>
+                          </TableCell>
+
+                          {/* Actions Column */}
+                          <TableCell className="py-2 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end space-x-1.5">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={isLatestRevoking}
+                                onClick={() => handleRevoke(latest.id)}
+                                className="h-7 px-2 text-xs text-destructive hover:bg-destructive/10 hover:text-destructive rounded-lg font-medium"
+                                title="Terminate primary session"
+                              >
+                                <Trash2 className="h-3 w-3 mr-1" />
+                                <span>{isLatestRevoking ? "..." : "Terminate"}</span>
+                              </Button>
+
+                              {hasMultiple && (
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={isRevokingThisUser}
+                                  onClick={() => handleRevokeAllForUser(group.userId, group.allSessions)}
+                                  className="h-7 px-2 text-[10px] font-medium rounded-lg"
+                                  title={`Terminate all ${group.allSessions.length} sessions for this user`}
+                                >
+                                  <span>{isRevokingThisUser ? "..." : `All (${group.allSessions.length})`}</span>
+                                </Button>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+
+                        {/* Expandable Inline Dropdown Section for Secondary Sessions */}
+                        {hasMultiple && isExpanded && group.restSessions.map((sub, sIdx) => {
+                          const subRawUa = sub.device || sub.user_agent || "Secondary Client";
+                          const subRawIp = (sub.ip || sub.ip_address || "—").replace(/\/32$/, "");
+                          const subParsed = parseUserAgent(subRawUa);
+                          const isSubRevoking = revokingId === sub.id;
+
+                          return (
+                            <TableRow key={sub.id || sIdx} className="bg-muted/10 border-b border-border/40 hover:bg-muted/20 text-xs">
+                              <TableCell className="py-1.5 px-2 text-center text-muted-foreground/60 font-mono text-[11px]">
+                                ↳
+                              </TableCell>
+                              <TableCell className="py-1.5 font-mono text-[11px] text-muted-foreground/80 italic pl-3">
+                                Secondary Session
+                              </TableCell>
+                              <TableCell className="py-1.5 text-muted-foreground text-[11px] font-mono">
+                                ID: {sub.id.slice(0, 8)}...
+                              </TableCell>
+                              <TableCell className="py-1.5">
+                                <div className="flex items-center space-x-2">
+                                  <div className="p-0.5 rounded bg-muted/40 text-muted-foreground shrink-0">
+                                    {subParsed.isMobile ? (
+                                      <Smartphone className="h-3 w-3" />
+                                    ) : (
+                                      <Laptop className="h-3 w-3" />
+                                    )}
+                                  </div>
+                                  <div className="flex flex-col min-w-0">
+                                    <span className="text-xs text-foreground/85 font-medium truncate max-w-[160px]" title={subParsed.device}>
+                                      {subParsed.device}
+                                    </span>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[180px] cursor-help block">
+                                          {subRawUa}
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="max-w-xs break-all font-mono text-[10px]">
+                                        {subRawUa}
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </div>
+                                </div>
+                              </TableCell>
+                              <TableCell className="py-1.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                <span className="flex items-center">
+                                  <Globe className="h-2.5 w-2.5 mr-1 text-primary opacity-60 shrink-0" />
+                                  {subRawIp}
+                                </span>
+                              </TableCell>
+                              <TableCell className="py-1.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                {formatRelativeTime(sub.last_active_at || sub.created_at)}
+                              </TableCell>
+                              <TableCell className="py-1.5 text-right whitespace-nowrap">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  disabled={isSubRevoking}
+                                  onClick={() => handleRevoke(sub.id)}
+                                  className="h-6 px-1.5 text-[11px] text-destructive hover:bg-destructive/10 hover:text-destructive rounded"
+                                  title="Terminate this session"
+                                >
+                                  <Trash2 className="h-2.5 w-2.5 mr-1" />
+                                  <span>{isSubRevoking ? "..." : "Terminate"}</span>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </React.Fragment>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </TooltipProvider>
+      </div>
     </div>
   );
 }
