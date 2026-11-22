@@ -165,7 +165,7 @@ export function AppsTab() {
   }, [clients, searchQuery, typeFilter]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
       {/* Header & Main Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
         <div>
@@ -202,7 +202,7 @@ export function AppsTab() {
 
       {/* Notifications */}
       {successMessage && (
-        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
             <CheckCircle2 className="h-4 w-4 shrink-0" />
             <span className="font-medium">{successMessage}</span>
@@ -217,7 +217,7 @@ export function AppsTab() {
       )}
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center justify-between">
           <div className="flex items-center space-x-2.5">
             <AlertCircle className="h-4 w-4 shrink-0" />
             <span className="font-medium">{error}</span>
@@ -234,12 +234,12 @@ export function AppsTab() {
       {/* Filter & Search Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search by application, client ID, or URI..."
+            placeholder="Search applications, client IDs, or URIs..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-lg bg-background/50 focus:bg-background text-xs"
+            className="pl-8 h-8 rounded-lg bg-background/50 focus:bg-background text-xs"
           />
           {searchQuery && (
             <button
@@ -251,53 +251,40 @@ export function AppsTab() {
           )}
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
-          <span className="text-xs text-muted-foreground font-medium">Type:</span>
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value as "all" | "confidential" | "public")}
-            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
-          >
-            <option value="all">All Types ({clients.length})</option>
-            <option value="confidential">Confidential</option>
-            <option value="public">Public (SPA)</option>
-          </select>
+        <div className="flex items-center space-x-2.5 self-start sm:self-auto">
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs text-muted-foreground font-medium">Type:</span>
+            <select
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value as "all" | "confidential" | "public")}
+              className="h-8 rounded-lg border border-input bg-background/50 focus:bg-background px-2.5 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
+            >
+              <option value="all">All Types</option>
+              <option value="confidential">Confidential</option>
+              <option value="public">Public (SPA)</option>
+            </select>
+          </div>
+
+          <Badge variant="outline" className="font-mono text-xs px-2.5 py-1 rounded-md">
+            {filteredClients.length} {filteredClients.length === 1 ? "Client" : "Clients"}
+          </Badge>
         </div>
       </div>
 
       {/* Applications Directory Table Card */}
       <TooltipProvider delayDuration={150}>
         <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
-          <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
-            <div className="flex items-center space-x-3.5">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <ShieldCheck className="w-4 h-4 sm:w-5 sm:h-5" />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                  Registered Clients Directory
-                </h2>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  Authorized identity relying parties capable of initiating SSO authorization flows.
-                </p>
-              </div>
-            </div>
-            <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
-              {clients.length} Registered
-            </Badge>
-          </div>
-
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
-                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
-                  <TableHead className="w-[240px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Application Name</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client ID</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client Type</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Allowed Scopes</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Redirect URIs</TableHead>
-                  <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Created</TableHead>
-                  <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Action</TableHead>
+                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                  <TableHead className="py-2.5 px-4 w-[220px]">Application Name</TableHead>
+                  <TableHead className="py-2.5 px-4">Client ID</TableHead>
+                  <TableHead className="py-2.5 px-4">Client Type</TableHead>
+                  <TableHead className="py-2.5 px-4">Redirect URIs</TableHead>
+                  <TableHead className="py-2.5 px-4">Allowed Scopes</TableHead>
+                  <TableHead className="py-2.5 px-4">Created</TableHead>
+                  <TableHead className="py-2.5 px-4 text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
 
@@ -329,24 +316,24 @@ export function AppsTab() {
                         className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
                       >
                         {/* Application Name */}
-                        <TableCell className="font-semibold text-xs text-foreground py-3">
-                          <div className="flex items-center space-x-2">
-                            <span>{client.client_name}</span>
-                          </div>
+                        <TableCell className="font-semibold text-xs text-foreground py-2.5 px-4">
+                          <span className="truncate block max-w-[200px]" title={client.client_name}>
+                            {client.client_name}
+                          </span>
                         </TableCell>
 
                         {/* Client ID */}
-                        <TableCell className="font-mono text-xs py-3">
+                        <TableCell className="font-mono text-xs py-2.5 px-4">
                           <div className="flex items-center space-x-1.5">
-                            <span className="truncate max-w-[140px] text-muted-foreground">
+                            <span className="truncate max-w-[130px] text-muted-foreground font-mono" title={client.client_id}>
                               {client.client_id}
                             </span>
-                            <CopyButton value={client.client_id} className="h-5 px-1.5 text-[10px] rounded" />
+                            <CopyButton value={client.client_id} className="h-4 px-1 text-[9px] rounded" />
                           </div>
                         </TableCell>
 
                         {/* Client Type */}
-                        <TableCell className="py-3">
+                        <TableCell className="py-2.5 px-4">
                           <Badge
                             variant={isConfidential ? "default" : "secondary"}
                             className="rounded-md text-[10px] py-0 px-2 font-semibold uppercase flex items-center w-fit gap-1"
@@ -356,22 +343,8 @@ export function AppsTab() {
                           </Badge>
                         </TableCell>
 
-                        {/* Allowed Scopes */}
-                        <TableCell className="py-3">
-                          <div className="flex flex-wrap gap-1">
-                            {(client.allowed_scopes || ["openid"]).map((s) => (
-                              <span
-                                key={s}
-                                className="font-mono text-[10px] px-1.5 py-0.5 rounded-md bg-muted/60 text-muted-foreground border border-border/80"
-                              >
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        </TableCell>
-
                         {/* Redirect URIs (Compact with +N tooltip) */}
-                        <TableCell className="font-mono text-xs py-3">
+                        <TableCell className="font-mono text-xs py-2.5 px-4">
                           {primaryUri ? (
                             <div className="flex items-center space-x-1.5">
                               <span className="font-mono text-foreground text-[11px] truncate max-w-[200px]" title={primaryUri}>
@@ -406,13 +379,20 @@ export function AppsTab() {
                           )}
                         </TableCell>
 
+                        {/* Allowed Scopes (Clean Comma-Separated Inline List) */}
+                        <TableCell className="py-2.5 px-4 font-mono text-[11px] text-muted-foreground">
+                          {client.allowed_scopes && client.allowed_scopes.length > 0
+                            ? client.allowed_scopes.join(", ")
+                            : "openid"}
+                        </TableCell>
+
                         {/* Created Date */}
-                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap py-3">
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap py-2.5 px-4">
                           {formatDateTime(client.created_at)}
                         </TableCell>
 
                         {/* Action */}
-                        <TableCell className="text-right py-3">
+                        <TableCell className="text-right py-2.5 px-4 whitespace-nowrap">
                           <Button
                             variant="destructive"
                             size="sm"
