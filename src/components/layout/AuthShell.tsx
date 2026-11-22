@@ -10,21 +10,13 @@ interface AuthShellProps {
 export function AuthShell({ children }: AuthShellProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate overflow-hidden">
-      {/* Precision Security Perimeter & Atmospheric Background */}
+      {/* Ultra-diffused Soft Ambient Light Wash (No lines, no circles) */}
       <div className="fixed inset-0 -z-10 pointer-events-none select-none overflow-hidden flex items-center justify-center">
-        {/* Soft Ambient Radial Illumination */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,hsl(var(--primary)/0.06),transparent_80%)]" />
+        {/* Large cloud-soft central diffused atmospheric aura directly behind card */}
+        <div className="w-[640px] h-[480px] rounded-full bg-primary/[0.045] dark:bg-primary/[0.055] blur-[130px] pointer-events-none -translate-y-6" />
 
-        {/* Concentric Architectural Security Rings with Smooth Radial Fade */}
-        <div className="absolute inset-0 flex items-center justify-center [mask-image:radial-gradient(ellipse_65%_65%_at_50%_50%,#000_20%,transparent_90%)]">
-          <div className="w-[460px] h-[460px] rounded-full border border-primary/[0.08] dark:border-primary/[0.12]" />
-          <div className="absolute w-[680px] h-[680px] rounded-full border border-primary/[0.05] dark:border-primary/[0.08]" />
-          <div className="absolute w-[920px] h-[920px] rounded-full border border-primary/[0.03] dark:border-primary/[0.05]" />
-          <div className="absolute w-[1180px] h-[1180px] rounded-full border border-primary/[0.015] dark:border-primary/[0.025]" />
-        </div>
-
-        {/* Hairline Top Glow Line */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
+        {/* Gentle top atmospheric wash */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-10%,hsl(var(--primary)/0.035),transparent_70%)] pointer-events-none" />
       </div>
 
       {/* Top Utility Bar */}
@@ -57,14 +49,18 @@ export function AuthShell({ children }: AuthShellProps) {
         </div>
       </main>
 
-      {/* Legal / Trust Footer */}
+      {/* Legal / Trust Footer with Links to Unavailable Documentation */}
       <footer className="border-t border-border/80 py-4 px-4 text-center text-xs text-muted-foreground bg-card/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>© 2026 VaultAuth SSO • Enterprise Identity Gateway</span>
           <div className="flex items-center space-x-3 text-[11px]">
-            <span>Privacy Policy</span>
+            <Link to="/privacy" className="hover:text-foreground hover:underline transition-colors">
+              Privacy Policy
+            </Link>
             <span className="text-border">•</span>
-            <span>Terms of Service</span>
+            <Link to="/terms" className="hover:text-foreground hover:underline transition-colors">
+              Terms of Service
+            </Link>
             <span className="text-border">•</span>
             <span>Zero-Trust Architecture</span>
           </div>

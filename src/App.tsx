@@ -29,6 +29,7 @@ import { NotFoundPage } from "@/pages/errors/NotFoundPage";
 import { RateLimitedPage } from "@/pages/errors/RateLimitedPage";
 import { ServerErrorPage } from "@/pages/errors/ServerErrorPage";
 import { ServiceUnavailablePage } from "@/pages/errors/ServiceUnavailablePage";
+import { PolicyUnavailablePage } from "@/pages/errors/PolicyUnavailablePage";
 
 function RootRedirect() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -97,6 +98,10 @@ function AppRoutes() {
         <Route path="/403" element={<ForbiddenPage />} />
         <Route path="/429" element={<RateLimitedPage />} />
         <Route path="/500" element={<ServerErrorPage />} />
+
+        {/* Legal & Compliance Routes (Temporarily Unavailable) */}
+        <Route path="/privacy" element={<PolicyUnavailablePage />} />
+        <Route path="/terms" element={<PolicyUnavailablePage />} />
 
         {/* 404 Catch-All */}
         <Route path="*" element={<NotFoundPage />} />

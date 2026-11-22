@@ -179,10 +179,7 @@ export function LoginPage() {
 
   return (
     <AuthShell>
-      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_10px_35px_-5px_rgba(15,23,42,0.06),0_2px_8px_rgba(15,23,42,0.03)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.5)] transition-all">
-        {/* Subtle top edge gradient accent */}
-        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
-
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-7 shadow-[0_4px_20px_rgba(15,23,42,0.05)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all">
         {/* Header */}
         <div className="text-center space-y-1.5 pb-5">
           <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center mx-auto mb-2.5 shadow-xs">
