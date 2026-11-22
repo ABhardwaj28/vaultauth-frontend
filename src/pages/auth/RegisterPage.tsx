@@ -77,7 +77,10 @@ export function RegisterPage() {
 
   return (
     <AuthShell>
-      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.04] before:via-transparent before:to-transparent before:pointer-events-none">
+      <div className="relative overflow-hidden rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_10px_35px_-5px_rgba(15,23,42,0.06),0_2px_8px_rgba(15,23,42,0.03)] dark:shadow-[0_16px_45px_rgba(0,0,0,0.5)] transition-all">
+        {/* Subtle top edge gradient accent */}
+        <div className="absolute top-0 inset-x-0 h-0.5 bg-gradient-to-r from-transparent via-primary/40 to-transparent" />
+
         <div className="space-y-1.5 pb-6 text-center">
           <div className="flex justify-center mb-2">
             <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs">

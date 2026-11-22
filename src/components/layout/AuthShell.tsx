@@ -10,16 +10,21 @@ interface AuthShellProps {
 export function AuthShell({ children }: AuthShellProps) {
   return (
     <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate overflow-hidden">
-      {/* Absolutely Subtle Atmospheric Background Layers */}
-      <div className="fixed inset-0 -z-10 pointer-events-none select-none overflow-hidden">
-        {/* Precision Micro-dot Matrix with Soft Vignette Mask */}
-        <div className="absolute inset-0 [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] text-foreground/[0.045] dark:text-muted-foreground/[0.06] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_45%,#000_20%,transparent_85%)]" />
+      {/* Precision Security Perimeter & Atmospheric Background */}
+      <div className="fixed inset-0 -z-10 pointer-events-none select-none overflow-hidden flex items-center justify-center">
+        {/* Soft Ambient Radial Illumination */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_60%_at_50%_45%,hsl(var(--primary)/0.06),transparent_80%)]" />
 
-        {/* Ambient Center Glow behind the Auth Box */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_45%,hsl(var(--primary)/0.05),transparent_75%)]" />
+        {/* Concentric Architectural Security Rings with Smooth Radial Fade */}
+        <div className="absolute inset-0 flex items-center justify-center [mask-image:radial-gradient(ellipse_65%_65%_at_50%_50%,#000_20%,transparent_90%)]">
+          <div className="w-[460px] h-[460px] rounded-full border border-primary/[0.08] dark:border-primary/[0.12]" />
+          <div className="absolute w-[680px] h-[680px] rounded-full border border-primary/[0.05] dark:border-primary/[0.08]" />
+          <div className="absolute w-[920px] h-[920px] rounded-full border border-primary/[0.03] dark:border-primary/[0.05]" />
+          <div className="absolute w-[1180px] h-[1180px] rounded-full border border-primary/[0.015] dark:border-primary/[0.025]" />
+        </div>
 
-        {/* Subtle Top Accent Beam */}
-        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+        {/* Hairline Top Glow Line */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
 
       {/* Top Utility Bar */}
