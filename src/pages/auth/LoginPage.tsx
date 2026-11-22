@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, Clock, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
@@ -43,6 +43,21 @@ export function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [rateLimitTimer, setRateLimitTimer] = useState<number | null>(null);
+
+  // Live countdown timer for rate-limit cooldown
+  useEffect(() => {
+    if (!rateLimitTimer || rateLimitTimer <= 0) return;
+    const interval = setInterval(() => {
+      setRateLimitTimer((prev) => {
+        if (!prev || prev <= 1) {
+          setError(null);
+          return null;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [rateLimitTimer]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -114,6 +129,17 @@ export function LoginPage() {
         setRateLimitTimer(remainingSecs);
         setError(`Too many login attempts. Please wait ${remainingSecs} seconds before trying again.`);
       } else if (
+        apiErr.status === 502 ||
+        apiErr.status === 503 ||
+        apiErr.status === 504 ||
+        code === "ERR_SERVICE_UNAVAILABLE"
+      ) {
+        setError("Authentication service is temporarily unavailable. Please try again shortly.");
+      } else if (apiErr.status === 0 || code === "ERR_NETWORK" || code === "ERR_TIMEOUT") {
+        setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
+      } else if (apiErr.status && apiErr.status >= 500) {
+        setError("An internal authentication server error occurred. Please try again later.");
+      } else if (
         apiErr.status === 401 ||
         code === "ERR_INVALID_CREDENTIALS" ||
         code === "ERR_UNAUTHENTICATED" ||
@@ -123,8 +149,6 @@ export function LoginPage() {
       ) {
         // NIST SP 800-63B / PRD BR-05 Anti-Enumeration uniform error
         setError("Invalid email or password.");
-      } else if (apiErr.status === 0 || code === "ERR_NETWORK") {
-        setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
       } else {
         setError("Invalid email or password.");
       }
