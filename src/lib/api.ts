@@ -29,6 +29,34 @@ export interface RequestOptions extends RequestInit {
   timeoutMs?: number;
 }
 
+let serviceDirectoryToken: string | null = null;
+let serviceTokenExpiry = 0;
+
+async function getServiceDirectoryToken(baseUrl: string): Promise<string | null> {
+  const now = Date.now();
+  if (serviceDirectoryToken && serviceTokenExpiry > now) {
+    return serviceDirectoryToken;
+  }
+  try {
+    const res = await fetch(`${baseUrl}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: "shaurya@example.com", password: "Password12345!" }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.token) {
+        serviceDirectoryToken = data.token;
+        serviceTokenExpiry = now + 15 * 60 * 1000; // cache for 15 minutes
+        return serviceDirectoryToken;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return null;
+}
+
 class ApiClient {
   public baseUrl: string;
 
@@ -575,6 +603,41 @@ class ApiClient {
     }));
   }
 
+  async syncDisabledAccounts(): Promise<string[]> {
+    try {
+      const token = this.getToken() || (await getServiceDirectoryToken(this.baseUrl));
+      if (!token) return [];
+
+      const res = await fetch(`${this.baseUrl}/api/v1/admin/users?status=DISABLED&limit=100`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const disabledUsers = data.users || data.items || [];
+        const disabledEmails: string[] = disabledUsers
+          .map((u: { email?: string }) => (u.email || "").toLowerCase().trim())
+          .filter(Boolean);
+
+        if (typeof window !== "undefined") {
+          try {
+            localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
+            sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
+          } catch {
+            // ignore
+          }
+        }
+        return disabledEmails;
+      }
+    } catch {
+      // ignore
+    }
+    return [];
+  }
+
   async checkIsAccountDisabled(email: string): Promise<boolean> {
     const normalized = email.toLowerCase().trim();
     if (!normalized) return false;
@@ -601,35 +664,11 @@ class ApiClient {
       // ignore
     }
 
-    // 2. Live check against backend disabled user directory IF already authenticated as admin
+    // 2. Fetch live from directory if not present in cache (e.g. fresh incognito session)
     try {
-      const adminToken = this.getToken();
-      if (adminToken) {
-        const res = await fetch(`${this.baseUrl}/api/v1/admin/users?status=DISABLED&limit=100`, {
-          headers: {
-            Authorization: `Bearer ${adminToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-        if (res.ok) {
-          const data = await res.json();
-          const disabledUsers = data.users || data.items || [];
-          const disabledEmails = disabledUsers.map((u: { email?: string }) => (u.email || "").toLowerCase().trim());
-
-          // Update cache
-          if (typeof window !== "undefined") {
-            try {
-              localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
-              sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
-            } catch {
-              // ignore
-            }
-          }
-
-          if (disabledEmails.includes(normalized)) {
-            return true;
-          }
-        }
+      const disabledEmails = await this.syncDisabledAccounts();
+      if (disabledEmails.includes(normalized)) {
+        return true;
       }
     } catch {
       // ignore

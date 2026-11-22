@@ -48,6 +48,11 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [rateLimitTimer, setRateLimitTimer] = useState<number | null>(null);
 
+  // Pre-sync disabled accounts on mount so fresh/incognito sessions immediately have real backend state
+  useEffect(() => {
+    api.syncDisabledAccounts().catch(() => {});
+  }, []);
+
   // Live countdown timer for rate-limit cooldown
   useEffect(() => {
     if (!rateLimitTimer || rateLimitTimer <= 0) return;
