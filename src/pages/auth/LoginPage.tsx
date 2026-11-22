@@ -9,31 +9,6 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
 
-function isKnownDisabledAccount(email: string): boolean {
-  const normalized = email.toLowerCase().trim();
-  if (!normalized) return false;
-
-  try {
-    const rawLocal = localStorage.getItem("vaultauth_disabled_accounts");
-    if (rawLocal) {
-      const list = JSON.parse(rawLocal);
-      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
-        return true;
-      }
-    }
-    const rawSession = sessionStorage.getItem("vaultauth_disabled_accounts");
-    if (rawSession) {
-      const list = JSON.parse(rawSession);
-      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
-        return true;
-      }
-    }
-  } catch {
-    // ignore
-  }
-  return false;
-}
-
 export function LoginPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -79,10 +54,13 @@ export function LoginPage() {
       return;
     }
 
-    // Proactively check if account is marked as disabled (prevents invalid credentials attempt from triggering failed strike count)
-    if (isKnownDisabledAccount(cleanEmail)) {
-      setError("Account is disabled. Contact your administrator.");
-      return;
+    // Check if account is in local disabled cache; verify live before blocking
+    if (api.isAccountInDisabledCache(cleanEmail)) {
+      const stillDisabled = await api.checkIsAccountDisabled(cleanEmail);
+      if (stillDisabled) {
+        setError("Account is disabled. Contact your administrator.");
+        return;
+      }
     }
 
     setLoading(true);
@@ -117,7 +95,6 @@ export function LoginPage() {
       const code = (apiErr.code || "").toUpperCase();
 
       let isDisabled =
-        isKnownDisabledAccount(cleanEmail) ||
         apiErr.status === 403 ||
         code === "ERR_FORBIDDEN" ||
         code === "ERR_ACCOUNT_DISABLED" ||

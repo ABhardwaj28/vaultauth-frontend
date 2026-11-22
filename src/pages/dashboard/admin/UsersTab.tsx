@@ -72,16 +72,8 @@ export function UsersTab() {
       setTotal(usersData.total ?? userList.length);
       setSessions(sessionsData || []);
 
-      // Cache real disabled accounts directly from backend directory
-      try {
-        const disabledInDb = userList
-          .filter((u) => u.status === "DISABLED")
-          .map((u) => u.email.toLowerCase().trim());
-        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledInDb));
-        sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledInDb));
-      } catch {
-        // ignore
-      }
+      // Synchronize complete directory of disabled accounts in background without overwriting from filtered view
+      api.syncDisabledAccounts().catch(() => {});
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load directory users.");
       setUsers([]);
@@ -176,19 +168,10 @@ export function UsersTab() {
     );
 
     // Keep anti-enumeration cache synchronized immediately
-    try {
-      const existing: string[] = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
-      const lowerEmail = user.email.toLowerCase().trim();
-      let updatedList: string[];
-      if (nextStatus === "DISABLED") {
-        updatedList = Array.from(new Set([...existing, lowerEmail]));
-      } else {
-        updatedList = existing.filter((e) => e !== lowerEmail);
-      }
-      localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
-      sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(updatedList));
-    } catch {
-      // ignore
+    if (nextStatus === "DISABLED") {
+      api.addDisabledAccountCache(user.email);
+    } else {
+      api.removeDisabledAccountCache(user.email);
     }
 
     try {
@@ -205,11 +188,17 @@ export function UsersTab() {
           : `User account ${user.email} enabled successfully. Account is now ACTIVE.`
       );
       await fetchUsersAndSessions();
+      await api.syncDisabledAccounts().catch(() => {});
     } catch (err: unknown) {
-      // Rollback optimistic state on backend rejection
+      // Rollback optimistic state and cache on backend rejection
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, status: user.status, failed_attempts: user.failed_attempts } : u))
       );
+      if (user.status === "DISABLED") {
+        api.addDisabledAccountCache(user.email);
+      } else {
+        api.removeDisabledAccountCache(user.email);
+      }
       setError((err as { message?: string })?.message || "Failed to update account status on backend.");
     } finally {
       setActionLoadingId(null);
