@@ -31,7 +31,7 @@ import {
 } from "@/components/ui/dialog";
 import { CopyButton } from "@/components/ui/copy-button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { formatDateTime } from "@/lib/utils";
+import { formatDateTime, formatRelativeTime } from "@/lib/utils";
 
 export function AppsTab() {
   const [clients, setClients] = useState<OAuthClient[]>([]);
@@ -274,142 +274,152 @@ export function AppsTab() {
       {/* Applications Directory Table Card */}
       <TooltipProvider delayDuration={150}>
         <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                  <TableHead className="py-2.5 px-4 w-[220px]">Application Name</TableHead>
-                  <TableHead className="py-2.5 px-4">Client ID</TableHead>
-                  <TableHead className="py-2.5 px-4">Client Type</TableHead>
-                  <TableHead className="py-2.5 px-4">Redirect URIs</TableHead>
-                  <TableHead className="py-2.5 px-4">Allowed Scopes</TableHead>
-                  <TableHead className="py-2.5 px-4">Created</TableHead>
-                  <TableHead className="py-2.5 px-4 text-right">Action</TableHead>
+          <Table wrapperClassName="overflow-x-auto md:overflow-x-hidden" className="w-full table-fixed">
+            <TableHeader>
+              <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                <TableHead className="py-2.5 px-3 w-[28%]">Application / Client ID</TableHead>
+                <TableHead className="py-2.5 px-3 w-[13%]">Client Type</TableHead>
+                <TableHead className="py-2.5 px-3 w-[24%]">Redirect URIs</TableHead>
+                <TableHead className="py-2.5 px-3 w-[14%]">Allowed Scopes</TableHead>
+                <TableHead className="py-2.5 px-3 w-[11%]">Created</TableHead>
+                <TableHead className="py-2.5 px-3 w-[10%] text-right">Action</TableHead>
+              </TableRow>
+            </TableHeader>
+
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-28 text-center text-muted-foreground text-xs">
+                    Loading registered applications...
+                  </TableCell>
                 </TableRow>
-              </TableHeader>
+              ) : filteredClients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={6} className="h-28 text-center text-muted-foreground text-xs">
+                    {searchQuery || typeFilter !== "all"
+                      ? "No applications match the current filter."
+                      : "No OAuth applications found."}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredClients.map((client) => {
+                  const uris = client.redirect_uris || [];
+                  const primaryUri = uris[0] || null;
+                  const remainingUris = uris.slice(1);
+                  const isConfidential = client.client_type === "confidential";
 
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
-                      Loading registered applications...
-                    </TableCell>
-                  </TableRow>
-                ) : filteredClients.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
-                      {searchQuery || typeFilter !== "all"
-                        ? "No applications match the current filter."
-                        : "No OAuth applications found."}
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredClients.map((client) => {
-                    const uris = client.redirect_uris || [];
-                    const primaryUri = uris[0] || null;
-                    const remainingUris = uris.slice(1);
-                    const isConfidential = client.client_type === "confidential";
-
-                    return (
-                      <TableRow
-                        key={client.client_id}
-                        className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
-                      >
-                        {/* Application Name */}
-                        <TableCell className="font-semibold text-xs text-foreground py-2.5 px-4">
-                          <span className="truncate block max-w-[200px]" title={client.client_name}>
+                  return (
+                    <TableRow
+                      key={client.client_id}
+                      className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
+                    >
+                      {/* Application Name & Client ID */}
+                      <TableCell className="py-2.5 px-3 min-w-0">
+                        <div className="flex flex-col space-y-0.5 min-w-0">
+                          <span className="font-semibold text-xs text-foreground truncate block" title={client.client_name}>
                             {client.client_name}
                           </span>
-                        </TableCell>
-
-                        {/* Client ID */}
-                        <TableCell className="font-mono text-xs py-2.5 px-4">
-                          <div className="flex items-center space-x-1.5">
-                            <span className="truncate max-w-[130px] text-muted-foreground font-mono" title={client.client_id}>
+                          <div className="flex items-center space-x-1.5 text-[11px] font-mono text-muted-foreground min-w-0">
+                            <span className="text-[10px] uppercase font-semibold text-muted-foreground/70 shrink-0">ID:</span>
+                            <span className="truncate" title={client.client_id}>
                               {client.client_id}
                             </span>
-                            <CopyButton value={client.client_id} className="h-4 px-1 text-[9px] rounded" />
+                            <CopyButton value={client.client_id} className="h-4 px-1 text-[9px] rounded shrink-0" />
                           </div>
-                        </TableCell>
+                        </div>
+                      </TableCell>
 
-                        {/* Client Type */}
-                        <TableCell className="py-2.5 px-4">
-                          <Badge
-                            variant={isConfidential ? "default" : "secondary"}
-                            className="rounded-md text-[10px] py-0 px-2 font-semibold uppercase flex items-center w-fit gap-1"
-                          >
-                            {isConfidential ? <Lock className="h-2.5 w-2.5" /> : <Globe className="h-2.5 w-2.5" />}
-                            <span>{client.client_type}</span>
-                          </Badge>
-                        </TableCell>
+                      {/* Client Type */}
+                      <TableCell className="py-2.5 px-3 min-w-0">
+                        <Badge
+                          variant={isConfidential ? "default" : "secondary"}
+                          className="rounded-md text-[10px] py-0 px-2 font-semibold uppercase flex items-center w-fit gap-1 shrink-0"
+                        >
+                          {isConfidential ? <Lock className="h-2.5 w-2.5 shrink-0" /> : <Globe className="h-2.5 w-2.5 shrink-0" />}
+                          <span>{client.client_type}</span>
+                        </Badge>
+                      </TableCell>
 
-                        {/* Redirect URIs (Compact with +N tooltip) */}
-                        <TableCell className="font-mono text-xs py-2.5 px-4">
-                          {primaryUri ? (
-                            <div className="flex items-center space-x-1.5">
-                              <span className="font-mono text-foreground text-[11px] truncate max-w-[200px]" title={primaryUri}>
-                                {primaryUri}
-                              </span>
-                              <CopyButton value={primaryUri} className="h-4 px-1 text-[9px] rounded shrink-0 opacity-70 hover:opacity-100" />
-                              {remainingUris.length > 0 && (
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Badge
-                                      variant="secondary"
-                                      className="text-[10px] font-mono py-0 px-1.5 cursor-pointer shrink-0"
-                                    >
-                                      +{remainingUris.length}
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent className="max-w-xs font-mono text-[10px] space-y-1 p-2">
-                                    <p className="font-bold text-foreground pb-1 border-b border-border/60">
-                                      All Redirect URIs ({uris.length}):
-                                    </p>
-                                    {uris.map((u, i) => (
-                                      <div key={i} className="break-all text-muted-foreground">
-                                        {u}
-                                      </div>
-                                    ))}
-                                  </TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
-                          ) : (
-                            <span className="text-muted-foreground italic text-[11px]">None configured</span>
-                          )}
-                        </TableCell>
+                      {/* Redirect URIs (Compact with +N tooltip) */}
+                      <TableCell className="font-mono text-xs py-2.5 px-3 min-w-0">
+                        {primaryUri ? (
+                          <div className="flex items-center space-x-1.5 min-w-0">
+                            <span className="font-mono text-foreground text-[11px] truncate" title={primaryUri}>
+                              {primaryUri}
+                            </span>
+                            <CopyButton value={primaryUri} className="h-4 px-1 text-[9px] rounded shrink-0 opacity-70 hover:opacity-100" />
+                            {remainingUris.length > 0 && (
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] font-mono py-0 px-1.5 cursor-pointer shrink-0"
+                                  >
+                                    +{remainingUris.length}
+                                  </Badge>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs font-mono text-[10px] space-y-1 p-2">
+                                  <p className="font-bold text-foreground pb-1 border-b border-border/60">
+                                    All Redirect URIs ({uris.length}):
+                                  </p>
+                                  {uris.map((u, i) => (
+                                    <div key={i} className="break-all text-muted-foreground">
+                                      {u}
+                                    </div>
+                                  ))}
+                                </TooltipContent>
+                              </Tooltip>
+                            )}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground italic text-[11px]">None configured</span>
+                        )}
+                      </TableCell>
 
-                        {/* Allowed Scopes (Clean Comma-Separated Inline List) */}
-                        <TableCell className="py-2.5 px-4 font-mono text-[11px] text-muted-foreground">
+                      {/* Allowed Scopes (Clean Inline Truncated List with Tooltip) */}
+                      <TableCell className="py-2.5 px-3 font-mono text-[11px] text-muted-foreground min-w-0">
+                        <span
+                          className="truncate block"
+                          title={client.allowed_scopes && client.allowed_scopes.length > 0 ? client.allowed_scopes.join(", ") : "openid"}
+                        >
                           {client.allowed_scopes && client.allowed_scopes.length > 0
                             ? client.allowed_scopes.join(", ")
                             : "openid"}
-                        </TableCell>
+                        </span>
+                      </TableCell>
 
-                        {/* Created Date */}
-                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap py-2.5 px-4">
-                          {formatDateTime(client.created_at)}
-                        </TableCell>
+                      {/* Created Date (Compact Relative with Full Tooltip) */}
+                      <TableCell className="font-mono text-xs text-muted-foreground py-2.5 px-3 min-w-0">
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <span className="truncate block cursor-default">
+                              {formatRelativeTime(client.created_at)}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent className="text-[11px] font-mono">
+                            {formatDateTime(client.created_at)}
+                          </TooltipContent>
+                        </Tooltip>
+                      </TableCell>
 
-                        {/* Action */}
-                        <TableCell className="text-right py-2.5 px-4 whitespace-nowrap">
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => setRevokingClient(client)}
-                            className="h-7 px-2.5 text-xs rounded-lg font-medium"
-                          >
-                            <Trash2 className="h-3 w-3 mr-1" />
-                            <span>Revoke</span>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                      {/* Action */}
+                      <TableCell className="text-right py-2.5 px-3 shrink-0">
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => setRevokingClient(client)}
+                          className="h-7 px-2.5 text-xs rounded-lg font-medium shadow-xs"
+                        >
+                          <Trash2 className="h-3 w-3 mr-1 shrink-0" />
+                          <span>Revoke</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              )}
+            </TableBody>
+          </Table>
         </div>
       </TooltipProvider>
 
