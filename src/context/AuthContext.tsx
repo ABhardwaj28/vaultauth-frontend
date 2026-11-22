@@ -155,6 +155,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUser(newUser);
     sessionStorage.setItem("vaultauth_user", JSON.stringify(newUser));
     setSessionExpiredNotice(null);
+
+    // Sync disabled directory accounts in the background if admin
+    if (newUser.role === "admin") {
+      api.getAdminUsers({ status: "DISABLED", limit: 200 }).then((res) => {
+        const emails = (res.users || []).map((u) => u.email.toLowerCase().trim());
+        const existing = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
+        const merged = Array.from(new Set([...existing, ...emails]));
+        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+        sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+      }).catch(() => {});
+    }
   };
 
   const isAuthenticated = Boolean(token && user);

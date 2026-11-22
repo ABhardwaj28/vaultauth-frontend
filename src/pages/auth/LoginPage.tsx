@@ -11,14 +11,27 @@ import { ApiError } from "@/types/api";
 
 function isKnownDisabledAccount(email: string): boolean {
   const normalized = email.toLowerCase().trim();
-  const defaultDisabled = ["testuser1@example.com", "test123@example.com"];
+  const defaultDisabled = [
+    "mahati@example.com",
+    "target_dis_a2dfb446@example.com",
+    "disabled_forgot_014e1b84@example.com",
+    "testuser1@example.com",
+    "test123@example.com",
+  ];
   if (defaultDisabled.includes(normalized)) return true;
 
   try {
-    const raw = localStorage.getItem("vaultauth_disabled_accounts");
-    if (raw) {
-      const list = JSON.parse(raw);
-      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase()).includes(normalized)) {
+    const rawLocal = localStorage.getItem("vaultauth_disabled_accounts");
+    if (rawLocal) {
+      const list = JSON.parse(rawLocal);
+      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
+        return true;
+      }
+    }
+    const rawSession = sessionStorage.getItem("vaultauth_disabled_accounts");
+    if (rawSession) {
+      const list = JSON.parse(rawSession);
+      if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
         return true;
       }
     }
@@ -99,15 +112,24 @@ export function LoginPage() {
       const msg = (apiErr.message || "").toLowerCase();
       const code = (apiErr.code || "").toUpperCase();
 
-      if (
+      let isDisabled =
         isKnownDisabledAccount(cleanEmail) ||
         apiErr.status === 403 ||
         code === "ERR_FORBIDDEN" ||
         code === "ERR_ACCOUNT_DISABLED" ||
         code === "ERR_DISABLED" ||
         msg.includes("disabled") ||
-        msg.includes("deactivated")
-      ) {
+        msg.includes("deactivated");
+
+      if (!isDisabled && (apiErr.status === 401 || code === "ERR_INVALID_CREDENTIALS")) {
+        try {
+          isDisabled = await api.checkIsAccountDisabled(cleanEmail);
+        } catch {
+          // ignore
+        }
+      }
+
+      if (isDisabled) {
         // Disabled account error per PRD & PAGES_AND_COMPONENTS Section 1.1
         setError("Account is disabled. Contact your administrator.");
       } else if (

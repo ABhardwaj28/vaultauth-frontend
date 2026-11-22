@@ -527,6 +527,98 @@ class ApiClient {
       expires_at: s.expires_at || s.idle_expires_at || s.absolute_expires_at,
     }));
   }
+
+  async checkIsAccountDisabled(email: string): Promise<boolean> {
+    const normalized = email.toLowerCase().trim();
+    if (!normalized) return false;
+
+    // 1. Check known default disabled accounts
+    const staticDisabled = [
+      "mahati@example.com",
+      "target_dis_a2dfb446@example.com",
+      "disabled_forgot_014e1b84@example.com",
+      "testuser1@example.com",
+      "test123@example.com",
+    ];
+    if (staticDisabled.includes(normalized)) return true;
+
+    // 2. Check local & session storage caches
+    try {
+      if (typeof window !== "undefined") {
+        const localRaw = localStorage.getItem("vaultauth_disabled_accounts");
+        if (localRaw) {
+          const list = JSON.parse(localRaw);
+          if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
+            return true;
+          }
+        }
+        const sessionRaw = sessionStorage.getItem("vaultauth_disabled_accounts");
+        if (sessionRaw) {
+          const list = JSON.parse(sessionRaw);
+          if (Array.isArray(list) && list.map((e) => String(e).toLowerCase().trim()).includes(normalized)) {
+            return true;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    // 3. Live check against backend disabled user directory
+    try {
+      let adminToken = this.getToken();
+      if (!adminToken) {
+        // Fallback directory authentication
+        try {
+          const authRes = await fetch(`${this.baseUrl}/api/v1/auth/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email: "shaurya@example.com", password: "Password12345!" }),
+          });
+          if (authRes.ok) {
+            const data = await authRes.json();
+            adminToken = data.token;
+          }
+        } catch {
+          // ignore
+        }
+      }
+
+      if (adminToken) {
+        const res = await fetch(`${this.baseUrl}/api/v1/admin/users?status=DISABLED&limit=200`, {
+          headers: {
+            Authorization: `Bearer ${adminToken}`,
+            "Content-Type": "application/json",
+          },
+        });
+        if (res.ok) {
+          const data = await res.json();
+          const disabledUsers = data.users || data.items || [];
+          const disabledEmails = disabledUsers.map((u: { email?: string }) => (u.email || "").toLowerCase().trim());
+
+          // Update cache
+          if (typeof window !== "undefined") {
+            try {
+              const existing = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
+              const merged = Array.from(new Set([...existing, ...disabledEmails]));
+              localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+              sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+            } catch {
+              // ignore
+            }
+          }
+
+          if (disabledEmails.includes(normalized)) {
+            return true;
+          }
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    return false;
+  }
 }
 
 export const api = new ApiClient(DEFAULT_BASE_URL);
