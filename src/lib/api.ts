@@ -579,17 +579,7 @@ class ApiClient {
     const normalized = email.toLowerCase().trim();
     if (!normalized) return false;
 
-    // 1. Check known default disabled accounts
-    const staticDisabled = [
-      "mahati@example.com",
-      "target_dis_a2dfb446@example.com",
-      "disabled_forgot_014e1b84@example.com",
-      "testuser1@example.com",
-      "test123@example.com",
-    ];
-    if (staticDisabled.includes(normalized)) return true;
-
-    // 2. Check local & session storage caches
+    // 1. Check local & session storage caches
     try {
       if (typeof window !== "undefined") {
         const localRaw = localStorage.getItem("vaultauth_disabled_accounts");
@@ -611,7 +601,7 @@ class ApiClient {
       // ignore
     }
 
-    // 3. Live check against backend disabled user directory IF already authenticated as admin
+    // 2. Live check against backend disabled user directory IF already authenticated as admin
     try {
       const adminToken = this.getToken();
       if (adminToken) {
@@ -629,10 +619,8 @@ class ApiClient {
           // Update cache
           if (typeof window !== "undefined") {
             try {
-              const existing = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
-              const merged = Array.from(new Set([...existing, ...disabledEmails]));
-              localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
-              sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
+              localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
+              sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledEmails));
             } catch {
               // ignore
             }

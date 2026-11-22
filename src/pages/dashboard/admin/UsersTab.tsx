@@ -72,21 +72,13 @@ export function UsersTab() {
       setTotal(usersData.total ?? userList.length);
       setSessions(sessionsData || []);
 
-      // Cache all disabled accounts locally for instant anti-enumeration enforcement
+      // Cache real disabled accounts directly from backend directory
       try {
-        const disabledInDb = userList.filter((u) => u.status === "DISABLED").map((u) => u.email.toLowerCase().trim());
-        const existing = JSON.parse(localStorage.getItem("vaultauth_disabled_accounts") || "[]");
-        const merged = Array.from(new Set([...existing, ...disabledInDb, "mahati@example.com", "target_dis_a2dfb446@example.com", "disabled_forgot_014e1b84@example.com", "testuser1@example.com", "test123@example.com"]));
-        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
-        sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(merged));
-
-        // Background sync of all disabled accounts across all pages
-        api.getAdminUsers({ status: "DISABLED", limit: 100 }).then((res) => {
-          const allDisabled = (res.users || []).map((u) => u.email.toLowerCase().trim());
-          const latestMerged = Array.from(new Set([...merged, ...allDisabled]));
-          localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(latestMerged));
-          sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(latestMerged));
-        }).catch(() => {});
+        const disabledInDb = userList
+          .filter((u) => u.status === "DISABLED")
+          .map((u) => u.email.toLowerCase().trim());
+        localStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledInDb));
+        sessionStorage.setItem("vaultauth_disabled_accounts", JSON.stringify(disabledInDb));
       } catch {
         // ignore
       }

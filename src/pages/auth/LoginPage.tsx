@@ -11,14 +11,7 @@ import { ApiError } from "@/types/api";
 
 function isKnownDisabledAccount(email: string): boolean {
   const normalized = email.toLowerCase().trim();
-  const defaultDisabled = [
-    "mahati@example.com",
-    "target_dis_a2dfb446@example.com",
-    "disabled_forgot_014e1b84@example.com",
-    "testuser1@example.com",
-    "test123@example.com",
-  ];
-  if (defaultDisabled.includes(normalized)) return true;
+  if (!normalized) return false;
 
   try {
     const rawLocal = localStorage.getItem("vaultauth_disabled_accounts");
