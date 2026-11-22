@@ -375,7 +375,18 @@ class ApiClient {
       res.data?.sessions ||
       (Array.isArray(res.data) ? res.data : []);
 
-    return rawList.map((s) => ({
+    const now = Date.now();
+
+    // Filter strictly to existing, active, revokable sessions
+    const activeList = rawList.filter((s) => {
+      if (s.status && s.status.toUpperCase() !== "ACTIVE") return false;
+      if (s.revoked_at || s.revoke_reason) return false;
+      const expTime = s.idle_expires_at || s.expires_at || s.absolute_expires_at;
+      if (expTime && new Date(expTime).getTime() <= now) return false;
+      return true;
+    });
+
+    return activeList.map((s) => ({
       ...s,
       ip_address: s.ip_address || s.ip || "Unknown IP",
       ip: s.ip || s.ip_address || "Unknown IP",
@@ -515,7 +526,18 @@ class ApiClient {
       res.data?.items ||
       (Array.isArray(res.data) ? res.data : []);
 
-    return rawList.map((s) => ({
+    const now = Date.now();
+
+    // Filter strictly to existing, active, revokable sessions
+    const activeList = rawList.filter((s) => {
+      if (s.status && s.status.toUpperCase() !== "ACTIVE") return false;
+      if (s.revoked_at || s.revoke_reason) return false;
+      const expTime = s.idle_expires_at || s.expires_at || s.absolute_expires_at;
+      if (expTime && new Date(expTime).getTime() <= now) return false;
+      return true;
+    });
+
+    return activeList.map((s) => ({
       ...s,
       ip_address: s.ip_address || s.ip || "Unknown IP",
       ip: s.ip || s.ip_address || "Unknown IP",

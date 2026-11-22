@@ -56,7 +56,15 @@ export function GlobalSessionsTab() {
     setError(null);
     try {
       const data = await api.getGlobalSessions(100);
-      setSessions(data || []);
+      const now = Date.now();
+      const activeSessions = (data || []).filter((s) => {
+        const isStatusActive = !s.status || s.status.toUpperCase() === "ACTIVE";
+        const notRevoked = !(s as any).revoked_at && !(s as any).revoke_reason;
+        const expTime = s.idle_expires_at || s.expires_at || s.absolute_expires_at;
+        const notExpired = !expTime || new Date(expTime).getTime() > now;
+        return isStatusActive && notRevoked && notExpired;
+      });
+      setSessions(activeSessions);
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load global active sessions.");
     } finally {
@@ -77,7 +85,17 @@ export function GlobalSessionsTab() {
       setMessage("Global session terminated. Bearer token expunged immediately from directory.");
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
     } catch (err: unknown) {
-      setError((err as { message?: string })?.message || "Failed to terminate session.");
+      const errMsg = (err as { message?: string })?.message || "";
+      if (
+        errMsg.toLowerCase().includes("not exist") ||
+        errMsg.toLowerCase().includes("not found") ||
+        errMsg.toLowerCase().includes("revoked")
+      ) {
+        setSessions((prev) => prev.filter((s) => s.id !== sessionId));
+        setMessage("Session is no longer active and has been expunged.");
+      } else {
+        setError(errMsg || "Failed to terminate session.");
+      }
     } finally {
       setRevokingId(null);
     }
