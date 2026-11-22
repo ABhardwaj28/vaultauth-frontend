@@ -142,8 +142,6 @@ export function DashboardShell() {
           <div className="flex items-center space-x-3 text-[11px]">
             <span>Enterprise Identity Platform</span>
             <span className="text-border">•</span>
-            <span>NIST SP 800-63B</span>
-            <span className="text-border">•</span>
             <span>Zero-Trust Architecture</span>
           </div>
         </div>
