@@ -87,6 +87,8 @@ export function parseUserAgent(ua?: string): {
   // Browser Detection
   let browser = "Web Client";
   if (/edg\//i.test(ua)) browser = "Microsoft Edge";
+  else if (/opr\/|opera/i.test(ua)) browser = "Opera";
+  else if (/brave/i.test(ua)) browser = "Brave";
   else if (/chrome\//i.test(ua) && !/edg\//i.test(ua)) browser = "Google Chrome";
   else if (/firefox\//i.test(ua)) browser = "Mozilla Firefox";
   else if (/safari/i.test(ua) && !/chrome\//i.test(ua)) browser = "Apple Safari";

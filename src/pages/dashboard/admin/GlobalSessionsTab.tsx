@@ -180,7 +180,8 @@ export function GlobalSessionsTab() {
         g.allSessions.some(
           (s) =>
             (s.ip || s.ip_address || "").toLowerCase().includes(q) ||
-            (s.device || s.user_agent || "").toLowerCase().includes(q)
+            (s.device || s.user_agent || "").toLowerCase().includes(q) ||
+            parseUserAgent(s.device || s.user_agent).browser.toLowerCase().includes(q)
         )
     );
   }, [sessions, searchQuery, userMap]);
@@ -269,7 +270,7 @@ export function GlobalSessionsTab() {
         <div className="relative flex-1 max-w-sm">
           <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
           <Input
-            placeholder="Search by User ID, email, IP, or device..."
+            placeholder="Search by User ID, email, IP, or browser..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-8 h-8 rounded-lg bg-background/50 focus:bg-background text-xs"
@@ -409,7 +410,7 @@ export function GlobalSessionsTab() {
                       <Table className="min-w-[720px]">
                         <TableHeader>
                           <TableRow className="border-b border-border/80 bg-muted/10 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            <TableHead className="min-w-[260px] py-2.5">Client Device & Footprint</TableHead>
+                            <TableHead className="min-w-[160px] py-2.5">Browser</TableHead>
                             <TableHead className="min-w-[140px] py-2.5">IP Address</TableHead>
                             <TableHead className="min-w-[120px] py-2.5">Last Active</TableHead>
                             <TableHead className="min-w-[140px] py-2.5">Signed In</TableHead>
@@ -431,40 +432,35 @@ export function GlobalSessionsTab() {
                                 key={session.id || sIdx}
                                 className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
                               >
-                                {/* Client Device */}
+                                {/* Browser */}
                                 <TableCell className="py-2.5">
-                                  <div className="flex items-center space-x-2.5">
-                                    <div className="p-1.5 rounded-lg bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                  <div className="flex items-center space-x-2">
+                                    <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
                                       {sParsed.isMobile ? (
                                         <Smartphone className="h-3.5 w-3.5" />
                                       ) : (
                                         <Laptop className="h-3.5 w-3.5" />
                                       )}
                                     </div>
-                                    <div className="flex flex-col min-w-0">
-                                      <div className="flex items-center space-x-1.5">
-                                        <span className="font-semibold text-xs text-foreground whitespace-nowrap">
-                                          {sParsed.device}
-                                        </span>
-                                        {isCurrent && (
-                                          <Badge
-                                            variant="outline"
-                                            className="text-[9px] py-0 px-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
-                                          >
-                                            Current
-                                          </Badge>
-                                        )}
-                                      </div>
+                                    <div className="flex items-center space-x-1.5 min-w-0">
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <span className="text-[10px] font-mono text-muted-foreground truncate max-w-[240px] cursor-help block">
-                                            {sRawUa}
+                                          <span className="font-semibold text-xs text-foreground cursor-help whitespace-nowrap">
+                                            {sParsed.browser}
                                           </span>
                                         </TooltipTrigger>
                                         <TooltipContent className="max-w-xs break-all font-mono text-[10px]">
                                           {sRawUa}
                                         </TooltipContent>
                                       </Tooltip>
+                                      {isCurrent && (
+                                        <Badge
+                                          variant="outline"
+                                          className="text-[9px] py-0 px-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 shrink-0"
+                                        >
+                                          Current
+                                        </Badge>
+                                      )}
                                     </div>
                                   </div>
                                 </TableCell>
