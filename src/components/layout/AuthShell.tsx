@@ -9,9 +9,21 @@ interface AuthShellProps {
 
 export function AuthShell({ children }: AuthShellProps) {
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate before:fixed before:inset-0 before:-z-10 before:bg-[radial-gradient(ellipse_80%_60%_at_50%_-15%,hsl(var(--primary)/0.03),transparent_70%)] before:pointer-events-none">
+    <div className="min-h-screen flex flex-col bg-background text-foreground transition-colors duration-150 relative isolate overflow-hidden">
+      {/* Absolutely Subtle Atmospheric Background Layers */}
+      <div className="fixed inset-0 -z-10 pointer-events-none select-none overflow-hidden">
+        {/* Precision Micro-dot Matrix with Soft Vignette Mask */}
+        <div className="absolute inset-0 [background-image:radial-gradient(currentColor_1px,transparent_1px)] [background-size:24px_24px] text-foreground/[0.045] dark:text-muted-foreground/[0.06] [mask-image:radial-gradient(ellipse_75%_65%_at_50%_45%,#000_20%,transparent_85%)]" />
+
+        {/* Ambient Center Glow behind the Auth Box */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_65%_55%_at_50%_45%,hsl(var(--primary)/0.05),transparent_75%)]" />
+
+        {/* Subtle Top Accent Beam */}
+        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-primary/25 to-transparent" />
+      </div>
+
       {/* Top Utility Bar */}
-      <header className="w-full border-b border-border bg-card/90 backdrop-blur-sm">
+      <header className="w-full border-b border-border/80 bg-card/80 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center space-x-2.5 group">
             <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs transition-transform group-hover:scale-105">
@@ -34,14 +46,14 @@ export function AuthShell({ children }: AuthShellProps) {
       </header>
 
       {/* Main Form Center Box */}
-      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <div className="w-full max-w-sm">
+      <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8 relative">
+        <div className="w-full max-w-sm relative z-10">
           {children}
         </div>
       </main>
 
       {/* Legal / Trust Footer */}
-      <footer className="border-t border-border py-4 px-4 text-center text-xs text-muted-foreground font-mono bg-card">
+      <footer className="border-t border-border/80 py-4 px-4 text-center text-xs text-muted-foreground bg-card/60 backdrop-blur-md">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
           <span>© 2026 VaultAuth SSO • Enterprise Identity Gateway</span>
           <div className="flex items-center space-x-3 text-[11px]">
