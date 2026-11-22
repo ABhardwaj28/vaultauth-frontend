@@ -4,9 +4,7 @@ import { ChevronDown, ChevronRight, AlertTriangle } from "lucide-react";
 import { TopBar } from "./TopBar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CopyButton } from "@/components/ui/copy-button";
 
 interface ErrorLayoutProps {
   status: number | string;
@@ -47,47 +45,49 @@ export function ErrorLayout({
       <TopBar />
 
       <main className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
-        <Card className="w-full max-w-md border-border shadow-sm">
-          <CardHeader className="space-y-3 pb-4">
+        <div className="relative overflow-hidden w-full max-w-md rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.04] before:via-transparent before:to-transparent before:pointer-events-none space-y-5">
+          <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <Badge variant="destructive" className="font-mono text-xs">
+              <Badge variant="destructive" className="font-mono text-xs rounded-md">
                 {status} • {code}
               </Badge>
-              <AlertTriangle className="h-4 w-4 text-destructive" />
+              <div className="w-8 h-8 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0">
+                <AlertTriangle className="h-4 w-4" />
+              </div>
             </div>
-            <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+            <h1 className="text-xl font-bold tracking-tight text-foreground">
               {title}
-            </CardTitle>
-            <CardDescription className="text-xs text-muted-foreground leading-relaxed">
+            </h1>
+            <p className="text-xs text-muted-foreground leading-relaxed">
               {description}
-            </CardDescription>
-          </CardHeader>
+            </p>
+          </div>
 
-          <CardContent className="space-y-4">
+          <div className="space-y-4">
             {extraContent}
 
             {/* Collapsible Technical Diagnostics */}
-            <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full border border-border rounded-md p-2 bg-muted/20">
+            <Collapsible open={isOpen} onOpenChange={setIsOpen} className="w-full border border-border/80 rounded-lg p-3 bg-muted/20">
               <CollapsibleTrigger asChild>
                 <button
                   type="button"
-                  className="flex items-center justify-between w-full text-xs font-mono text-muted-foreground hover:text-foreground text-left"
+                  className="flex items-center justify-between w-full text-xs font-mono text-muted-foreground hover:text-foreground text-left focus:outline-none"
                 >
                   <span className="flex items-center">
                     {isOpen ? (
-                      <ChevronDown className="h-3.5 w-3.5 mr-1" />
+                      <ChevronDown className="h-3.5 w-3.5 mr-1 text-primary" />
                     ) : (
-                      <ChevronRight className="h-3.5 w-3.5 mr-1" />
+                      <ChevronRight className="h-3.5 w-3.5 mr-1 text-primary" />
                     )}
-                    <span>Technical Diagnostics</span>
+                    <span className="font-medium font-sans">Technical Diagnostics</span>
                   </span>
-                  <span className="text-[10px] uppercase opacity-75">
+                  <span className="text-[10px] uppercase font-mono opacity-75">
                     {isOpen ? "Hide" : "Inspect"}
                   </span>
                 </button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="pt-2 text-[11px] font-mono space-y-1.5 text-muted-foreground">
-                <div className="flex items-center justify-between pt-1 border-t border-border">
+              <CollapsibleContent className="pt-2.5 text-[11px] font-mono space-y-1.5 text-muted-foreground">
+                <div className="flex items-center justify-between pt-1.5 border-t border-border/80">
                   <span>Status Code:</span>
                   <span className="text-foreground">{status}</span>
                 </div>
@@ -98,12 +98,7 @@ export function ErrorLayout({
                 {requestId && (
                   <div className="flex items-center justify-between">
                     <span>Request ID:</span>
-                    <div className="flex items-center">
-                      <span className="truncate max-w-[150px] text-foreground mr-1">
-                        {requestId}
-                      </span>
-                      <CopyButton value={requestId} className="h-5 px-1 text-[10px]" />
-                    </div>
+                    <span className="text-foreground font-mono truncate max-w-[150px]">{requestId}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
@@ -112,32 +107,37 @@ export function ErrorLayout({
                 </div>
               </CollapsibleContent>
             </Collapsible>
-          </CardContent>
 
-          <CardFooter className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-border">
-            {primaryAction.href ? (
-              <Button asChild className="w-full sm:w-auto flex-1">
-                <Link to={primaryAction.href}>{primaryAction.label}</Link>
-              </Button>
-            ) : (
-              <Button onClick={primaryAction.onClick} className="w-full sm:w-auto flex-1">
-                {primaryAction.label}
-              </Button>
-            )}
-
-            {secondaryAction &&
-              (secondaryAction.href ? (
-                <Button asChild variant="outline" className="w-full sm:w-auto">
-                  <Link to={secondaryAction.href}>{secondaryAction.label}</Link>
+            <div className="space-y-2 pt-1">
+              {primaryAction.href ? (
+                <Button asChild className="w-full h-10 font-semibold rounded-lg shadow-xs">
+                  <Link to={primaryAction.href}>{primaryAction.label}</Link>
                 </Button>
               ) : (
-                <Button onClick={secondaryAction.onClick} variant="outline" className="w-full sm:w-auto">
-                  {secondaryAction.label}
+                <Button onClick={primaryAction.onClick} className="w-full h-10 font-semibold rounded-lg shadow-xs">
+                  {primaryAction.label}
                 </Button>
-              ))}
-          </CardFooter>
-        </Card>
+              )}
+
+              {secondaryAction && (
+                secondaryAction.href ? (
+                  <Button asChild variant="outline" className="w-full h-9 rounded-lg text-xs font-medium">
+                    <Link to={secondaryAction.href}>{secondaryAction.label}</Link>
+                  </Button>
+                ) : (
+                  <Button onClick={secondaryAction.onClick} variant="outline" className="w-full h-9 rounded-lg text-xs font-medium">
+                    {secondaryAction.label}
+                  </Button>
+                )
+              )}
+            </div>
+          </div>
+        </div>
       </main>
+
+      <footer className="py-4 border-t border-border/80 text-center text-xs text-muted-foreground">
+        © 2026 VaultAuth SSO • All rights reserved
+      </footer>
     </div>
   );
 }

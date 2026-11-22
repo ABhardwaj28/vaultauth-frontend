@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { KeyRound, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { OtpInput } from "@/components/ui/otp-input";
@@ -87,7 +86,7 @@ export function VerifyOtpPage() {
       const apiErr = err as ApiError;
       setAttemptsRemaining((prev) => Math.max(0, prev - 1));
       setError(
-        apiErr.message || "Invalid or expired security code. Attempts are rate-limited to 3 strikes."
+        apiErr.message || "Invalid or expired security code. Attempts are rate-limited."
       );
     } finally {
       setLoading(false);
@@ -98,6 +97,7 @@ export function VerifyOtpPage() {
     if (resendCooldown > 0) return;
     setError(null);
     setResendMessage(null);
+
     try {
       if (isRegistration) {
         await api.resendVerifyEmail(email);
@@ -113,93 +113,93 @@ export function VerifyOtpPage() {
 
   return (
     <AuthShell>
-      <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1.5 pb-4 text-center">
-          <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-lg bg-[#F6821F] text-white shadow-sm mb-2">
-            <KeyRound className="h-5 w-5" />
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.04] before:via-transparent before:to-transparent before:pointer-events-none">
+        <div className="space-y-1.5 pb-6 text-center">
+          <div className="flex justify-center mb-2">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs">
+              <KeyRound className="w-5 h-5" />
+            </div>
           </div>
-          <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
             Two-Factor Verification
-          </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground max-w-xs mx-auto">
+          </h1>
+          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
             Enter the 6-digit security code dispatched to{" "}
             <span className="font-mono text-foreground font-medium">
               {email || "your corporate email"}
             </span>
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </div>
 
-        <form onSubmit={handleVerify}>
-          <CardContent className="space-y-5">
-            {/* Error Banner */}
-            {error && (
-              <Alert variant="destructive" className="text-xs py-2 px-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle className="text-xs font-semibold">Verification Failed</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+        <form onSubmit={handleVerify} className="space-y-5">
+          {/* Error Banner */}
+          {error && (
+            <Alert variant="destructive" className="text-xs py-2.5 px-3 rounded-lg">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle className="text-xs font-semibold">Verification Failed</AlertTitle>
+              <AlertDescription className="text-xs mt-0.5">{error}</AlertDescription>
+            </Alert>
+          )}
 
-            {/* Resend Notice */}
-            {resendMessage && (
-              <Alert variant="success" className="text-xs py-2 px-3">
-                <AlertDescription>{resendMessage}</AlertDescription>
-              </Alert>
-            )}
+          {/* Resend Notice */}
+          {resendMessage && (
+            <Alert variant="success" className="text-xs py-2.5 px-3 rounded-lg">
+              <AlertDescription className="text-xs">{resendMessage}</AlertDescription>
+            </Alert>
+          )}
 
-            {/* 6-Cell Segmented OtpInput */}
-            <div className="py-2">
-              <OtpInput
-                value={code}
-                onChange={(val) => {
-                  setCode(val);
-                  if (val.length === 6) {
-                    setError(null);
-                  }
-                }}
-                disabled={loading || attemptsRemaining === 0}
-                error={Boolean(error)}
-              />
-            </div>
+          {/* 6-Cell Segmented OtpInput */}
+          <div className="py-2">
+            <OtpInput
+              value={code}
+              onChange={(val) => {
+                setCode(val);
+                if (val.length === 6) {
+                  setError(null);
+                }
+              }}
+              disabled={loading || attemptsRemaining === 0}
+              error={Boolean(error)}
+            />
+          </div>
 
-            {/* Attempt Feedback & Timer */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
-              <span className="tabular-nums">
-                Attempts:{" "}
-                <span
-                  className={
-                    attemptsRemaining <= 1
-                      ? "text-destructive font-semibold"
-                      : "text-foreground font-medium"
-                  }
-                >
-                  {attemptsRemaining} of 3 left
-                </span>
-              </span>
-
-              <button
-                type="button"
-                onClick={handleResend}
-                disabled={resendCooldown > 0}
-                className="hover:text-foreground disabled:opacity-50 transition-colors focus:outline-none"
+          {/* Attempt Feedback & Timer */}
+          <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
+            <span className="tabular-nums">
+              Attempts:{" "}
+              <span
+                className={
+                  attemptsRemaining <= 1
+                    ? "text-destructive font-semibold"
+                    : "text-foreground font-medium"
+                }
               >
-                {resendCooldown > 0 ? (
-                  <span className="tabular-nums">Resend in {resendCooldown}s</span>
-                ) : (
-                  <span className="flex items-center text-primary font-sans font-medium">
-                    <RefreshCw className="h-3 w-3 mr-1" />
-                    Resend Code
-                  </span>
-                )}
-              </button>
-            </div>
-          </CardContent>
+                {attemptsRemaining} of 3 left
+              </span>
+            </span>
 
-          <CardFooter className="flex flex-col space-y-2 pt-1">
+            <button
+              type="button"
+              onClick={handleResend}
+              disabled={resendCooldown > 0}
+              className="hover:text-foreground disabled:opacity-50 transition-colors focus:outline-none"
+            >
+              {resendCooldown > 0 ? (
+                <span className="tabular-nums">Resend in {resendCooldown}s</span>
+              ) : (
+                <span className="flex items-center text-primary font-sans font-medium">
+                  <RefreshCw className="h-3 w-3 mr-1" />
+                  Resend Code
+                </span>
+              )}
+            </button>
+          </div>
+
+          <div className="pt-2 space-y-2">
             <Button
               type="submit"
               disabled={loading || code.length < 6 || attemptsRemaining === 0}
-              className="w-full h-10 font-medium"
+              className="w-full h-10 font-semibold rounded-lg shadow-xs"
             >
               {loading ? (
                 <span className="flex items-center space-x-2">
@@ -211,12 +211,12 @@ export function VerifyOtpPage() {
               )}
             </Button>
 
-            <Button asChild variant="ghost" className="w-full h-9 text-xs">
+            <Button asChild variant="ghost" className="w-full h-9 rounded-lg text-xs font-medium">
               <Link to="/login">Cancel & Return to Sign In</Link>
             </Button>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </div>
     </AuthShell>
   );
 }

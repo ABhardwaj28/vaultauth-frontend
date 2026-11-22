@@ -16,7 +16,6 @@ import {
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -80,7 +79,7 @@ export function SettingsTab() {
     }
 
     if (newPassword.length < 12) {
-      setPasswordError("New password must be at least 12 characters in compliance with NIST SP 800-63B.");
+      setPasswordError("New password must be at least 12 characters.");
       return;
     }
 
@@ -116,64 +115,74 @@ export function SettingsTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             Account & Security Settings
           </h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your authentication credentials, multi-factor policy, and interface preferences.
+            Manage your authentication credentials, multi-factor security, and interface preferences.
           </p>
         </div>
       </div>
 
       {/* Global Notifications */}
       {successMsg && (
-        <div className="p-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{successMsg}</span>
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
           <AlertCircle className="h-4 w-4 shrink-0" />
           <span>{errorMsg}</span>
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Card 1: Change Password Form */}
-        <Card className="border-border">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <KeyRound className="h-4 w-4 text-primary" />
-              <CardTitle className="text-sm font-semibold text-foreground">
-                Change Password
-              </CardTitle>
+        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <KeyRound className="w-5 h-5 text-primary" />
+              </div>
+              <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                Credentials
+              </Badge>
             </div>
-            <CardDescription className="text-xs text-muted-foreground">
-              Update your corporate credentials per NIST SP 800-63B guidelines (minimum 12 characters).
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleChangePassword} className="space-y-3.5 text-xs">
+
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Authentication Secret
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                Change Password
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Update your corporate access credentials (minimum 12 characters).
+              </p>
+            </div>
+
+            <form onSubmit={handleChangePassword} className="space-y-3.5 text-xs mt-5 pt-4 border-t border-border/60">
               {passwordSuccess && (
-                <div className="p-2.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
+                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
                   <CheckCircle2 className="h-4 w-4 shrink-0" />
                   <span>{passwordSuccess}</span>
                 </div>
               )}
 
               {passwordError && (
-                <div className="p-2.5 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
                   <AlertCircle className="h-4 w-4 shrink-0" />
                   <span>{passwordError}</span>
                 </div>
               )}
 
-              <div className="space-y-1">
-                <Label htmlFor="current-password" className="text-xs">
+              <div className="space-y-1.5">
+                <Label htmlFor="current-password" className="text-xs font-medium text-foreground">
                   Current Password
                 </Label>
                 <div className="relative">
@@ -183,13 +192,13 @@ export function SettingsTab() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     placeholder="Enter current password"
-                    className="h-8 text-xs pr-8"
+                    className="h-10 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
                     autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
                     {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -197,8 +206,8 @@ export function SettingsTab() {
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="new-password" className="text-xs">
+              <div className="space-y-1.5">
+                <Label htmlFor="new-password" className="text-xs font-medium text-foreground">
                   New Password
                 </Label>
                 <div className="relative">
@@ -208,25 +217,25 @@ export function SettingsTab() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Minimum 12 characters"
-                    className="h-8 text-xs pr-8"
+                    className="h-10 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
                     autoComplete="new-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
                     {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Must be at least 12 characters and hashed server-side with Argon2id.
+                <p className="text-[11px] text-muted-foreground">
+                  Minimum 12 characters, maximum 128 characters.
                 </p>
               </div>
 
-              <div className="space-y-1">
-                <Label htmlFor="confirm-password" className="text-xs">
+              <div className="space-y-1.5">
+                <Label htmlFor="confirm-password" className="text-xs font-medium text-foreground">
                   Confirm New Password
                 </Label>
                 <div className="relative">
@@ -236,13 +245,13 @@ export function SettingsTab() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Repeat new password"
-                    className="h-8 text-xs pr-8"
+                    className="h-10 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
                     autoComplete="new-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2.5 top-2 text-muted-foreground hover:text-foreground"
+                    className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
                     tabIndex={-1}
                   >
                     {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -252,81 +261,98 @@ export function SettingsTab() {
 
               <Button
                 type="submit"
-                size="sm"
                 disabled={updatingPassword || !currentPassword || !newPassword || !confirmPassword}
-                className="w-full h-8 text-xs font-medium mt-2"
+                className="w-full h-10 text-xs font-semibold rounded-lg mt-2 shadow-xs"
               >
                 {updatingPassword ? (
-                  <>
-                    <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />
+                  <span className="flex items-center space-x-2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
                     <span>Updating Credentials...</span>
-                  </>
+                  </span>
                 ) : (
                   <span>Update Password</span>
                 )}
               </Button>
             </form>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        {/* Card 2: Two-Factor Authentication Status */}
-        <Card className="border-border">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <ShieldCheck className="h-4 w-4 text-primary" />
-              <CardTitle className="text-sm font-semibold text-foreground">
-                Multi-Factor Authentication (MFA)
-              </CardTitle>
-            </div>
-            <CardDescription className="text-xs text-muted-foreground">
-              Secondary out-of-band challenge required for every authentication request.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">Email OTP Verification</span>
-                <span className="text-[11px] text-muted-foreground">6-digit cryptographic challenge via Resend</span>
+        {/* Column 2 */}
+        <div className="space-y-5">
+          {/* Card 2: Two-Factor Authentication Status */}
+          <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <ShieldCheck className="w-5 h-5 text-primary" />
               </div>
-              <Badge variant="success" className="text-[11px]">
-                ENFORCED
+              <Badge variant="success" className="font-mono text-[10px] uppercase">
+                Enforced
               </Badge>
             </div>
 
-            <div className="flex items-center justify-between p-2 rounded-md bg-muted/40 border border-border">
-              <div className="space-y-0.5">
-                <span className="font-medium text-foreground block">Destination Channel</span>
-                <span className="text-[11px] text-muted-foreground">Verified corporate email address</span>
-              </div>
-              <span className="font-mono text-[11px] text-foreground">
-                {user?.email || "—"}
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Secondary Verification
               </span>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                Multi-Factor Authentication (MFA)
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1">
+                Out-of-band verification required for all corporate logins.
+              </p>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Card 3: Theme & Display Preferences */}
-        <Card className="border-border">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <Sun className="h-4 w-4 text-primary" />
-              <CardTitle className="text-sm font-semibold text-foreground">
-                Display & Theme Preference
-              </CardTitle>
+            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Challenge Mode</span>
+                <span className="text-foreground font-medium">Email Challenge (OTP)</span>
+              </div>
+
+              <div className="flex items-center justify-between py-1 border-b border-border/40">
+                <span className="text-muted-foreground font-medium">Delivery Channel</span>
+                <span className="text-foreground font-mono truncate max-w-[200px]">
+                  {user?.email || "—"}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground font-medium">Policy Status</span>
+                <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>Mandatory Policy</span>
+                </div>
+              </div>
             </div>
-            <CardDescription className="text-xs text-muted-foreground">
-              High-contrast surfaces with amber accent in Light and Dark modes.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <div className="grid grid-cols-3 gap-2">
+          </div>
+
+          {/* Card 3: Theme & Display Preferences */}
+          <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+                <Sun className="w-5 h-5 text-primary" />
+              </div>
+              <Badge variant="outline" className="font-mono text-[10px] uppercase">
+                Interface
+              </Badge>
+            </div>
+
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Display Styling
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                Theme Preference
+              </h2>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5 mt-5 pt-4 border-t border-border/60">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
-                className={`flex flex-col items-center justify-center p-3 rounded-md border text-xs font-medium transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
                   theme === "light"
-                    ? "border-primary bg-primary/10 text-primary font-semibold"
-                    : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
+                    : "border-border/80 bg-card text-muted-foreground hover:bg-muted/50"
                 }`}
               >
                 <Sun className="h-4 w-4 mb-1.5" />
@@ -336,10 +362,10 @@ export function SettingsTab() {
               <button
                 type="button"
                 onClick={() => setTheme("dark")}
-                className={`flex flex-col items-center justify-center p-3 rounded-md border text-xs font-medium transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
                   theme === "dark"
-                    ? "border-primary bg-primary/10 text-primary font-semibold"
-                    : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
+                    : "border-border/80 bg-card text-muted-foreground hover:bg-muted/50"
                 }`}
               >
                 <Moon className="h-4 w-4 mb-1.5" />
@@ -349,49 +375,54 @@ export function SettingsTab() {
               <button
                 type="button"
                 onClick={() => setTheme("system")}
-                className={`flex flex-col items-center justify-center p-3 rounded-md border text-xs font-medium transition-all ${
+                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
                   theme === "system"
-                    ? "border-primary bg-primary/10 text-primary font-semibold"
-                    : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
+                    : "border-border/80 bg-card text-muted-foreground hover:bg-muted/50"
                 }`}
               >
                 <Monitor className="h-4 w-4 mb-1.5" />
                 <span>System</span>
               </button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
 
-        {/* Card 4: Emergency Device Control (Danger Zone) */}
-        <Card className="border-border border-destructive/30">
-          <CardHeader className="pb-3">
-            <div className="flex items-center space-x-2">
-              <Laptop className="h-4 w-4 text-destructive" />
-              <CardTitle className="text-sm font-semibold text-foreground">
-                Workstation & Session Governance
-              </CardTitle>
+          {/* Card 4: Emergency Device Control (Danger Zone) */}
+          <div className="relative overflow-hidden rounded-xl border border-destructive/30 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-destructive/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all">
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0 shadow-xs">
+                <Laptop className="w-5 h-5 text-destructive" />
+              </div>
+              <Badge variant="destructive" className="font-mono text-[10px] uppercase">
+                Danger Zone
+              </Badge>
             </div>
-            <CardDescription className="text-xs text-muted-foreground">
-              Emergency kill-switch to invalidate sessions across other hardware.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3 text-xs">
-            <p className="text-muted-foreground text-xs leading-relaxed">
-              If you suspect an active session or token has been compromised on another device, terminate all other active sessions immediately. Your current browser session will remain active.
-            </p>
 
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleRevokeAllOtherSessions}
-              disabled={revokingAll}
-              className="w-full h-8 text-xs font-medium"
-            >
-              <LogOut className="h-3.5 w-3.5 mr-1.5" />
-              <span>{revokingAll ? "Terminating other sessions..." : "Sign Out From All Other Devices"}</span>
-            </Button>
-          </CardContent>
-        </Card>
+            <div className="mt-4">
+              <span className="text-[11px] font-semibold uppercase tracking-wider text-destructive">
+                Emergency Control
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
+                Revoke Other Workstations
+              </h2>
+              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                Terminate all other authenticated sessions across external devices. Your current session will remain active.
+              </p>
+            </div>
+
+            <div className="mt-5 pt-4 border-t border-border/60">
+              <Button
+                variant="destructive"
+                onClick={handleRevokeAllOtherSessions}
+                disabled={revokingAll}
+                className="w-full h-10 text-xs font-semibold rounded-lg shadow-xs"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                <span>{revokingAll ? "Terminating other sessions..." : "Sign Out From All Other Devices"}</span>
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );

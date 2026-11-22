@@ -9,11 +9,11 @@ import {
   MoreHorizontal,
   CheckCircle2,
   AlertCircle,
+  Users,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { AdminUserListItem } from "@/types/api";
 import { useAuth } from "@/context/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -166,7 +166,7 @@ export function UsersTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             User Governance & Access Control
@@ -181,7 +181,7 @@ export function UsersTab() {
           size="sm"
           onClick={fetchUsers}
           disabled={loading}
-          className="h-8 text-xs font-mono self-start sm:self-auto"
+          className="h-8 px-3 text-xs font-medium rounded-lg self-start sm:self-auto"
         >
           <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
           <span>Refresh</span>
@@ -190,16 +190,16 @@ export function UsersTab() {
 
       {/* Notifications */}
       {message && (
-        <div className="p-3 rounded-md bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2.5">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>{message}</span>
+          <span className="font-medium">{message}</span>
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2.5">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{error}</span>
+          <span className="font-medium">{error}</span>
         </div>
       )}
 
@@ -211,17 +211,17 @@ export function UsersTab() {
             placeholder="Search users by email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 text-xs"
+            className="pl-9 h-9 rounded-lg bg-background/50 focus:bg-background text-xs"
           />
         </div>
 
-        <div className="flex items-center space-x-2">
-          <div className="flex items-center space-x-1">
-            <span className="text-xs text-muted-foreground font-mono">Role:</span>
+        <div className="flex items-center space-x-3">
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs text-muted-foreground font-medium">Role:</span>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
             >
               <option value="All">All Roles</option>
               <option value="user">User</option>
@@ -229,12 +229,12 @@ export function UsersTab() {
             </select>
           </div>
 
-          <div className="flex items-center space-x-1">
-            <span className="text-xs text-muted-foreground font-mono">Status:</span>
+          <div className="flex items-center space-x-1.5">
+            <span className="text-xs text-muted-foreground font-medium">Status:</span>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
             >
               <option value="All">All Statuses</option>
               <option value="ACTIVE">ACTIVE</option>
@@ -246,41 +246,44 @@ export function UsersTab() {
       </div>
 
       {/* Users Table Card */}
-      <Card className="border-border">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
-                Employee Directory
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Manage account states, unlock brute-force rate locks, or promote authority.
-              </CardDescription>
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
+        <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <Badge variant="outline" className="font-mono text-xs">
-              {total || users.length} Accounts
-            </Badge>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                Employee Directory
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Manage account states, unlock brute-force rate locks, or promote authority.
+              </p>
+            </div>
           </div>
-        </CardHeader>
+          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
+            {total || users.length} Accounts
+          </Badge>
+        </div>
 
-        <CardContent className="p-0">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-[260px]">Corporate Email</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Account Status</TableHead>
-                <TableHead>Failed Strikes</TableHead>
-                <TableHead>Locked Until</TableHead>
-                <TableHead>Registered</TableHead>
-                <TableHead className="text-right">Manage</TableHead>
+              <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
+                <TableHead className="w-[260px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Corporate Email</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Role</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Account Status</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Failed Strikes</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Locked Until</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Registered</TableHead>
+                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Manage</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {!users || users.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-24 text-center text-muted-foreground text-xs">
+                  <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
                     {loading ? "Searching enterprise directory..." : "No accounts match the current filter."}
                   </TableCell>
                 </TableRow>
@@ -290,12 +293,12 @@ export function UsersTab() {
                   const isCurrent = item.id === currentUser?.id;
 
                   return (
-                    <TableRow key={item.id}>
+                    <TableRow key={item.id} className="border-b border-border/60 hover:bg-muted/20 transition-colors">
                       <TableCell className="font-medium text-xs text-foreground">
-                        <div className="flex items-center space-x-1.5">
+                        <div className="flex items-center space-x-2">
                           <span className="font-mono">{item.email}</span>
                           {isCurrent && (
-                            <Badge variant="secondary" className="text-[10px] py-0 px-1">
+                            <Badge variant="secondary" className="text-[10px] py-0 px-1.5 rounded-md font-medium">
                               You
                             </Badge>
                           )}
@@ -303,8 +306,8 @@ export function UsersTab() {
                       </TableCell>
 
                       <TableCell>
-                        <Badge variant={item.role === "admin" ? "default" : "secondary"}>
-                          {item.role.toUpperCase()}
+                        <Badge variant={item.role === "admin" ? "default" : "secondary"} className="rounded-md text-[10px] uppercase font-semibold">
+                          {item.role}
                         </Badge>
                       </TableCell>
 
@@ -317,6 +320,7 @@ export function UsersTab() {
                               ? "warning"
                               : "destructive"
                           }
+                          className="rounded-md text-[10px] uppercase font-semibold"
                         >
                           {item.status}
                         </Badge>
@@ -347,19 +351,19 @@ export function UsersTab() {
                               variant="ghost"
                               size="icon"
                               disabled={actionLoadingId === item.id}
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
                             >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48 text-xs">
-                            <DropdownMenuLabel>Account Controls</DropdownMenuLabel>
+                          <DropdownMenuContent align="end" className="w-52 text-xs rounded-xl border border-border/80 shadow-md">
+                            <DropdownMenuLabel className="text-xs font-semibold">Account Controls</DropdownMenuLabel>
 
                             {/* Unlock Action */}
                             <DropdownMenuItem
                               disabled={!isLocked}
                               onClick={() => handleUnlock(item.id)}
-                              className="cursor-pointer"
+                              className="cursor-pointer text-xs"
                             >
                               <Unlock className="h-3.5 w-3.5 mr-2 text-amber-500" />
                               <span>Unlock Account (Reset Strikes)</span>
@@ -369,7 +373,7 @@ export function UsersTab() {
                             <DropdownMenuItem
                               disabled={isCurrent}
                               onClick={() => handleToggleStatus(item)}
-                              className="cursor-pointer"
+                              className="cursor-pointer text-xs"
                             >
                               {item.status === "DISABLED" ? (
                                 <>
@@ -390,7 +394,7 @@ export function UsersTab() {
                             <DropdownMenuItem
                               disabled={isCurrent}
                               onClick={() => handleChangeRole(item)}
-                              className="cursor-pointer"
+                              className="cursor-pointer text-xs"
                             >
                               <Shield className="h-3.5 w-3.5 mr-2 text-primary" />
                               <span>
@@ -406,8 +410,8 @@ export function UsersTab() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { RefreshCw, ChevronDown, ChevronRight, AlertCircle, Globe } from "lucide-react";
+import { RefreshCw, ChevronDown, ChevronRight, AlertCircle, Globe, FileText } from "lucide-react";
 import { api } from "@/lib/api";
 import { AuditLogItem } from "@/types/api";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,7 +66,7 @@ export function AuditLogsTab() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
             Security Audit Trail
@@ -83,7 +82,7 @@ export function AuditLogsTab() {
             size="sm"
             onClick={fetchLogs}
             disabled={loading}
-            className="h-8 text-xs font-mono"
+            className="h-8 px-3 text-xs font-medium rounded-lg"
           >
             <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
             <span>Refresh</span>
@@ -92,20 +91,20 @@ export function AuditLogsTab() {
       </div>
 
       {error && (
-        <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
+        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2.5">
           <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{error}</span>
+          <span className="font-medium">{error}</span>
         </div>
       )}
 
       {/* Filter Toolbar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground font-mono">Event Type:</span>
+          <span className="text-xs text-muted-foreground font-medium">Event Type:</span>
           <select
             value={selectedEvent}
             onChange={(e) => setSelectedEvent(e.target.value)}
-            className="h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-mono shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
           >
             {AUDIT_EVENTS.map((evt) => (
               <option key={evt} value={evt}>
@@ -116,128 +115,135 @@ export function AuditLogsTab() {
         </div>
 
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground font-mono">Fetch Limit:</span>
+          <span className="text-xs text-muted-foreground font-medium">Fetch Limit:</span>
           <select
             value={limit}
-            onChange={(e) => setLimit(parseInt(e.target.value, 10))}
-            className="h-9 rounded-md border border-input bg-background px-2.5 py-1 text-xs font-mono shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+            onChange={(e) => setLimit(Number(e.target.value))}
+            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
           >
-            <option value={25}>25 Events</option>
-            <option value={50}>50 Events</option>
-            <option value={100}>100 Events</option>
+            <option value={25}>25 Entries</option>
+            <option value={50}>50 Entries</option>
+            <option value={100}>100 Entries</option>
           </select>
         </div>
       </div>
 
-      {/* Audit Logs Table Card */}
-      <Card className="border-border">
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-sm font-semibold tracking-tight text-foreground">
-                Audit Event Records
-              </CardTitle>
-              <CardDescription className="text-xs text-muted-foreground">
-                Click any row to inspect serialized metadata payload.
-              </CardDescription>
+      {/* Audit Log Table Card */}
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
+        <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
+              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <Badge variant="outline" className="font-mono text-xs">
-              {logs.length} Recorded Events
-            </Badge>
+            <div>
+              <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
+                Activity Records
+              </h2>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Timestamped security operations with IP attribution and telemetry details.
+              </p>
+            </div>
           </div>
-        </CardHeader>
+          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
+            {logs.length} Recorded
+          </Badge>
+        </div>
 
-        <CardContent className="p-0">
+        <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
-                <TableHead className="w-[30px]"></TableHead>
-                <TableHead className="w-[180px]">Timestamp</TableHead>
-                <TableHead>Event Type</TableHead>
-                <TableHead>Actor User ID</TableHead>
-                <TableHead>Target User ID</TableHead>
-                <TableHead>IP Address</TableHead>
+              <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
+                <TableHead className="w-10 py-3"></TableHead>
+                <TableHead className="w-[180px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Timestamp</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Event Action</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Principal User</TableHead>
+                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client IP Address</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center text-muted-foreground text-xs">
-                    {loading ? "Inspecting audit storage..." : "No audit events match the filter."}
+                  <TableCell colSpan={5} className="h-28 text-center text-muted-foreground text-xs">
+                    {loading ? "Streaming security audit records..." : "No audit trail records found."}
                   </TableCell>
                 </TableRow>
               ) : (
                 logs.map((log) => {
                   const isExpanded = expandedId === log.id;
+                  const rawIp = (log.ip_address || log.ip || "—").replace(/\/32$/, "");
+                  const timestampStr = log.ts || (log as any).created_at || (log as any).timestamp;
+                  const principal =
+                    log.actor_user_id ||
+                    log.target_user_id ||
+                    (log.details && (log.details.email || log.details.user_id || log.details.user_email)) ||
+                    "Anonymous / System";
+
                   return (
                     <React.Fragment key={log.id}>
                       <TableRow
                         onClick={() => toggleExpand(log.id)}
-                        className="cursor-pointer select-none"
+                        className={`cursor-pointer transition-colors border-b border-border/60 hover:bg-muted/20 ${
+                          isExpanded ? "bg-muted/20" : ""
+                        }`}
                       >
-                        <TableCell className="p-2 text-center text-muted-foreground">
-                          {isExpanded ? (
-                            <ChevronDown className="h-4 w-4" />
-                          ) : (
-                            <ChevronRight className="h-4 w-4" />
-                          )}
+                        <TableCell className="w-10 px-3">
+                          <button
+                            type="button"
+                            className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            {isExpanded ? (
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            ) : (
+                              <ChevronRight className="h-3.5 w-3.5" />
+                            )}
+                          </button>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground tabular-nums whitespace-nowrap">
-                          {formatDateTime(log.ts)}
+                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                          {formatDateTime(timestampStr)}
                         </TableCell>
 
                         <TableCell>
-                          <Badge variant={getEventBadgeVariant(log.event)} className="text-[10px]">
+                          <Badge variant={getEventBadgeVariant(log.event)} className="rounded-md text-[10px] uppercase font-semibold">
                             {log.event}
                           </Badge>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {log.actor_user_id ? (
-                            <div className="flex items-center">
-                              <span className="truncate max-w-[120px]">{log.actor_user_id}</span>
-                              <CopyButton value={log.actor_user_id} className="h-5 px-1 text-[10px]" />
-                            </div>
-                          ) : (
-                            <span className="italic">SYSTEM</span>
-                          )}
+                        <TableCell className="font-mono text-xs text-foreground">
+                          <span className="truncate max-w-[220px] block">
+                            {String(principal)}
+                          </span>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          {log.target_user_id ? (
-                            <div className="flex items-center">
-                              <span className="truncate max-w-[120px]">{log.target_user_id}</span>
-                              <CopyButton value={log.target_user_id} className="h-5 px-1 text-[10px]" />
-                            </div>
-                          ) : (
-                            <span>—</span>
-                          )}
-                        </TableCell>
-
-                        <TableCell className="font-mono text-xs text-muted-foreground">
-                          <span className="flex items-center">
-                            <Globe className="h-3 w-3 mr-1 opacity-70" />
-                            {log.ip_address || log.ip || "127.0.0.1"}
+                        <TableCell className="font-mono text-xs text-foreground">
+                          <span className="flex items-center space-x-1.5">
+                            <Globe className="h-3 w-3 text-primary opacity-80 shrink-0" />
+                            <span>{rawIp}</span>
                           </span>
                         </TableCell>
                       </TableRow>
 
-                      {/* Expandable JSON Detail Drawer */}
+                      {/* Expandable JSON Detail View */}
                       {isExpanded && (
-                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableCell colSpan={6} className="p-3">
-                            <div className="rounded-md border border-border bg-background p-3 text-xs font-mono space-y-1">
-                              <div className="flex items-center justify-between pb-1 border-b border-border text-[11px] text-muted-foreground">
-                                <span>Event Payload Details</span>
-                                <CopyButton
-                                  value={JSON.stringify(log.details || log, null, 2)}
-                                  label="Copy JSON"
-                                />
+                        <TableRow className="bg-muted/10 hover:bg-muted/10 border-b border-border/60">
+                          <TableCell colSpan={5} className="p-4">
+                            <div className="rounded-lg border border-border/80 bg-background/60 p-4 space-y-3 font-mono text-xs">
+                              <div className="flex items-center justify-between border-b border-border/60 pb-2">
+                                <span className="font-semibold text-foreground text-[11px] uppercase tracking-wider font-sans">
+                                  Audit Payload & Event Metadata
+                                </span>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-muted-foreground text-[11px]">Log ID: {log.id}</span>
+                                  <CopyButton
+                                    value={JSON.stringify(log, null, 2)}
+                                    className="h-6 px-2 text-[10px] rounded"
+                                  />
+                                </div>
                               </div>
-                              <pre className="text-[11px] text-foreground overflow-x-auto pt-2 max-h-48 leading-relaxed">
-                                {JSON.stringify(log.details || { event: log.event, id: log.id }, null, 2)}
+
+                              <pre className="text-[11px] leading-relaxed text-muted-foreground overflow-x-auto p-2 rounded-md bg-muted/30">
+                                {JSON.stringify(log.details || log, null, 2)}
                               </pre>
                             </div>
                           </TableCell>
@@ -249,8 +255,8 @@ export function AuditLogsTab() {
               )}
             </TableBody>
           </Table>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 }

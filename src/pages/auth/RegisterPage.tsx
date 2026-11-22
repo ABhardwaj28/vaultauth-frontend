@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Eye, EyeOff, Loader2, AlertCircle, CheckCircle2, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -66,7 +65,7 @@ export function RegisterPage() {
       const apiErr = err as ApiError;
       if (apiErr.code === "ERR_WEAK_PASSWORD" || apiErr.status === 422) {
         setError(
-          apiErr.message || "Password does not meet enterprise cryptographic complexity standards."
+          apiErr.message || "Password does not meet enterprise complexity requirements."
         );
       } else {
         setError(apiErr.message || "Registration failed. Please verify corporate email.");
@@ -78,146 +77,144 @@ export function RegisterPage() {
 
   return (
     <AuthShell>
-      <Card className="border-border shadow-sm">
-        <CardHeader className="space-y-1.5 pb-4 text-center">
-          <div className="flex justify-center mb-1">
-            <div className="w-10 h-10 rounded-lg bg-[#F6821F] flex items-center justify-center text-white shadow-sm">
+      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.04] before:via-transparent before:to-transparent before:pointer-events-none">
+        <div className="space-y-1.5 pb-6 text-center">
+          <div className="flex justify-center mb-2">
+            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs">
               <ShieldCheck className="w-5 h-5" />
             </div>
           </div>
-          <CardTitle className="text-xl font-bold tracking-tight text-foreground">
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
             Create an Account
-          </CardTitle>
-          <CardDescription className="text-xs text-muted-foreground">
+          </h1>
+          <p className="text-xs text-muted-foreground">
             Provision a new corporate identity on the VaultAuth SSO realm.
-          </CardDescription>
-        </CardHeader>
+          </p>
+        </div>
 
-        <form onSubmit={handleSubmit}>
-          <CardContent className="space-y-4">
-            {/* Success Banner */}
-            {successMessage && (
-              <Alert variant="success" className="text-xs py-2 px-3">
-                <CheckCircle2 className="h-4 w-4" />
-                <AlertTitle className="text-xs font-semibold">Registration Initiated</AlertTitle>
-                <AlertDescription>
-                  {successMessage}{" "}
-                  <Link to="/login" className="underline font-semibold font-sans">
-                    Sign in now
-                  </Link>
-                </AlertDescription>
-              </Alert>
-            )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Success Banner */}
+          {successMessage && (
+            <Alert variant="success" className="text-xs py-2.5 px-3 rounded-lg">
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertTitle className="text-xs font-semibold">Registration Initiated</AlertTitle>
+              <AlertDescription className="text-xs mt-0.5">
+                {successMessage}{" "}
+                <Link to="/login" className="underline font-semibold font-sans">
+                  Sign in now
+                </Link>
+              </AlertDescription>
+            </Alert>
+          )}
 
-            {/* Error Banner */}
-            {error && (
-              <Alert variant="destructive" className="text-xs py-2 px-3">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle className="text-xs font-semibold">Registration Error</AlertTitle>
-                <AlertDescription>{error}</AlertDescription>
-              </Alert>
-            )}
+          {/* Error Banner */}
+          {error && (
+            <Alert variant="destructive" className="text-xs py-2.5 px-3 rounded-lg">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle className="text-xs font-semibold">Registration Error</AlertTitle>
+              <AlertDescription className="text-xs mt-0.5">{error}</AlertDescription>
+            </Alert>
+          )}
 
-            {/* Email Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="email">Corporate Email</Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="email"
-                  type="email"
-                  required
-                  autoFocus
-                  autoComplete="email"
-                  placeholder="employee@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-9 font-sans text-sm"
-                  disabled={loading}
-                />
-              </div>
+          {/* Email Field */}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-xs font-medium">Corporate Email</Label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                required
+                autoFocus
+                autoComplete="email"
+                placeholder="employee@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="pl-9 h-10 rounded-lg bg-background/50 focus:bg-background text-sm"
+                disabled={loading}
+              />
+            </div>
+          </div>
+
+          {/* Password Field */}
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-xs font-medium">Master Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="new-password"
+                placeholder="••••••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="pl-9 pr-9 h-10 rounded-lg bg-background/50 focus:bg-background text-sm"
+                disabled={loading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-3 text-muted-foreground hover:text-foreground focus:outline-none"
+                tabIndex={-1}
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
             </div>
 
-            {/* Password Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="password">Master Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  autoComplete="new-password"
-                  placeholder="••••••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-9 pr-9 font-sans text-sm"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground focus:outline-none"
-                  tabIndex={-1}
-                >
-                  {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-
-              {/* Real-time NIST Policy Checklist */}
-              {password && (
-                <div className="pt-1.5 space-y-1 text-[11px] font-mono text-muted-foreground">
-                  <div className="flex items-center space-x-1.5">
-                    <span className={isLengthValid ? "text-emerald-500 font-semibold" : "text-muted-foreground"}>
-                      {isLengthValid ? "✓" : "○"} Min 12 Characters ({password.length}/12)
-                    </span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1">
-                    <span className={hasUppercase ? "text-emerald-500" : ""}>
-                      {hasUppercase ? "✓" : "○"} Uppercase Letter
-                    </span>
-                    <span className={hasLowercase ? "text-emerald-500" : ""}>
-                      {hasLowercase ? "✓" : "○"} Lowercase Letter
-                    </span>
-                    <span className={hasNumberOrSymbol ? "text-emerald-500" : ""}>
-                      {hasNumberOrSymbol ? "✓" : "○"} Number or Symbol
-                    </span>
-                    <span className="text-muted-foreground">Max 128 Bytes</span>
-                  </div>
+            {/* Real-time Policy Checklist */}
+            {password && (
+              <div className="p-2.5 rounded-lg border border-border/80 bg-muted/20 text-xs space-y-1 mt-1">
+                <div className="flex items-center space-x-1.5">
+                  <span className={isLengthValid ? "text-emerald-500 font-semibold" : "text-muted-foreground"}>
+                    {isLengthValid ? "✓" : "○"} Min 12 Characters ({password.length}/12)
+                  </span>
                 </div>
-              )}
-            </div>
-
-            {/* Confirm Password Field */}
-            <div className="space-y-1.5">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="confirmPassword"
-                  type={showPassword ? "text" : "password"}
-                  required
-                  autoComplete="new-password"
-                  placeholder="••••••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="pl-9 font-sans text-sm"
-                  disabled={loading}
-                />
+                <div className="grid grid-cols-2 gap-1 text-[11px] text-muted-foreground">
+                  <span className={hasUppercase ? "text-emerald-500 font-medium" : ""}>
+                    {hasUppercase ? "✓" : "○"} Uppercase
+                  </span>
+                  <span className={hasLowercase ? "text-emerald-500 font-medium" : ""}>
+                    {hasLowercase ? "✓" : "○"} Lowercase
+                  </span>
+                  <span className={hasNumberOrSymbol ? "text-emerald-500 font-medium" : ""}>
+                    {hasNumberOrSymbol ? "✓" : "○"} Number or Symbol
+                  </span>
+                  <span>Max 128 Bytes</span>
+                </div>
               </div>
-              {confirmPassword && (
-                <span className={`text-[11px] font-mono ${passwordsMatch ? "text-emerald-500" : "text-destructive"}`}>
-                  {passwordsMatch ? "✓ Passwords match" : "✕ Passwords do not match"}
-                </span>
-              )}
-            </div>
-          </CardContent>
+            )}
+          </div>
 
-          <CardFooter className="flex flex-col space-y-3 pt-2">
+          {/* Confirm Password Field */}
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword" className="text-xs font-medium">Confirm Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="confirmPassword"
+                type={showPassword ? "text" : "password"}
+                required
+                autoComplete="new-password"
+                placeholder="••••••••••••"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                className="pl-9 h-10 rounded-lg bg-background/50 focus:bg-background text-sm"
+                disabled={loading}
+              />
+            </div>
+            {confirmPassword && (
+              <span className={`text-[11px] font-mono ${passwordsMatch ? "text-emerald-500" : "text-destructive"}`}>
+                {passwordsMatch ? "✓ Passwords match" : "✕ Passwords do not match"}
+              </span>
+            )}
+          </div>
+
+          <div className="pt-2 space-y-3">
             <Button
               type="submit"
               disabled={loading || !isLengthValid || !passwordsMatch}
-              className="w-full h-10 font-medium"
+              className="w-full h-10 font-semibold rounded-lg shadow-xs"
             >
               {loading ? (
                 <span className="flex items-center space-x-2">
@@ -238,9 +235,9 @@ export function RegisterPage() {
                 Sign In
               </Link>
             </div>
-          </CardFooter>
+          </div>
         </form>
-      </Card>
+      </div>
     </AuthShell>
   );
 }
