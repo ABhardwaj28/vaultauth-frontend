@@ -79,7 +79,7 @@ export default function App() {
             whileHover={{ y: -2 }}
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
             aria-label="Back to top"
-            className="fixed bottom-6 right-6 z-40 hidden h-10 w-10 items-center justify-center rounded-full border border-[#1E2838] bg-[#0E1420] text-[#94A3B8] shadow-xl transition-colors hover:border-[#F07A26] hover:text-white sm:flex"
+            className="fixed bottom-6 right-6 z-40 hidden h-10 w-10 items-center justify-center rounded-full border border-[#1E2838] bg-[#0E1420] text-[#94A3B8] shadow-xl transition-colors hover:border-[#F07A26] hover:text-white lg:flex"
           >
             <ArrowUp className="h-4 w-4" />
           </motion.button>
