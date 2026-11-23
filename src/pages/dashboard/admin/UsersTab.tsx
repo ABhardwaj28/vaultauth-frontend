@@ -71,9 +71,6 @@ export function UsersTab() {
       setUsers(userList);
       setTotal(usersData.total ?? userList.length);
       setSessions(sessionsData || []);
-
-      // Synchronize complete directory of disabled accounts in background without overwriting from filtered view
-      api.syncDisabledAccounts().catch(() => {});
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to load directory users.");
       setUsers([]);
@@ -167,13 +164,6 @@ export function UsersTab() {
       )
     );
 
-    // Keep anti-enumeration cache synchronized immediately
-    if (nextStatus === "DISABLED") {
-      api.addDisabledAccountCache(user.email);
-    } else {
-      api.removeDisabledAccountCache(user.email);
-    }
-
     try {
       await api.updateUserStatus(user.id, nextStatus);
 
@@ -188,17 +178,11 @@ export function UsersTab() {
           : `User account ${user.email} enabled successfully. Account is now ACTIVE.`
       );
       await fetchUsersAndSessions();
-      await api.syncDisabledAccounts().catch(() => {});
     } catch (err: unknown) {
-      // Rollback optimistic state and cache on backend rejection
+      // Rollback optimistic state on backend rejection
       setUsers((prev) =>
         prev.map((u) => (u.id === user.id ? { ...u, status: user.status, failed_attempts: user.failed_attempts } : u))
       );
-      if (user.status === "DISABLED") {
-        api.addDisabledAccountCache(user.email);
-      } else {
-        api.removeDisabledAccountCache(user.email);
-      }
       setError((err as { message?: string })?.message || "Failed to update account status on backend.");
     } finally {
       setActionLoadingId(null);

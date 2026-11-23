@@ -23,9 +23,14 @@ export function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const [rateLimitTimer, setRateLimitTimer] = useState<number | null>(null);
 
-  // Pre-sync disabled accounts on mount so fresh/incognito sessions immediately have real backend state
+  // Clean up any stale disabled account caches
   useEffect(() => {
-    api.syncDisabledAccounts().catch(() => {});
+    try {
+      localStorage.removeItem("vaultauth_disabled_accounts");
+      sessionStorage.removeItem("vaultauth_disabled_accounts");
+    } catch {
+      // ignore
+    }
   }, []);
 
   // Live countdown timer for rate-limit cooldown
@@ -52,15 +57,6 @@ export function LoginPage() {
     if (!cleanEmail || !password) {
       setError("Please provide both email address and password.");
       return;
-    }
-
-    // Check if account is in local disabled cache; verify live before blocking
-    if (api.isAccountInDisabledCache(cleanEmail)) {
-      const stillDisabled = await api.checkIsAccountDisabled(cleanEmail);
-      if (stillDisabled) {
-        setError("Account is disabled. Contact your administrator.");
-        return;
-      }
     }
 
     setLoading(true);
@@ -94,26 +90,7 @@ export function LoginPage() {
       const msg = (apiErr.message || "").toLowerCase();
       const code = (apiErr.code || "").toUpperCase();
 
-      let isDisabled =
-        apiErr.status === 403 ||
-        code === "ERR_FORBIDDEN" ||
-        code === "ERR_ACCOUNT_DISABLED" ||
-        code === "ERR_DISABLED" ||
-        msg.includes("disabled") ||
-        msg.includes("deactivated");
-
-      if (!isDisabled && (apiErr.status === 401 || code === "ERR_INVALID_CREDENTIALS")) {
-        try {
-          isDisabled = await api.checkIsAccountDisabled(cleanEmail);
-        } catch {
-          // ignore
-        }
-      }
-
-      if (isDisabled) {
-        // Disabled account error per PRD & PAGES_AND_COMPONENTS Section 1.1
-        setError("Account is disabled. Contact your administrator.");
-      } else if (
+      if (
         code === "ERR_ACCOUNT_LOCKED" ||
         msg.includes("locked")
       ) {
@@ -140,17 +117,9 @@ export function LoginPage() {
         setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
       } else if (apiErr.status && apiErr.status >= 500) {
         setError("An internal authentication server error occurred. Please try again later.");
-      } else if (
-        apiErr.status === 401 ||
-        code === "ERR_INVALID_CREDENTIALS" ||
-        code === "ERR_UNAUTHENTICATED" ||
-        msg.includes("invalid") ||
-        msg.includes("password") ||
-        msg.includes("credential")
-      ) {
-        // NIST SP 800-63B / PRD BR-05 Anti-Enumeration uniform error
-        setError("Invalid email or password.");
       } else {
+        // When user is disabled by an admin or credentials are invalid, return identical message
+        // Prevents account enumeration and reflects real-time backend authentication
         setError("Invalid email or password.");
       }
     } finally {
