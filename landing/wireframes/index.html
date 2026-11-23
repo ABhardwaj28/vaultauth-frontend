@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>VaultAuth SSO — UI Wireframes</title>
+<style>
+  :root {
+    --ink: #141a22;
+    --muted: #5b6673;
+    --line: #cdd4dd;
+    --soft: #eef1f5;
+    --softer: #f7f9fb;
+    --accent: #e8711a;
+    --accent-soft: #fff3e8;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+    color: var(--ink);
+    background: #e9edf2;
+  }
+  .layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); min-height: 100vh; }
+  aside {
+    position: sticky; top: 0; height: 100vh; overflow: auto;
+    padding: 28px 20px; background: #fff; border-right: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; letter-spacing: -.02em; }
+  .brand .mark { width: 28px; height: 28px; border-radius: 8px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 14px; }
+  .kicker { margin: 24px 0 8px; font-size: 10px; font-weight: 700; letter-spacing: .12em; color: #8a95a3; text-transform: uppercase; }
+  aside nav a { display: block; padding: 7px 10px; border-radius: 7px; color: #43505f; text-decoration: none; font-size: 13px; }
+  aside nav a:hover { background: var(--soft); color: var(--accent); }
+  .legend { margin-top: 28px; border-top: 1px solid var(--line); padding-top: 18px; font-size: 11px; color: var(--muted); }
+  .legend div { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
+  .swatch { width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); background: var(--soft); }
+  .swatch.accent { background: var(--accent-soft); border-color: #f0b98d; }
+
+  main { padding: 46px 52px 100px; max-width: 1240px; }
+  .page-head h1 { font-size: 32px; line-height: 1.15; letter-spacing: -.035em; margin: 0; }
+  .page-head p { color: var(--muted); max-width: 720px; margin: 12px 0 0; }
+  .tokens { display: flex; flex-wrap: wrap; gap: 8px; margin: 22px 0 0; }
+  .token { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 11px; font-size: 11px; color: var(--muted); }
+  .token b { color: var(--ink); }
+
+  .sheet { margin-top: 56px; scroll-margin-top: 24px; }
+  .sheet > header { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+  .sheet > header h2 { font-size: 19px; letter-spacing: -.02em; margin: 0; }
+  .sheet > header code { font-size: 11px; color: var(--accent); background: var(--accent-soft); padding: 3px 7px; border-radius: 5px; }
+  .note { font-size: 12px; color: var(--muted); margin: 0 0 16px; max-width: 760px; }
+  .note b { color: var(--ink); }
+
+  .frame { background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: 0 8px 24px -18px rgba(20,26,34,.5); }
+  .frame-bar { display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: var(--softer); border-bottom: 1px solid var(--line); }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #cfd6df; }
+  .frame-bar .url { margin-left: auto; font: 10px ui-monospace, SFMono-Regular, Menlo, monospace; color: #8a95a3; }
+  .canvas { padding: 22px; background: #fbfcfd; }
+
+  .box { border: 1px dashed #b8c1cc; background: var(--soft); border-radius: 7px; padding: 10px 12px; color: #6b7684; font-size: 11px; }
+  .solid { border-style: solid; background: #fff; color: #33404f; }
+  .accent { background: var(--accent-soft); border: 1px solid #f0b98d; color: #a34d08; border-radius: 7px; padding: 10px 12px; font-size: 11px; }
+  .btn { display: inline-flex; align-items: center; justify-content: center; min-height: 34px; padding: 0 16px; border-radius: 7px; background: #fff; border: 1px solid #b8c1cc; color: #33404f; font-size: 11px; font-weight: 600; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .btn.danger { background: #fff; border-color: #e2a3a3; color: #a33; }
+  .field { border: 1px solid #c3ccd7; background: #fff; border-radius: 6px; height: 34px; padding: 8px 10px; font-size: 11px; color: #8a95a3; }
+  .label { font-size: 10px; font-weight: 700; letter-spacing: .08em; color: #8a95a3; text-transform: uppercase; margin-bottom: 6px; }
+  .title { font-size: 18px; font-weight: 700; letter-spacing: -.02em; }
+  .sub { font-size: 11px; color: var(--muted); }
+  .row { display: flex; gap: 12px; }
+  .col { flex: 1; min-width: 0; }
+  .stack { display: grid; gap: 12px; }
+  .center { display: grid; place-items: center; }
+  .between { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .grid2 { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 14px; }
+  .grid4 { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 14px; }
+  .pill { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 4px 9px; font-size: 10px; color: var(--muted); }
+  .divider { height: 1px; background: var(--line); margin: 16px 0; }
+  .auth-wrap { max-width: 430px; margin: 0 auto; }
+  .app-shell { display: grid; grid-template-columns: 160px minmax(0,1fr); min-height: 480px; }
+  .side { background: #f2f5f8; border-right: 1px solid var(--line); padding: 16px 12px; }
+  .side .item { padding: 8px 9px; border-radius: 6px; font-size: 11px; color: #546172; margin: 3px 0; }
+  .side .item.on { background: #fff; border: 1px solid var(--line); color: var(--ink); font-weight: 600; }
+  .side .sep { margin: 14px 0 8px; padding-top: 10px; border-top: 1px solid var(--line); }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 18px; border-bottom: 1px solid var(--line); background: #fff; }
+  .content { padding: 22px; }
+  table.wf { width: 100%; border-collapse: collapse; font-size: 10px; }
+  table.wf th { text-align: left; padding: 9px 8px; background: var(--softer); border-bottom: 1px solid var(--line); color: #6b7684; font-weight: 700; }
+  table.wf td { padding: 10px 8px; border-bottom: 1px solid #e7ebf0; color: #7a8593; }
+  .avatar { width: 26px; height: 26px; border-radius: 50%; background: #e2e8ef; display: inline-block; }
+  .otp { display: flex; gap: 8px; justify-content: center; }
+  .otp span { width: 40px; height: 48px; border: 1px solid #c3ccd7; border-radius: 7px; background: #fff; display: grid; place-items: center; font: 16px ui-monospace, monospace; color: var(--accent); }
+  .foot { margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .error-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { position: static; height: auto; }
+    main { padding: 28px 18px 80px; }
+    .grid4, .error-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+  }
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside>
+    <div class="brand"><span class="mark">V</span> VaultAuth UI</div>
+    <div class="kicker">Wireframe index</div>
+    <nav>
+      <a href="#overview">00 · Design direction</a>
+      <a href="#login">01 · Login</a>
+      <a href="#register">02 · Register</a>
+      <a href="#otp">03 · Verify OTP</a>
+      <a href="#profile">04 · Profile</a>
+      <a href="#sessions">05 · Active sessions</a>
+      <a href="#settings">06 · Settings</a>
+      <a href="#apps">07 · Admin · Apps</a>
+      <a href="#users">08 · Admin · Users</a>
+      <a href="#audit">09 · Admin · Audit logs</a>
+      <a href="#global">10 · Admin · Global sessions</a>
+      <a href="#errors">11 · Error states</a>
+    </nav>
+    <div class="legend">
+      <div><span class="swatch"></span> Placeholder / content region</div>
+      <div><span class="swatch accent"></span> Primary action / emphasis</div>
+      <div>Full specs: <code>00-overview.md</code> … <code>04-errors.md</code></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="page-head" id="overview">
+      <h1>VaultAuth SSO — cleaner UI wireframes</h1>
+      <p>Low-fidelity layouts for every screen in the application, based on the actual routes and content of the local app. These are proposals: the goal is a calmer, more legible, more professional interface — amber reserved for actions, monospace reserved for machine data, and generous breathing room around content.</p>
+      <div class="tokens">
+        <span class="token"><b>Canvas</b> #F6F8FB / #0B0F17</span>
+        <span class="token"><b>Surface</b> #FFFFFF / #111826</span>
+        <span class="token"><b>Ink</b> #141A22 / #F1F5F9</span>
+        <span class="token"><b>Action</b> #F6821F</span>
+        <span class="token"><b>Success</b> #16A34A</span>
+        <span class="token"><b>Danger</b> #DC2626</span>
+        <span class="token"><b>Type</b> Inter · Inter Tight · JetBrains Mono</span>
+        <span class="token"><b>Base</b> 14px / 1.5 · 8px spacing scale</span>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <section class="sheet" id="login">
+      <header><h2>Login</h2><code>/login · public</code></header>
+      <p class="note"><b>Change:</b> one centered card on a calm wash; status banners sit above the form; social/passkey options lead, password is secondary. No decorative glows behind data.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/login</span></div>
+        <div class="canvas center">
+          <div class="auth-wrap stack">
+            <div class="between"><div class="box solid" style="min-width:120px">◆ VaultAuth SSO</div><div class="pill">◐ Light / Dark</div></div>
+            <div class="accent">Session expired — sign in again to continue.</div>
+            <div class="box solid stack" style="padding:24px">
+              <div class="title">Welcome back</div>
+              <div class="sub">Sign in with your corporate identity.</div>
+              <div class="divider"></div>
+              <div class="btn" style="width:100%">◉ Continue with passkey</div>
+              <div class="btn" style="width:100%">⬡ Continue with corporate SSO</div>
+              <div class="between" style="color:#9aa5b1;font-size:10px"><span></span>or use email and password<span></span></div>
+              <div><div class="label">Work email</div><div class="field">you@company.com</div></div>
+              <div><div class="label">Password</div><div class="field">••••••••••••</div></div>
+              <div class="between"><span class="sub">Forgot password?</span><span class="pill">3-strike lockout</span></div>
+              <button class="btn primary" style="width:100%">Sign in</button>
+              <div class="between"><span class="sub">New to VaultAuth?</span><span class="sub" style="color:var(--accent)">Create an account</span></div>
+            </div>
+            <div class="sub center">Protected by VaultAuth · Privacy · Terms</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="register">
+      <header><h2>Register</h2><code>/register · public</code></header>
+      <p class="note"><b>Change:</b> password policy becomes a live, quiet checklist beside the field instead of an error after submit. Clear inline states for success and failure.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/register</span></div>
+        <div class="canvas center">
+          <div class="auth-wrap box solid stack" style="padding:24px">
+            <div class="title">Create your account</div>
+            <div class="sub">Start with a free developer workspace.</div>
+            <div><div class="label">Full name</div><div class="field">Your name</div></div>
+            <div><div class="label">Work email</div><div class="field">you@company.com</div></div>
+            <div><div class="label">Password</div><div class="field">At least 12 characters</div></div>
+            <div class="box" style="padding:10px">✓ 12+ characters &nbsp; ✓ One number &nbsp; ○ One symbol</div>
+            <div><div class="label">Confirm password</div><div class="field">Repeat password</div></div>
+            <div class="accent">Passwords do not match.</div>
+            <button class="btn primary" style="width:100%">Create account</button>
+            <div class="sub center">Already registered? Sign in</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="otp">
+      <header><h2>Verify OTP</h2><code>/verify-otp · public</code></header>
+      <p class="note"><b>Change:</b> the six-cell input becomes the focal point; remaining attempts and resend timing are shown as plain text, not alerts.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/verify-otp</span></div>
+        <div class="canvas center">
+          <div class="auth-wrap box solid stack" style="padding:26px;text-align:center">
+            <div class="box" style="width:44px;height:44px;border-radius:50%;margin:0 auto">✉</div>
+            <div class="title">Check your inbox</div>
+            <div class="sub">We sent a 6-digit code to y***@company.com</div>
+            <div class="otp"><span>0</span><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="sub">2 of 3 attempts left · Resend available in 0:28</div>
+            <button class="btn primary" style="width:100%">Verify and continue</button>
+            <button class="btn" style="width:100%">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section class="sheet" id="profile">
+      <header><h2>Dashboard — Profile</h2><code>/dashboard · protected</code></header>
+      <p class="note"><b>Change:</b> shared shell with a quiet top bar, left navigation grouped into personal vs. admin, and content cards with consistent hierarchy. Copyable IDs use an icon button, not a text link.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard</span></div>
+        <div class="app-shell">
+          <div class="side">
+            <div class="box solid" style="font-weight:700">◆ VaultAuth</div>
+            <div class="sep"></div>
+            <div class="item on">My profile</div>
+            <div class="item">Active sessions</div>
+            <div class="item">Account settings</div>
+            <div class="sep"></div>
+            <div class="item">Application management</div>
+            <div class="item">User management</div>
+            <div class="item">Security audit logs</div>
+            <div class="item">Global sessions</div>
+          </div>
+          <div>
+            <div class="topbar"><div class="pill">● Session active · Admin</div><div class="row"><div class="pill">shaurya@example.com  ADMIN</div><div class="pill">◐</div><div class="pill">Sign out</div></div></div>
+            <div class="content stack">
+              <div class="between"><div><div class="title">Profile &amp; identity</div><div class="sub">Identity claims, authorization, and two-factor credentials.</div></div><button class="btn">↻ Refresh identity</button></div>
+              <div class="grid2">
+                <div class="box solid stack"><div class="between"><b>Principal identity</b><span class="pill">Active</span></div><div class="field">shaurya@example.com</div><div class="between"><span class="sub">User ID</span><span class="sub">5acdc56e… ⧉</span></div><div class="between"><span class="sub">Directory realm</span><span class="sub">corporate-sso</span></div><div class="between"><span class="sub">Verified</span><span class="sub">Email verified</span></div></div>
+                <div class="box solid stack"><div class="between"><b>RBAC authority</b><span class="pill">Admin</span></div><div class="field">Enterprise Administrator</div><div class="between"><span class="sub">Clearance</span><span class="sub">Tier-1 governance</span></div><div class="sub">Authorized capabilities</div><div class="sub">• User lifecycle governance<br />• OAuth client registration<br />• Audit logs &amp; telemetry<br />• Global session revocation</div></div>
+                <div class="box solid stack"><div class="between"><b>Two-factor credentials</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Second factor</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Code expiration</span><span class="sub">10 minutes</span></div><div class="between"><span class="sub">Idle timeout</span><span class="sub">30 minutes</span></div><div class="between"><span class="sub">Absolute cap</span><span class="sub">8 hours</span></div></div>
+                <div class="box stack"><b>Security posture</b><div class="sub">A calm summary replaces repeated policy values: MFA enforced, session policy active, no outstanding risks.</div><div class="pill">● No action required</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="sessions">
+      <header><h2>Active sessions</h2><code>/dashboard/sessions</code></header>
+      <p class="note"><b>Change:</b> one clear table, a count in the header, and a confirm step before revocation. “This device” is tagged inline.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/sessions</span></div>
+        <div class="content" style="padding:22px">
+          <div class="between"><div class="title">Active sessions</div><div class="row"><span class="pill">2 active</span><button class="btn">↻ Refresh</button></div></div>
+          <div class="sub" style="margin:8px 0 16px">Workstations currently authenticated with your credentials.</div>
+          <div class="box solid" style="padding:0;overflow:hidden">
+            <table class="wf"><thead><tr><th>Device &amp; workstation</th><th>IP address</th><th>Last active</th><th>Signed in</th><th>Action</th></tr></thead>
+            <tbody>
+              <tr><td><span class="avatar"></span> Safari · macOS <span class="pill">This device</span></td><td>103.24.…</td><td>Just now</td><td>Today, 09:41</td><td><span class="sub">Current</span></td></tr>
+              <tr><td><span class="avatar"></span> Chrome · Windows</td><td>49.207.…</td><td>2 hours ago</td><td>Today, 07:12</td><td><button class="btn danger">Revoke</button></td></tr>
+              <tr><td><span class="avatar"></span> iPhone · Safari</td><td>117.239.…</td><td>Yesterday</td><td>Nov 22, 18:20</td><td><button class="btn danger">Revoke</button></td></tr>
+            </tbody></table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="settings">
+      <header><h2>Account settings</h2><code>/dashboard/settings</code></header>
+      <p class="note"><b>Change:</b> four focused sections with real spacing. Destructive controls are isolated at the bottom with a clear consequence statement.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/settings</span></div>
+        <div class="content">
+          <div class="title">Account &amp; security settings</div>
+          <div class="grid2" style="margin-top:16px">
+            <div class="box solid stack"><b>Change password</b><div class="field">Current password</div><div class="field">New password</div><div class="field">Confirm new password</div><button class="btn primary">Update password</button></div>
+            <div class="box solid stack"><div class="between"><b>Two-factor authentication</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Challenge mode</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Delivery channel</span><span class="sub">shaurya@example.com</span></div><div class="sub">Mandatory for all corporate logins.</div></div>
+            <div class="box solid stack"><b>Theme preference</b><div class="row"><div class="box" style="flex:1">☀ Light</div><div class="box" style="flex:1">◐ Dark</div><div class="box accent" style="flex:1">System</div></div><div class="sub">Active mode: System</div></div>
+            <div class="box stack" style="border-color:#e2a3a3;background:#fff7f7"><b style="color:#a33">Revoke other workstations</b><div class="sub">Ends all sessions except this one. Immediate and irreversible.</div><div class="sub">Scope: all other devices</div><button class="btn danger">Sign out other devices</button></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section class="sheet" id="apps">
+      <header><h2>Admin — Applications</h2><code>/dashboard/admin/apps</code></header>
+      <p class="note"><b>Change:</b> search and filters in one toolbar; six-column table with wrapped URIs; client secret shown once in a dedicated confirmation dialog.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/admin/apps</span></div>
+        <div class="content">
+          <div class="between"><div><div class="title">OAuth 2.0 / OIDC applications</div><div class="sub">Registered relying parties, SPAs, and server clients.</div></div><button class="btn primary">+ Register application</button></div>
+          <div class="row" style="margin:16px 0"><div class="field" style="flex:1">⌕ Search applications</div><div class="pill">Type: all</div><button class="btn">↻ Refresh</button></div>
+          <div class="box solid" style="padding:0;overflow:hidden"><table class="wf"><thead><tr><th>Application / client ID</th><th>Type</th><th>Redirect URIs</th><th>Scopes</th><th>Created</th><th>Action</th></tr></thead>
+          <tbody><tr><td>Analytics Dashboard</td><td>Public (PKCE)</td><td>localhost:5173/callback</td><td>openid profile</td><td>Nov 12</td><td>⋯ Revoke</td></tr>
+          <tr><td>Payments API</td><td>Confidential</td><td>api.internal/callback</td><td>openid api:read</td><td>Nov 10</td><td>⋯ Revoke</td></tr></tbody></table></div>
+          <div class="note" style="margin-top:14px"><b>Dialog:</b> “Client secret created — copy it now” · masked secret with copy button · acknowledgement checkbox · Done.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="users">
+      <header><h2>Admin — User governance</h2><code>/dashboard/admin/users</code></header>
+      <p class="note"><b>Change:</b> filters group by relevance (search → sort → status). Row actions are consolidated into one menu instead of two adjacent dropdowns.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/admin/users</span></div>
+        <div class="content">
+          <div class="title">User governance &amp; access control</div>
+          <div class="row" style="margin:16px 0"><div class="field" style="flex:1">⌕ Search by email or user ID</div><div class="pill">A–Z</div><div class="pill">Role: all</div><div class="pill">Status: all</div><button class="btn">↻</button></div>
+          <div class="box solid" style="padding:0;overflow:hidden"><table class="wf"><thead><tr><th>Corporate email / user ID</th><th>Role</th><th>Status</th><th>Sessions</th><th>Strikes</th><th>Registered</th><th>Manage</th></tr></thead>
+          <tbody><tr><td>shaurya@example.com<br><span class="sub">5acdc56e…</span></td><td>Admin</td><td><span class="pill">Active</span></td><td>2</td><td>0 / 3</td><td>Nov 10</td><td>⋯</td></tr>
+          <tr><td>alex.chen@example.com</td><td>User</td><td><span class="pill">Locked</span></td><td>0</td><td>3 / 3</td><td>Nov 08</td><td>⋯</td></tr></tbody></table></div>
+          <div class="note" style="margin-top:14px"><b>Menu:</b> View sessions · Unlock account · Change role · Disable account.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="audit">
+      <header><h2>Admin — Audit logs</h2><code>/dashboard/admin/audit-logs</code></header>
+      <p class="note"><b>Change:</b> event type and result filters up front; expandable rows reveal the JSON payload without leaving the table.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/admin/audit-logs</span></div>
+        <div class="content">
+          <div class="between"><div class="title">Security audit trail</div><div class="row"><div class="pill">Event: all</div><div class="pill">Limit: 25</div><button class="btn">↻ Refresh</button></div></div>
+          <div class="box solid" style="padding:0;overflow:hidden;margin-top:16px"><table class="wf"><thead><tr><th></th><th>Timestamp</th><th>Event action</th><th>Principal user</th><th>Client IP</th><th>Result</th></tr></thead>
+          <tbody><tr><td>▸</td><td>Nov 23, 09:41:02</td><td>LOGIN_SUCCESS</td><td>shaurya@example.com</td><td>103.24.…</td><td><span class="pill">Success</span></td></tr>
+          <tr><td>▾</td><td>Nov 23, 09:38:57</td><td>2FA_VERIFIED</td><td>shaurya@example.com</td><td>103.24.…</td><td><span class="pill">Success</span></td></tr>
+          <tr><td colspan="6"><div class="box" style="font-family:ui-monospace,monospace">{ "event": "2FA_VERIFIED", "channel": "EMAIL_OTP", "userId": "5acdc56e…" }</div></td></tr></tbody></table></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="global">
+      <header><h2>Admin — Global sessions</h2><code>/dashboard/admin/sessions</code></header>
+      <p class="note"><b>Change:</b> group by user in collapsible cards with a summary count. “Terminate all” always requires confirmation and reports how many sessions ended.</p>
+      <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">localhost:3000/dashboard/admin/sessions</span></div>
+        <div class="content stack">
+          <div class="between"><div><div class="title">Global active sessions</div><div class="sub">Directory-wide grants and emergency revocation.</div></div><div class="row"><span class="pill">7 users</span><span class="pill">19 sessions</span><button class="btn">↻</button></div></div>
+          <div class="box solid"><div class="between"><b>▾ <span class="avatar"></span> shaurya@example.com <span class="pill">Admin</span></b><div class="row"><span class="pill">3 sessions</span><button class="btn danger">Terminate all</button></div></div>
+            <div style="margin-top:12px"><table class="wf"><thead><tr><th>Device</th><th>IP</th><th>Last active</th><th>Action</th></tr></thead><tbody><tr><td>Safari · macOS</td><td>103.24.…</td><td>Just now</td><td>Revoke</td></tr></tbody></table></div>
+          </div>
+          <div class="box solid between"><b>▸ <span class="avatar"></span> alex.chen@example.com <span class="pill">User</span></b><div class="row"><span class="pill">1 session</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="sheet" id="errors">
+      <header><h2>Error states</h2><code>/403 · /404 · /429 · /500 · /503 · crash</code></header>
+      <p class="note"><b>Change:</b> one shared layout across all statuses. Short, plain-language explanation; one primary action; diagnostics collapsed by default. Rate-limit and gateway screens show live state.</p>
+      <div class="error-grid">
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">/403</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">403</div><div class="title">No access to this area</div><div class="sub">Your account does not have permission to view this page.</div><button class="btn primary">Back to dashboard</button><div class="sub">Details ▾</div></div></div>
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">/404</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">404</div><div class="title">We couldn't find that page</div><div class="sub">The link may have moved or no longer exists.</div><button class="btn primary">Go home</button><div class="sub">Details ▾</div></div></div>
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">/429</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">429</div><div class="title">Too many attempts</div><div class="sub">Try again in 0:42</div><button class="btn" disabled>Try again in 42s</button><div class="sub">Details ▾</div></div></div>
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">/500</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">500</div><div class="title">Something went wrong</div><div class="sub">The request couldn't be completed. Retry or contact support.</div><button class="btn primary">Try again</button><div class="sub">Details ▾</div></div></div>
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">/503</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">503</div><div class="title">Identity service unavailable</div><div class="sub">Reconnecting automatically in 5s…</div><button class="btn">Retry now</button><div class="sub">Details ▾</div></div></div>
+        <div class="frame"><div class="frame-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="url">crash</span></div><div class="canvas center stack" style="text-align:center"><div class="pill">!</div><div class="title">This page hit a snag</div><div class="sub">Reload to continue. Your session is still active.</div><button class="btn primary">Reload page</button><div class="sub">Details ▾</div></div></div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
