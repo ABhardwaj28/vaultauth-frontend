@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion, useScroll, useSpring } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -29,6 +29,7 @@ export default function App() {
   }, []);
 
   return (
+    <MotionConfig reducedMotion="user">
     <div className="relative min-h-screen overflow-x-clip bg-[#080C14] text-white">
       {/* Ambient canvas: dark base with softly blended bright gradients */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
@@ -87,5 +88,6 @@ export default function App() {
       </AnimatePresence>
       </div>
     </div>
+    </MotionConfig>
   );
 }

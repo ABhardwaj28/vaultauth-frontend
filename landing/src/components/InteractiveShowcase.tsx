@@ -155,7 +155,7 @@ export function InteractiveShowcase() {
                     </div>
                     <div className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 py-2.5 text-[12px] text-slate-300">{email}</div>
                     <div className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 transition-colors focus-within:border-[#F07A26] focus-within:ring-1 focus-within:ring-[#F07A26]/40">
-                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full bg-transparent py-2.5 text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
+                      <input type="password" aria-label="Demo password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Password" className="w-full bg-transparent py-2.5 text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
                     </div>
                     <button type="button" onClick={() => {
                       if (password === "wrong") {
