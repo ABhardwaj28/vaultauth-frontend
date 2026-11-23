@@ -52,18 +52,15 @@ export function UsersTab() {
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUsersAndSessions = useCallback(async () => {
+  const fetchUsersAndSessions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
     setError(null);
+    if (forceRefresh) {
+      api.invalidateUserCache();
+    }
     try {
       const [usersData, sessionsData] = await Promise.all([
-        api.getAdminUsers({
-          q: searchQuery.trim() || undefined,
-          role: roleFilter !== "All" ? roleFilter : undefined,
-          status: statusFilter !== "All" ? statusFilter : undefined,
-          limit: 100,
-          fetchAll: true,
-        }),
+        api.getAdminUsers({ limit: 100, fetchAll: true }),
         api.getGlobalSessions(100).catch(() => [] as SessionItem[]),
       ]);
 
@@ -77,20 +74,10 @@ export function UsersTab() {
     } finally {
       setLoading(false);
     }
-  }, [searchQuery, roleFilter, statusFilter]);
+  }, []);
 
   useEffect(() => {
-    let active = true;
-    const debounceTimer = setTimeout(() => {
-      if (active) {
-        fetchUsersAndSessions();
-      }
-    }, 200);
-
-    return () => {
-      active = false;
-      clearTimeout(debounceTimer);
-    };
+    fetchUsersAndSessions();
   }, [fetchUsersAndSessions]);
 
   // Index active sessions by User ID and email
@@ -117,13 +104,32 @@ export function UsersTab() {
     return map;
   }, [sessions]);
 
+  // Filter in memory for instantaneous 0ms search & filter response
+  const filteredUsers = useMemo(() => {
+    let list = users;
+    if (roleFilter !== "All") {
+      list = list.filter((u) => (u.role || "").toLowerCase() === roleFilter.toLowerCase());
+    }
+    if (statusFilter !== "All") {
+      list = list.filter((u) => (u.status || "").toUpperCase() === statusFilter.toUpperCase());
+    }
+    const q = searchQuery.trim().toLowerCase();
+    if (q) {
+      list = list.filter((u) =>
+        (u.email || "").toLowerCase().includes(q) ||
+        (u.id || "").toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [users, roleFilter, statusFilter, searchQuery]);
+
   // Group and sort alphabetically by Corporate Email
   const sortedUsers = useMemo(() => {
-    return [...users].sort((a, b) => {
-      const comp = a.email.toLowerCase().localeCompare(b.email.toLowerCase(), undefined, { sensitivity: "base" });
+    return [...filteredUsers].sort((a, b) => {
+      const comp = (a.email || "").toLowerCase().localeCompare((b.email || "").toLowerCase(), undefined, { sensitivity: "base" });
       return sortAsc ? comp : -comp;
     });
-  }, [users, sortAsc]);
+  }, [filteredUsers, sortAsc]);
 
   // Actions
   const handleUnlock = async (userId: string) => {
@@ -133,7 +139,7 @@ export function UsersTab() {
     try {
       await api.unlockUser(userId);
       setMessage("Account unlocked and 3-strike failure counter reset.");
-      await fetchUsersAndSessions();
+      await fetchUsersAndSessions(true);
     } catch (err: unknown) {
       setError((err as { message?: string })?.message || "Failed to unlock account.");
     } finally {
@@ -177,7 +183,7 @@ export function UsersTab() {
           ? `User account ${user.email} disabled successfully. All active sessions terminated.`
           : `User account ${user.email} enabled successfully. Account is now ACTIVE.`
       );
-      await fetchUsersAndSessions();
+      await fetchUsersAndSessions(true);
     } catch (err: unknown) {
       // Rollback optimistic state on backend rejection
       setUsers((prev) =>
@@ -212,7 +218,7 @@ export function UsersTab() {
     try {
       await api.updateUserRole(user.id, nextRole);
       setMessage(`User ${user.email} authority role updated to ${nextRole.toUpperCase()} on backend.`);
-      await fetchUsersAndSessions();
+      await fetchUsersAndSessions(true);
     } catch (err: unknown) {
       // Rollback optimistic state on backend rejection
       setUsers((prev) =>
@@ -255,7 +261,7 @@ export function UsersTab() {
         <Button
           variant="outline"
           size="sm"
-          onClick={fetchUsersAndSessions}
+          onClick={() => fetchUsersAndSessions(true)}
           disabled={loading}
           className="h-8 px-3 text-xs font-medium rounded-lg self-start sm:self-auto"
         >

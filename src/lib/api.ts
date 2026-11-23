@@ -31,9 +31,14 @@ export interface RequestOptions extends RequestInit {
 
 class ApiClient {
   public baseUrl: string;
+  private userDirectoryCache: { users: AdminUserListItem[]; total: number; timestamp: number } | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/+$/, "");
+  }
+
+  invalidateUserCache(): void {
+    this.userDirectoryCache = null;
   }
 
   // Ephemeral storage helpers
@@ -199,65 +204,34 @@ class ApiClient {
   // --- High-Speed Parallel Health Handshake with Cold-Start Resilience ---
   async checkHealth(options?: { timeoutMs?: number; retries?: number }): Promise<{ ok: boolean; status: string; latency: number; details?: HealthCheckResponse }> {
     const startTime = performance.now();
-    const timeoutMs = options?.timeoutMs ?? 4000;
-    const maxRetries = options?.retries ?? 2;
+    const timeoutMs = options?.timeoutMs ?? 2500;
 
-    const endpoints = [
-      "/.well-known/openid-configuration",
-      "/health",
-      "/api/v1/health",
-      "/",
-    ];
-
-    const probeOnce = async (timeout: number): Promise<boolean> => {
+    const probeEndpoint = async (path: string, timeout: number): Promise<boolean> => {
       const controller = new AbortController();
       const timer = setTimeout(() => controller.abort(), timeout);
-
       try {
-        return await new Promise<boolean>((resolve) => {
-          let settledCount = 0;
-          let hasSucceeded = false;
-
-          endpoints.forEach(async (ep) => {
-            try {
-              const res = await fetch(`${this.baseUrl}${ep}`, {
-                method: "GET",
-                headers: { Accept: "application/json" },
-                signal: controller.signal,
-              });
-              // Any HTTP response < 500 confirms host is awake & reachable
-              if (res.status < 500 && !hasSucceeded) {
-                hasSucceeded = true;
-                resolve(true);
-                return;
-              }
-            } catch {
-              // ignore probe error
-            }
-
-            settledCount++;
-            if (settledCount === endpoints.length && !hasSucceeded) {
-              resolve(false);
-            }
-          });
+        const res = await fetch(`${this.baseUrl}${path}`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          signal: controller.signal,
         });
+        return res.status < 500;
+      } catch {
+        return false;
       } finally {
         clearTimeout(timer);
-        controller.abort();
       }
     };
 
-    // Attempt 1: Fast parallel probe across all standard endpoints
-    let isAlive = await probeOnce(timeoutMs);
-
-    // Attempt 2: If sleeping host is still warming up, wait 1.2s and probe again with a wider window
-    if (!isAlive && maxRetries > 1) {
-      await new Promise((r) => setTimeout(r, 1200));
-      isAlive = await probeOnce(timeoutMs + 2500);
+    // Fast probe: ping /health directly
+    let ok = await probeEndpoint("/health", timeoutMs);
+    // Fallback: ping /.well-known/openid-configuration if /health failed
+    if (!ok) {
+      ok = await probeEndpoint("/.well-known/openid-configuration", timeoutMs);
     }
 
     const latency = Math.round(performance.now() - startTime);
-    if (!isAlive) {
+    if (!ok) {
       return { ok: false, status: "offline", latency };
     }
     return { ok: true, status: "healthy", latency };
@@ -435,6 +409,23 @@ class ApiClient {
   }
 
   async getAdminUsers(filter?: AdminUsersFilter): Promise<AdminUsersResponse> {
+    const isUnfilteredAll =
+      filter?.fetchAll &&
+      !filter?.q &&
+      (!filter?.role || filter.role === "All") &&
+      (!filter?.status || filter.status === "All");
+
+    // Return cached directory if fresh (< 20 seconds) to avoid redundant round-trips
+    if (isUnfilteredAll && this.userDirectoryCache && Date.now() - this.userDirectoryCache.timestamp < 20_000) {
+      return {
+        users: [...this.userDirectoryCache.users],
+        items: [...this.userDirectoryCache.users],
+        total: this.userDirectoryCache.total,
+        limit: filter?.limit || 100,
+        offset: filter?.offset || 0,
+      };
+    }
+
     const params = new URLSearchParams();
     if (filter?.q) params.set("q", filter.q);
     if (filter?.role && filter.role !== "All") params.set("role", filter.role);
@@ -457,28 +448,45 @@ class ApiClient {
     const totalCount =
       typeof res.data?.total === "number" ? res.data.total : userList.length;
 
-    // If fetchAll is requested, automatically paginate until the full directory is assembled
+    // If fetchAll is requested, fetch all remaining pages in parallel
     if (filter?.fetchAll && totalCount > userList.length) {
-      let currentOffset = userList.length;
-      while (currentOffset < totalCount) {
-        params.set("offset", currentOffset.toString());
-        params.set("limit", "100");
-        try {
-          const nextRes = await this.request<any>(
-            `/api/v1/admin/users?${params.toString()}`,
-            { method: "GET" }
-          );
-          const nextBatch: AdminUserListItem[] =
-            nextRes.data?.users ||
-            nextRes.data?.items ||
-            (Array.isArray(nextRes.data) ? nextRes.data : []);
-          if (nextBatch.length === 0) break;
-          userList = [...userList, ...nextBatch];
-          currentOffset += nextBatch.length;
-        } catch {
-          break;
-        }
+      const remainingOffsets: number[] = [];
+      for (let offset = userList.length; offset < totalCount; offset += 100) {
+        remainingOffsets.push(offset);
       }
+
+      const results = await Promise.all(
+        remainingOffsets.map(async (offset) => {
+          const pageParams = new URLSearchParams(params);
+          pageParams.set("offset", offset.toString());
+          pageParams.set("limit", "100");
+          try {
+            const nextRes = await this.request<any>(
+              `/api/v1/admin/users?${pageParams.toString()}`,
+              { method: "GET" }
+            );
+            const nextBatch: AdminUserListItem[] =
+              nextRes.data?.users ||
+              nextRes.data?.items ||
+              (Array.isArray(nextRes.data) ? nextRes.data : []);
+            return nextBatch;
+          } catch {
+            return [] as AdminUserListItem[];
+          }
+        })
+      );
+
+      for (const batch of results) {
+        userList = [...userList, ...batch];
+      }
+    }
+
+    if (isUnfilteredAll) {
+      this.userDirectoryCache = {
+        users: userList,
+        total: totalCount,
+        timestamp: Date.now(),
+      };
     }
 
     return {
@@ -491,6 +499,7 @@ class ApiClient {
   }
 
   async unlockUser(userId: string): Promise<GenericMessageResponse> {
+    this.invalidateUserCache();
     const res = await this.request<GenericMessageResponse>(
       `/api/v1/admin/users/${userId}/unlock`,
       { method: "POST" }
@@ -499,6 +508,7 @@ class ApiClient {
   }
 
   async updateUserStatus(userId: string, status: "ACTIVE" | "DISABLED"): Promise<GenericMessageResponse> {
+    this.invalidateUserCache();
     const res = await this.request<GenericMessageResponse>(
       `/api/v1/admin/users/${userId}/status`,
       {
@@ -510,6 +520,7 @@ class ApiClient {
   }
 
   async updateUserRole(userId: string, role: "user" | "admin"): Promise<GenericMessageResponse> {
+    this.invalidateUserCache();
     const res = await this.request<GenericMessageResponse>(
       `/api/v1/admin/users/${userId}/role`,
       {

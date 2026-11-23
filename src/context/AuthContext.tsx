@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [logout]);
 
   const checkServiceAvailability = useCallback(async (): Promise<boolean> => {
-    const health = await api.checkHealth({ timeoutMs: 4000, retries: 2 });
+    const health = await api.checkHealth({ timeoutMs: 2500 });
     if (health.ok) {
       setIsServiceUnavailable(false);
       return true;
@@ -76,28 +76,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     let isMounted = true;
 
     async function initialize() {
-      // 1. Initial Service Connectivity Handshake (Parallel Fast Probes)
+      const existingToken = api.getToken();
+
+      let cachedUser: UserProfile | null = null;
       try {
-        const health = await api.checkHealth({ timeoutMs: 3500, retries: 2 });
-        if (!health.ok) {
-          if (isMounted) {
-            setIsServiceUnavailable(true);
-            setIsLoading(false);
-          }
-          return;
-        }
+        const stored = sessionStorage.getItem("vaultauth_user");
+        if (stored) cachedUser = JSON.parse(stored);
       } catch {
-        if (isMounted) {
-          setIsServiceUnavailable(true);
-          setIsLoading(false);
-        }
-        return;
+        // ignore
       }
 
-      if (isMounted) setIsServiceUnavailable(false);
-
-      // 2. Hydrate Existing Session if token exists
-      const existingToken = api.getToken();
+      // 1. If unauthenticated, render auth pages immediately without blocking
       if (!existingToken) {
         if (isMounted) {
           setToken(null);
@@ -107,24 +96,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
+      // 2. If token and cached user exist, hydrate immediately for instant visual response
+      if (cachedUser && isMounted) {
+        setToken(existingToken);
+        setUser(cachedUser);
+        setIsLoading(false);
+      }
+
+      // 3. Revalidate session against live backend
       try {
-        const profile = await api.getMe({ skipAuthExpiredEvent: true, timeoutMs: 5000 });
+        const profile = await api.getMe({ skipAuthExpiredEvent: true, timeoutMs: 4000 });
         if (isMounted) {
           setToken(existingToken);
           setUser(profile);
           sessionStorage.setItem("vaultauth_user", JSON.stringify(profile));
+          setIsServiceUnavailable(false);
+          setIsLoading(false);
         }
-      } catch {
-        // Stale or invalid token from prior session — silently clear it!
-        // Never throw an authentication error or show an expired notice on initial startup.
-        api.clearToken();
-        if (isMounted) {
-          setToken(null);
-          setUser(null);
-          setSessionExpiredNotice(null);
+      } catch (err: unknown) {
+        const apiErr = err as { status?: number };
+        if (apiErr.status === 401) {
+          // Token expired or invalidated on backend
+          api.clearToken();
+          if (isMounted) {
+            setToken(null);
+            setUser(null);
+            setSessionExpiredNotice(null);
+            setIsLoading(false);
+          }
+        } else if (apiErr.status === 0 || (apiErr.status && apiErr.status >= 500)) {
+          // Backend unreachable or offline
+          if (isMounted) {
+            if (!cachedUser) {
+              setIsServiceUnavailable(true);
+            }
+            setIsLoading(false);
+          }
+        } else {
+          // Other error
+          if (isMounted) {
+            if (!cachedUser) {
+              api.clearToken();
+              setToken(null);
+              setUser(null);
+            }
+            setIsLoading(false);
+          }
         }
-      } finally {
-        if (isMounted) setIsLoading(false);
       }
     }
 
