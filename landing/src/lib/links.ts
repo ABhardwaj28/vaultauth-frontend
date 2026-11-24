@@ -1,2 +1,2 @@
-/** Temporary docs destination — the app's 403 page until public docs are live. */
-export const DOCS_LINK = "http://localhost:3000/403";
+/** Temporary docs destination — a self-contained 403 page that follows the OS theme. */
+export const DOCS_LINK = "/403.html";

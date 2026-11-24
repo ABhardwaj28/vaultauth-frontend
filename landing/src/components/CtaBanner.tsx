@@ -26,6 +26,7 @@ const actions = [
     href: DOCS_LINK,
     label: "See documentation",
     primary: false,
+    error: true,
   },
 ];
 
@@ -57,11 +58,11 @@ export function CtaBanner() {
             const Icon = action.icon;
             return (
               <Reveal key={action.title} delay={index * 0.06}>
-                <a href={action.href} target={action.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="flex h-full flex-col rounded-xl border border-[#1E2838] bg-[#0E1420] p-6 transition-colors hover:border-[#F07A26]/40">
-                  <Icon className="h-5 w-5 text-[#F07A26]" />
+                <a href={action.href} target={action.href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className={`flex h-full flex-col rounded-xl border border-[#1E2838] bg-[#0E1420] p-6 transition-colors ${action.error ? "hover:border-[#F97066]/50" : "hover:border-[#F07A26]/40"}`}>
+                  <Icon className={`h-5 w-5 ${action.error ? "text-[#FF8A80]" : "text-[#F07A26]"}`} />
                   <p className="mt-4 font-display text-base font-semibold text-white">{action.title}</p>
                   <p className="mt-2 flex-1 text-[13px] leading-6 text-[#94A3B8]">{action.body}</p>
-                  <span className={`mt-5 text-[13px] font-semibold ${action.primary ? "text-[#F07A26]" : "text-white"}`}>{action.label}</span>
+                  <span className={`mt-5 text-[13px] font-semibold ${action.error ? "text-[#FF8A80]" : action.primary ? "text-[#F07A26]" : "text-white"}`}>{action.label}</span>
                 </a>
               </Reveal>
             );
