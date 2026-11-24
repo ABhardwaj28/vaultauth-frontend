@@ -38,7 +38,6 @@ export function AuditLogsTab() {
   const [usersMap, setUsersMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState("All");
-  const [limit, setLimit] = useState(50);
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
@@ -94,7 +93,7 @@ export function AuditLogsTab() {
       const [logsData] = await Promise.all([
         api.getAuditLogs({
           event: selectedEvent !== "All" ? selectedEvent : undefined,
-          limit,
+          limit: 100,
         }),
         fetchUsers(),
       ]);
@@ -104,11 +103,20 @@ export function AuditLogsTab() {
     } finally {
       setLoading(false);
     }
-  }, [selectedEvent, limit, fetchUsers]);
+  }, [selectedEvent, fetchUsers]);
 
   useEffect(() => {
     fetchLogs();
   }, [fetchLogs]);
+
+  // The table shows the 25 most recent events; the graph uses the full set.
+  const tableLogs = [...logs]
+    .sort((a, b) => {
+      const ta = new Date(a.ts || (a as { created_at?: string }).created_at || "").getTime();
+      const tb = new Date(b.ts || (b as { created_at?: string }).created_at || "").getTime();
+      return (Number.isNaN(tb) ? 0 : tb) - (Number.isNaN(ta) ? 0 : ta);
+    })
+    .slice(0, 25);
 
   const toggleExpand = (id: number | string) => {
     setExpandedId((prev) => (prev === id ? null : id));
@@ -175,21 +183,6 @@ export function AuditLogsTab() {
             </select>
           </div>
 
-          <div className="space-y-1.5">
-            <label htmlFor="audit-limit" className="block text-[11px] text-muted-foreground">
-              Rows
-            </label>
-            <select
-              id="audit-limit"
-              value={limit}
-              onChange={(e) => setLimit(Number(e.target.value))}
-              className="h-8 rounded-md border border-border/70 bg-background/60 px-2.5 font-mono text-[11px] focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"
-            >
-              <option value={25}>25 entries</option>
-              <option value={50}>50 entries</option>
-              <option value={100}>100 entries</option>
-            </select>
-          </div>
         </div>
 
         <div className="space-y-1.5">
@@ -222,7 +215,7 @@ export function AuditLogsTab() {
             <p className="text-xs text-muted-foreground">Hourly · last 24 hours</p>
           </div>
           <Badge variant="outline" className="rounded-md px-2 py-0 font-mono text-[11px] text-muted-foreground">
-            {logs.length} events
+            {tableLogs.length} of {logs.length} events
           </Badge>
         </div>
         <div className="px-4 py-5 sm:px-5">
@@ -253,7 +246,7 @@ export function AuditLogsTab() {
             </h2>
           </div>
           <Badge variant="outline" className="self-start rounded-md px-2 py-0 font-mono text-[11px] text-muted-foreground sm:self-auto">
-            {logs.length} events
+            {tableLogs.length} of {logs.length} events
           </Badge>
         </div>
 
@@ -270,14 +263,14 @@ export function AuditLogsTab() {
             </TableHeader>
 
             <TableBody>
-              {logs.length === 0 ? (
+              {tableLogs.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-28 text-center text-sm text-muted-foreground">
                     {loading ? "Reading the audit trail" : "No events recorded for this filter."}
                   </TableCell>
                 </TableRow>
               ) : (
-                logs.map((log) => {
+                tableLogs.map((log) => {
                   const isExpanded = expandedId === log.id;
                   const rawIp = (log.ip_address || log.ip || "—").replace(/\/32$/, "");
                   const timestampStr = log.ts || (log as any).created_at || (log as any).timestamp;

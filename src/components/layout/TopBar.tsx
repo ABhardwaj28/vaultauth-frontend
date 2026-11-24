@@ -42,6 +42,12 @@ export function TopBar() {
           {/* User Email & Role Badge */}
           {user && (
             <div className="flex items-center space-x-2 pl-2 border-l border-border">
+              <span
+                className="flex h-7 w-7 shrink-0 items-center justify-center rounded-sm border border-primary/30 bg-primary/10 font-display text-[10px] font-bold text-primary"
+                title={user.email}
+              >
+                {(user.email || "?").slice(0, 2).toUpperCase()}
+              </span>
               <span className="hidden md:inline text-xs font-mono text-muted-foreground max-w-[180px] truncate">
                 {user.email}
               </span>
