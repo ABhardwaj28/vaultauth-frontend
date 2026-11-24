@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   Check,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -88,7 +87,7 @@ export function RegisterPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
+    <div className="flex min-h-screen bg-[#F1F2F5] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
       {/* Always-dark brand panel — hidden on small screens */}
       <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] shrink-0 flex-col overflow-hidden bg-[#111318] text-white">
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
@@ -156,9 +155,8 @@ export function RegisterPage() {
       </aside>
 
       {/* Themed form panel */}
-      <section className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
+      <section className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-[#F1F2F5] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
         <div className="absolute right-5 top-5 z-20">
-          <ThemeToggle />
         </div>
 
         {/* Brand mark sits above the form on mobile */}

@@ -1,7 +1,6 @@
 import { ShieldCheck, LogOut, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ORGANISATION_NAME } from "@/lib/organisation";
@@ -53,7 +52,6 @@ export function TopBar() {
           )}
 
           {/* Theme Switcher */}
-          <ThemeToggle />
 
           {/* Logout Button */}
           {user && (

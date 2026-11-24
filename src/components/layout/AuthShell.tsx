@@ -1,7 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { ShieldCheck } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 
 interface AuthShellProps {
   children: React.ReactNode;
@@ -37,8 +36,7 @@ export function AuthShell({ children }: AuthShellProps) {
           </Link>
 
           <div className="flex items-center space-x-3">
-            <ThemeToggle />
-          </div>
+            </div>
         </div>
       </header>
 

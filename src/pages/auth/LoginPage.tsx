@@ -12,7 +12,6 @@ import {
   Check,
   CheckCircle2,
 } from "lucide-react";
-import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -518,46 +517,83 @@ export function LoginPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen flex-col bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
+    <div className="relative flex min-h-screen items-center justify-center bg-[#F1F2F5] px-4 py-8 text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)]"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_45%_at_50%_35%,hsl(var(--primary)/0.06),transparent_70%)]"
       />
 
-      <header className="relative z-10 flex items-center justify-between border-b border-border/60 px-5 py-3.5 sm:px-8">
-        <Link to="/" className="flex items-center gap-2.5">
-          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F07A26] text-white">
-            <ShieldCheck className="h-4 w-4" />
-          </span>
-          <span className="flex items-baseline gap-1.5">
-            <span className="font-display text-sm font-bold tracking-tight text-foreground">VaultAuth</span>
-            <span className="font-mono text-[10px] font-semibold tracking-[0.16em] text-[#C96B1E]">SSO</span>
-          </span>
-        </Link>
-        <ThemeToggle />
-      </header>
+      <div className="relative z-10 w-full max-w-[720px] overflow-hidden rounded-none border border-border/70 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,40,0.45)] dark:border-white/[0.07] dark:bg-[#11141A] dark:shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] md:grid md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+        {/* Compact always-dark brand panel */}
+        <aside className="relative hidden flex-col justify-between overflow-hidden bg-[#111318] p-7 text-white md:flex">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="absolute -bottom-32 -left-24 h-[380px] w-[380px] rounded-none border border-white/[0.06]" />
+            <div className="absolute -bottom-20 -left-12 h-[300px] w-[300px] rounded-full border border-white/[0.05]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_90%,rgba(240,122,38,0.16),transparent_60%)]" />
+          </div>
 
-      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8">
-        <div className="w-full max-w-[380px]">
-          <div className="mb-5 text-center">
-            <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[#C96B1E]">Secure sign-in</p>
-            <h1 className="mt-2 font-display text-[28px] font-bold leading-tight tracking-[-0.03em] text-foreground">
+          <div className="relative flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-none bg-[#F07A26] text-white">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-display text-sm font-bold tracking-tight">VaultAuth</span>
+              <span className="font-mono text-[10px] font-semibold tracking-[0.16em] text-white/45">SSO</span>
+            </span>
+          </div>
+
+          <div className="relative py-8">
+            <h2 className="font-display text-[30px] font-bold leading-[1.12] tracking-[-0.035em]">
+              Sign in once.
+              <br />
+              Move freely.
+            </h2>
+            <p className="mt-3 text-[13px] leading-relaxed text-white/55">
+              Zero-trust single sign-on with hardware-backed credential protection.
+            </p>
+
+            <ul className="mt-7 space-y-3">
+              {["Argon2id protected", "Opaque sessions", "Instant revocation"].map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-[13px] text-white/85">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-emerald-500/15 ring-1 ring-emerald-400/25">
+                    <Check className="h-3 w-3 text-emerald-400" strokeWidth={3} />
+                  </span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <p className="relative font-mono text-[10px] text-white/35">zero-trust identity gateway</p>
+        </aside>
+
+        {/* Themed form panel */}
+        <div className="relative flex flex-col">
+          <div className="absolute right-4 top-4 z-10">
+            </div>
+
+          <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-8">
+            <div className="mb-6 md:hidden">
+              <span className="flex h-8 w-8 items-center justify-center rounded-none bg-[#F07A26] text-white">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+            </div>
+
+            <h1 className="font-display text-[26px] font-bold tracking-[-0.03em] text-foreground">
               Welcome back
             </h1>
             <p className="mt-1 text-sm text-muted-foreground">Sign in with your credentials.</p>
-          </div>
 
-          <div className="rounded-xl border border-border/70 bg-white p-6 shadow-[0_16px_40px_-24px_rgba(16,24,40,0.25)] dark:border-white/[0.07] dark:bg-[#11141A] dark:shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {sessionExpiredNotice && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
+                <div className="flex items-start gap-2.5 rounded-none border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                   <span className="leading-relaxed">{sessionExpiredNotice}</span>
                 </div>
               )}
 
               {error && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive/[0.06] p-2.5 text-sm text-destructive">
+                <div className="flex items-start gap-2.5 rounded-none border border-destructive/25 bg-destructive/[0.06] p-2.5 text-sm text-destructive">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
                   <div className="space-y-0.5">
                     <span className="block font-semibold">Authentication error</span>
@@ -567,9 +603,7 @@ export function LoginPage() {
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="email" className="text-[13px] font-semibold text-foreground">
-                  User email
-                </Label>
+                <Label htmlFor="email" className="text-[13px] font-semibold text-foreground">User email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -580,7 +614,7 @@ export function LoginPage() {
                       if (error) setError(null);
                       if (sessionExpiredNotice) setSessionExpiredNotice(null);
                     }}
-                    className="h-10 rounded-lg border-border/80 bg-background/60 pl-9 text-sm dark:bg-white/[0.03]"
+                    className="h-10 rounded-none border-border/80 bg-background/60 pl-9 text-sm dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                 </div>
@@ -588,9 +622,7 @@ export function LoginPage() {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="password" className="text-[13px] font-semibold text-foreground">
-                    Password
-                  </Label>
+                  <Label htmlFor="password" className="text-[13px] font-semibold text-foreground">Password</Label>
                   <button
                     type="button" onClick={() => setResetOpen(true)}
                     className="text-xs font-medium text-[#C96B1E] underline-offset-4 hover:underline dark:text-[#E5A068]"
@@ -608,7 +640,7 @@ export function LoginPage() {
                       if (error) setError(null);
                       if (sessionExpiredNotice) setSessionExpiredNotice(null);
                     }}
-                    className="h-10 rounded-lg border-border/80 bg-background/60 pl-9 pr-9 text-sm dark:bg-white/[0.03]"
+                    className="h-10 rounded-none border-border/80 bg-background/60 pl-9 pr-9 text-sm dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                   <button
@@ -622,16 +654,28 @@ export function LoginPage() {
               </div>
 
               {rateLimitTimer && rateLimitTimer > 0 && (
-                <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
+                <div className="flex items-center gap-2 rounded-none border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
                   <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
                   Try again in <span className="font-mono font-medium tabular-nums">{rateLimitTimer}s</span>.
                 </div>
               )}
 
+              <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+                <span className={password.length >= 12 ? "text-emerald-500" : ""}>
+                  {password.length >= 12 ? "✓" : "○"} 12+ characters
+                </span>
+                <span className={/[A-Z]/.test(password) && /[a-z]/.test(password) ? "text-emerald-500" : ""}>
+                  {/[A-Z]/.test(password) && /[a-z]/.test(password) ? "✓" : "○"} Mixed case
+                </span>
+                <span className={/\d/.test(password) ? "text-emerald-500" : ""}>
+                  {/\d/.test(password) ? "✓" : "○"} Number
+                </span>
+              </div>
+
               <Button
                 type="submit"
                 disabled={loading || Boolean(rateLimitTimer && rateLimitTimer > 0)}
-                className="h-10 w-full rounded-lg bg-[#F07A26] text-sm font-semibold text-white transition-colors hover:bg-[#DB6A16]"
+                className="h-10 w-full rounded-none bg-[#F07A26] text-sm font-semibold text-white transition-colors hover:bg-[#DB6A16]"
               >
                 {loading ? (
                   <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</span>
@@ -649,21 +693,12 @@ export function LoginPage() {
             </form>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
-            {["Argon2id protected", "Opaque sessions", "Instant revocation"].map((item) => (
-              <span key={item} className="flex items-center gap-1.5">
-                <Check className="h-3.5 w-3.5 text-emerald-500" />
-                {item}
-              </span>
-            ))}
+          <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-[11px] text-muted-foreground sm:px-8">
+            <span>Protected by VaultAuth SSO</span>
+            <span className="font-mono">req_8f2c41d9</span>
           </div>
         </div>
-      </main>
-
-      <footer className="relative z-10 flex items-center justify-between px-5 py-4 text-xs text-muted-foreground sm:px-8">
-        <span>Protected by VaultAuth SSO</span>
-        <span className="font-mono text-[11px]">req_8f2c41d9</span>
-      </footer>
+      </div>
 
       <PasswordResetDialog
         open={resetOpen}
@@ -673,4 +708,5 @@ export function LoginPage() {
       />
     </div>
   );
+
 }

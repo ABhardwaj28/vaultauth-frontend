@@ -11,64 +11,41 @@ interface ThemeContextType {
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vaultauth-theme") as Theme | null;
-      if (stored === "light" || stored === "dark" || stored === "system") {
-        return stored;
-      }
-    }
-    return "system";
-  });
+function getSystemTheme(): ResolvedTheme {
+  if (typeof window === "undefined") return "light";
+  return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+}
 
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => {
-    if (typeof window === "undefined") return "dark";
-    if (theme === "system") {
-      return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    }
-    return theme;
-  });
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  // The portal always follows the operating system. `theme`/`setTheme` remain
+  // in the context so existing consumers keep working, but selection is fixed.
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(getSystemTheme);
 
   useEffect(() => {
     const root = document.documentElement;
+    const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
 
     const applyTheme = (isDark: boolean) => {
-      if (isDark) {
-        root.classList.add("dark");
-        setResolvedTheme("dark");
-      } else {
-        root.classList.remove("dark");
-        setResolvedTheme("light");
-      }
+      root.classList.toggle("dark", isDark);
+      setResolvedTheme(isDark ? "dark" : "light");
     };
 
-    if (theme === "system") {
-      const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-      applyTheme(mediaQuery.matches);
-
-      const handleChange = (e: MediaQueryListEvent) => {
-        applyTheme(e.matches);
-      };
-
-      mediaQuery.addEventListener("change", handleChange);
-      return () => mediaQuery.removeEventListener("change", handleChange);
-    } else {
-      applyTheme(theme === "dark");
-    }
-  }, [theme]);
-
-  const setTheme = (nextTheme: Theme) => {
-    setThemeState(nextTheme);
-    try {
-      localStorage.setItem("vaultauth-theme", nextTheme);
-    } catch {
-      // ignore
-    }
-  };
+    applyTheme(mediaQuery.matches);
+    const handleChange = (e: MediaQueryListEvent) => applyTheme(e.matches);
+    mediaQuery.addEventListener("change", handleChange);
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   return (
-    <ThemeContext.Provider value={{ theme, resolvedTheme, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme: "system",
+        resolvedTheme,
+        setTheme: () => {
+          // Intentionally inert: system preference is authoritative.
+        },
+      }}
+    >
       {children}
     </ThemeContext.Provider>
   );

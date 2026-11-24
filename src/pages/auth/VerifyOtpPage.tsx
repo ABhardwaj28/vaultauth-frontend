@@ -137,7 +137,7 @@ export function VerifyOtpPage() {
   return (
     <AuthShell>
       {/* Exact auth canvas colors over the shared shell */}
-      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[#F6F7F9] dark:bg-[#0B0D11]" />
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[#F1F2F5] dark:bg-[#0B0D11]" />
 
       <div className="relative overflow-hidden rounded-xl border border-border/70 bg-white p-7 shadow-[0_12px_40px_-16px_rgba(16,24,40,0.18)] dark:border-white/[0.06] dark:bg-[#11141A] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.5)] sm:p-8">
         <div className="space-y-3 pb-7 text-center">
