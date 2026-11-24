@@ -147,7 +147,7 @@ export function Hero() {
               </span>
             </div>
 
-            <div className="min-h-[400px] rounded-b-xl bg-[#060a11] p-4 sm:p-5">
+            <div className="h-[430px] overflow-y-auto rounded-b-xl bg-[#060a11] p-4 sm:h-[460px] sm:p-5">
               <AnimatePresence mode="wait">
                 {tab === "token" ? (
                   <motion.div key="token" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
