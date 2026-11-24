@@ -60,13 +60,13 @@ export function SectionHeading({
 }
 
 export const ctaPrimary =
-  "inline-flex items-center justify-center rounded-lg bg-[#F07A26] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#e06d1b] hover:shadow-[0_12px_30px_-12px_rgba(240,122,38,0.8)]";
+  "inline-flex items-center justify-center rounded-none bg-[#F07A26] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#e06d1b] hover:shadow-[0_12px_30px_-12px_rgba(240,122,38,0.8)]";
 
 /** Primary CTA with dark ink for WCAG contrast outside the header. */
 export const ctaPrimaryInk = `${ctaPrimary} va-amber-ink`;
 
 export const ctaSecondary =
-  "inline-flex items-center justify-center rounded-lg border border-white/35 bg-white/[0.09] px-5 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] transition-all hover:border-white/60 hover:bg-white/[0.15]";
+  "inline-flex items-center justify-center rounded-none border border-white/35 bg-white/[0.09] px-5 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] transition-all hover:border-white/60 hover:bg-white/[0.15]";
 
 /** Small, quiet link that points a claim at the live portal. */
 export function SeeLive({ href, children }: { href: string; children: ReactNode }) {
