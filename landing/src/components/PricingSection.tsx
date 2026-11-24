@@ -161,7 +161,7 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <a href={tier.name === "Developer" ? "http://localhost:3000/register" : "#final-cta"} className={`${tier.primary ? ctaPrimaryInk : ctaSecondary} mt-5 justify-center text-[10px] sm:mt-7 sm:text-[13px]`}>
+                <a href={tier.name === "Developer" ? "/register" : "#final-cta"} className={`${tier.primary ? ctaPrimaryInk : ctaSecondary} mt-5 justify-center text-[10px] sm:mt-7 sm:text-[13px]`}>
                   {tier.cta}
                 </a>
               </div>

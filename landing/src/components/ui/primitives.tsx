@@ -72,7 +72,7 @@ export const ctaSecondary =
 export function SeeLive({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
-      href={`http://localhost:3000${href}`}
+      href={href}
       target="_blank"
       rel="noreferrer"
       className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F07A26] transition-opacity hover:opacity-80"

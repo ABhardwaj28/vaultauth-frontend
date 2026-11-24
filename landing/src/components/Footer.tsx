@@ -39,7 +39,7 @@ const columns = [
       { label: "Comparison", href: "#compare" },
       { label: "Plans & capacity", href: "#pricing" },
       { label: "Technical FAQs", href: "#faq" },
-      { label: "Identity portal", href: "http://localhost:3000/login" },
+      { label: "Identity portal", href: "/login" },
     ],
   },
 ];

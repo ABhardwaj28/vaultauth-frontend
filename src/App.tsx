@@ -1,6 +1,5 @@
 import { useState } from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Loader2 } from "lucide-react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ErrorBoundary } from "@/pages/errors/ErrorBoundary";
@@ -31,19 +30,8 @@ import { ServerErrorPage } from "@/pages/errors/ServerErrorPage";
 import { ServiceUnavailablePage } from "@/pages/errors/ServiceUnavailablePage";
 import { PolicyUnavailablePage } from "@/pages/errors/PolicyUnavailablePage";
 
-function RootRedirect() {
-  const { isAuthenticated, isLoading } = useAuth();
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background text-foreground">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-      </div>
-    );
-  }
-
-  return <Navigate to={isAuthenticated ? "/dashboard" : "/login"} replace />;
-}
+// The marketing site is the public front door at "/".
+import LandingPage from "@landing/App";
 
 function AppRoutes() {
   const { isServiceUnavailable, checkServiceAvailability } = useAuth();
@@ -66,8 +54,8 @@ function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Root redirect: cleanly route to dashboard if logged in, or login if not */}
-        <Route path="/" element={<RootRedirect />} />
+        {/* Public landing page */}
+        <Route path="/" element={<LandingPage />} />
 
         {/* Public-Only Auth Routes */}
         <Route element={<PublicOnly />}>

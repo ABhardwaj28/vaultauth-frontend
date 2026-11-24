@@ -60,7 +60,7 @@ const tiers = [
 
 export function ArchitectureSection() {
   const [active, setActive] = useState(0);
-  const tier = tiers[active];
+  const tier = tiers[active]!;
 
   return (
     <section id="architecture" className="scroll-mt-24 border-y border-[#1E2838] py-24 sm:py-28">

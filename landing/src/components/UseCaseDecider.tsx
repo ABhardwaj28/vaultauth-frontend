@@ -50,7 +50,7 @@ const cases = [
 
 export function UseCaseDecider() {
   const [active, setActive] = useState(0);
-  const item = cases[active];
+  const item = cases[active]!;
 
   return (
     <section id="solutions" className="scroll-mt-24 py-24 sm:py-28">

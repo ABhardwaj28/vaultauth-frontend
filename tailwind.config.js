@@ -4,6 +4,8 @@ export default {
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
+    // Landing page components are reused from the standalone app folder.
+    "./landing/src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -45,6 +47,17 @@ export default {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
           amber: "#F6821F",
+          50: "#fff8f1",
+          100: "#feefdc",
+          200: "#fcdbb8",
+          300: "#f9be88",
+          400: "#f69752",
+          500: "#F6821F",
+          600: "#e76a14",
+          700: "#c04f11",
+          800: "#993f15",
+          900: "#7b3615",
+          950: "#431908",
         },
       },
       borderRadius: {
@@ -59,6 +72,13 @@ export default {
           "BlinkMacSystemFont",
           "'Segoe UI'",
           "Roboto",
+          "sans-serif",
+        ],
+        display: [
+          "Plus Jakarta Sans",
+          "-apple-system",
+          "BlinkMacSystemFont",
+          "Segoe UI",
           "sans-serif",
         ],
         mono: [
@@ -83,6 +103,11 @@ export default {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+      },
+      boxShadow: {
+        "glow-sm": "0 0 15px -3px rgba(246, 130, 31, 0.25)",
+        "glow": "0 0 25px -4px rgba(246, 130, 31, 0.35)",
+        "glow-lg": "0 0 40px -6px rgba(246, 130, 31, 0.45)",
       },
     },
   },

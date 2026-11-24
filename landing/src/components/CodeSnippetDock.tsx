@@ -167,7 +167,7 @@ export function CodeSnippetDock() {
   const [active, setActive] = useState(0);
   const [copied, setCopied] = useState(false);
   const [copyFailed, setCopyFailed] = useState(false);
-  const framework = frameworks[active];
+  const framework = frameworks[active]!;
 
   const copy = async () => {
     const ok = await copyText(framework.code);

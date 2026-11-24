@@ -206,8 +206,8 @@ export function Navbar() {
               <span className={`h-1.5 w-1.5 rounded-full ${health === "live" ? "bg-[#10B981]" : "bg-slate-500"}`} />
               {health === "live" ? "Service healthy" : "API reference"}
             </span>
-            <a href="http://localhost:3000/login" className="text-sm font-medium text-white hover:text-[#F07A26]">Sign in</a>
-            <a href="http://localhost:3000/register" className={ctaPrimary}>Create free account</a>
+            <a href="/login" className="text-sm font-medium text-white hover:text-[#F07A26]">Sign in</a>
+            <a href="/register" className={ctaPrimary}>Create free account</a>
           </div>
 
           <button
@@ -295,8 +295,8 @@ export function Navbar() {
             ))}
             <a href="#pricing" onClick={() => setMobileOpen(false)} className="block py-3.5 text-sm font-medium text-white">Pricing</a>
             <div className="mt-4 grid gap-2">
-              <a href="http://localhost:3000/login" className="rounded-lg border border-[#1E2838] px-5 py-3 text-center text-sm font-semibold text-white">Sign in</a>
-              <a href="http://localhost:3000/register" className={`${ctaPrimaryInk} text-center`}>Create free account</a>
+              <a href="/login" className="rounded-lg border border-[#1E2838] px-5 py-3 text-center text-sm font-semibold text-white">Sign in</a>
+              <a href="/register" className={`${ctaPrimaryInk} text-center`}>Create free account</a>
             </div>
           </motion.div>
         ) : null}
