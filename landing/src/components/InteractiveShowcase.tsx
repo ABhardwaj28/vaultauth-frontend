@@ -77,6 +77,10 @@ export function InteractiveShowcase() {
   const [engaged, setEngaged] = useState(false);
   const [stage, setStage] = useState(0);
   const [copyFeedback, setCopyFeedback] = useState<boolean | null>(null);
+  const [typedPassword, setTypedPassword] = useState("");
+  const [seconds, setSeconds] = useState(30);
+  const [otpCode, setOtpCode] = useState("482913");
+  const [showRecovery, setShowRecovery] = useState(false);
 
   useMotionValueEvent(smoothProgress, "change", (value) => {
     const next = Math.min(3, Math.max(0, Math.floor(value * 4)));
@@ -96,6 +100,11 @@ export function InteractiveShowcase() {
 
   // Each chamber plays its own sequence once, then holds still.
   useEffect(() => {
+    setTypedPassword("");
+    setShowRecovery(false);
+    setSeconds(30);
+    setOtpCode("482913");
+
     if (!engaged) {
       setStage(0);
       return;
@@ -108,8 +117,36 @@ export function InteractiveShowcase() {
     const timers = STEP_TIMES.map((time, index) =>
       window.setTimeout(() => setStage(index + 1), time)
     );
-    return () => timers.forEach((timer) => window.clearTimeout(timer));
+
+    let typeTimer: number | undefined;
+    if (active === 0) {
+      const full = "Password12345!";
+      let index = 0;
+      typeTimer = window.setInterval(() => {
+        index += 1;
+        setTypedPassword(full.slice(0, index));
+        if (index >= full.length && typeTimer) window.clearInterval(typeTimer);
+      }, 40);
+    }
+
+    return () => {
+      timers.forEach((timer) => window.clearTimeout(timer));
+      if (typeTimer) window.clearInterval(typeTimer);
+    };
   }, [active, engaged, reduce]);
+
+  // Real countdown for the OTP panel, independent of the scroll stage.
+  useEffect(() => {
+    if (active !== 1 || !engaged || reduce) return;
+    const timer = window.setInterval(() => setSeconds((value) => Math.max(0, value - 1)), 1000);
+    return () => window.clearInterval(timer);
+  }, [active, engaged, reduce]);
+
+  useEffect(() => {
+    if (active !== 1 || seconds > 0) return;
+    setOtpCode(String(Math.floor(100000 + Math.random() * 900000)));
+    setSeconds(30);
+  }, [active, seconds]);
 
   const copy = async (text: string) => {
     const ok = await copyText(text);
@@ -118,23 +155,20 @@ export function InteractiveShowcase() {
   };
 
   // Chamber values derived from the current stage.
-  const password = stage >= 1 ? "Password12345!" : "";
+  const password = typedPassword;
   const signedIn = stage >= 4;
   const clickPulse = stage >= 3;
 
-  const otp = "482913";
+  const otp = otpCode;
   const shownDigits = Math.min(6, Math.max(0, stage));
-  const seconds = Math.max(25, 30 - stage);
   const verified = stage >= 7;
   const otpClick = stage >= 7;
 
   const sessionStates = [
     { active: true },
     { active: stage < 1 },
-    { active: stage < 2 },
   ];
   const auditLines = [
-    ...(stage >= 2 ? ["11:04  SESSION_REVOKED  117.239.8.41"] : []),
     ...(stage >= 1 ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
     "11:01  AUTH_SUCCESS  103.24.18.9",
   ];
@@ -146,11 +180,11 @@ export function InteractiveShowcase() {
 
   const pointerTargets =
     active === 0
-      ? ["login-password", "login-password", "login-submit", "login-submit", "login-submit", "login-submit", "login-submit"]
+      ? ["login-password", "login-password", "login-submit", "login-submit", "login-done", "login-done", "login-done"]
       : active === 1
         ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit"]
         : active === 2
-          ? ["revoke-1", "revoke-2", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream"]
+          ? ["revoke-1", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream"]
           : [];
 
   const enter = (delay: number) => ({
@@ -217,45 +251,86 @@ export function InteractiveShowcase() {
                   <div ref={panelRef} className="relative rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
                     {active === 0 ? (
                       <div className="grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
-                        <div className="relative space-y-3">
-                          <motion.div {...enter(0)} className="flex items-center justify-between border-b border-[#1E2838] pb-2">
-                            <span className="text-xs font-semibold text-white">Enterprise sign-in</span>
-                            <span className="font-mono text-[10px] text-[#94A3B8]">demo shell</span>
-                          </motion.div>
-                          <motion.div {...enter(0.1)} className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 py-2.5 text-[12px] text-slate-300">shaurya@example.com</motion.div>
-                          <motion.div {...enter(0.2)} className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 transition-colors focus-within:border-[#F07A26]">
-                            <input readOnly value={password} aria-label="Demo password" data-pointer="login-password" placeholder="Password" className="w-full bg-transparent py-2.5 font-mono text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
-                          </motion.div>
-                          <motion.div {...enter(0.3)}>
-                            <motion.button
-                              type="button"
-                              data-pointer="login-submit"
-                              animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
-                              transition={{ duration: 0.2 }}
-                              className="relative w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
-                            >
-                              {clickPulse ? (
-                                <motion.span
-                                  aria-hidden="true"
-                                  className="pointer-events-none absolute inset-0 border border-[#F07A26]"
-                                  initial={{ opacity: 0.9, scale: 1 }}
-                                  animate={{ opacity: 0, scale: 1.12 }}
-                                  transition={{ duration: 0.55 }}
-                                />
-                              ) : null}
-                              {signedIn ? "Signed in" : "Sign in"}
-                            </motion.button>
-                          </motion.div>
-                          <motion.button {...enter(0.4)} type="button" className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E2838] py-2.5 text-[12px] text-[#94A3B8]">
-                            <Fingerprint className="h-4 w-4" /> Continue with passkey
-                          </motion.button>
-                          <AnimatePresence>
-                            {signedIn ? (
-                              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-[11px] leading-5 text-[#10B981]">
-                                <span className="inline-flex items-center gap-1.5 font-semibold"><CheckCircle2 className="h-3.5 w-3.5" /> Sign in successful</span>
-                                <span className="mt-1 block text-[10px] text-[#94A3B8]">Opaque session token issued after Argon2id verification.</span>
+                        <div className="relative min-h-[240px]">
+                          <AnimatePresence mode="wait">
+                            {!signedIn ? (
+                              <motion.div
+                                key="login-form"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0, y: -10 }}
+                                transition={{ duration: 0.22 }}
+                                className="space-y-3"
+                              >
+                                <div className="flex items-center justify-between border-b border-[#1E2838] pb-2">
+                                  <span className="text-xs font-semibold text-white">Enterprise sign-in</span>
+                                  <span className="font-mono text-[10px] text-[#94A3B8]">demo shell</span>
+                                </div>
+                                <div className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 py-2.5 text-[12px] text-slate-300">shaurya@example.com</div>
+                                <div className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 transition-colors focus-within:border-[#F07A26]">
+                                  <input
+                                    readOnly
+                                    type="password"
+                                    value={password}
+                                    aria-label="Demo password"
+                                    data-pointer="login-password"
+                                    placeholder="Password"
+                                    className="w-full bg-transparent py-2.5 font-mono text-[12px] tracking-[0.18em] text-white outline-none placeholder:tracking-normal placeholder:text-[#94A3B8]"
+                                  />
+                                </div>
+                                <motion.button
+                                  type="button"
+                                  data-pointer="login-submit"
+                                  animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="relative w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
+                                >
+                                  {clickPulse ? (
+                                    <motion.span
+                                      aria-hidden="true"
+                                      className="pointer-events-none absolute inset-0 border border-[#F07A26]"
+                                      initial={{ opacity: 0.9, scale: 1 }}
+                                      animate={{ opacity: 0, scale: 1.12 }}
+                                      transition={{ duration: 0.55 }}
+                                    />
+                                  ) : null}
+                                  Sign in
+                                </motion.button>
+                                <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E2838] py-2.5 text-[12px] text-[#94A3B8]">
+                                  <Fingerprint className="h-4 w-4" /> Continue with passkey
+                                </div>
                               </motion.div>
-                            ) : null}
+                            ) : (
+                              <motion.div
+                                key="login-done"
+                                data-pointer="login-done"
+                                initial={{ opacity: 0, scale: 0.94 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-lg border border-[#10B981]/30 bg-[#10B981]/[0.06] p-6 text-center"
+                              >
+                                <svg viewBox="0 0 64 64" className="h-14 w-14">
+                                  <motion.circle
+                                    cx="32" cy="32" r="27"
+                                    className="stroke-[#10B981]"
+                                    strokeWidth="3" fill="transparent"
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 0.5, ease: "easeOut" }}
+                                  />
+                                  <motion.path
+                                    d="M21 33l8 8 15-16"
+                                    className="stroke-[#10B981]"
+                                    strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="transparent"
+                                    initial={{ pathLength: 0 }}
+                                    animate={{ pathLength: 1 }}
+                                    transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
+                                  />
+                                </svg>
+                                <p className="font-display text-lg font-semibold text-white">Signed in</p>
+                                <p className="text-[11px] text-[#94A3B8]">Opaque session token issued after Argon2id verification.</p>
+                              </motion.div>
+                            )}
                           </AnimatePresence>
                         </div>
 
@@ -281,16 +356,16 @@ export function InteractiveShowcase() {
 
                     {active === 1 ? (
                       <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-                        <motion.div {...enter(0)} className="relative overflow-hidden rounded-xl border border-[#1E2838] bg-[#080c14] p-6 text-center">
-                          <div className="relative mx-auto flex h-28 w-28 items-center justify-center">
+                        <motion.div {...enter(0)} className="flex flex-col items-center gap-4 rounded-xl border border-[#1E2838] bg-[#080c14] p-6 text-center">
+                          <div className="relative flex h-28 w-28 items-center justify-center">
                             <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
                               <circle cx="50" cy="50" r="44" className="stroke-[#1E2838]" strokeWidth="5" fill="transparent" />
-                              <motion.circle cx="50" cy="50" r="44" className="stroke-[#F07A26]" strokeWidth="5" fill="transparent" strokeLinecap="round" strokeDasharray={276.5} animate={{ strokeDashoffset: 276.5 - (276.5 * seconds) / 30 }} transition={{ duration: 0.6 }} />
+                              <motion.circle cx="50" cy="50" r="44" className="stroke-[#F07A26]" strokeWidth="5" fill="transparent" strokeLinecap="round" strokeDasharray={276.5} animate={{ strokeDashoffset: 276.5 - (276.5 * seconds) / 30 }} transition={{ duration: 0.8 }} />
                             </svg>
-                            <div><p className="font-mono text-2xl font-bold text-white">{seconds}s</p><p className="text-[9px] text-slate-500">VALIDITY</p></div>
+                            <div><p className="font-mono text-2xl font-bold text-white">{seconds}s</p><p className="text-[9px] text-[#94A3B8]">VALIDITY</p></div>
                           </div>
-                          <p className="mt-5 text-sm font-semibold text-white">Email OTP verification</p>
-                          <div className="mt-4 flex justify-center gap-2">
+                          <p className="text-sm font-semibold text-white">Email OTP verification</p>
+                          <div className="flex justify-center gap-2">
                             {otp.split("").map((digit, i) => (
                               <motion.span key={i} data-pointer={`otp-digit-${i}`} initial={{ opacity: 0, y: 6 }} animate={i < shownDigits ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.3, delay: i * 0.12 }} className="flex h-11 w-9 items-center justify-center rounded-md border border-[#1E2838] bg-[#0e1420] font-mono text-lg text-white">
                                 {i < shownDigits ? digit : "·"}
@@ -302,7 +377,7 @@ export function InteractiveShowcase() {
                             data-pointer="otp-submit"
                             animate={otpClick ? { scale: [1, 0.96, 1] } : { scale: 1 }}
                             transition={{ duration: 0.2 }}
-                            className="relative mt-5 rounded-lg bg-[#F07A26] px-5 py-2 text-[11px] font-semibold va-amber-ink"
+                            className="relative rounded-lg bg-[#F07A26] px-5 py-2 text-[11px] font-semibold va-amber-ink"
                           >
                             {otpClick ? (
                               <motion.span
@@ -317,7 +392,7 @@ export function InteractiveShowcase() {
                           </motion.button>
                           <AnimatePresence>
                             {verified ? (
-                              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
+                              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
                             ) : null}
                           </AnimatePresence>
                         </motion.div>
@@ -326,10 +401,17 @@ export function InteractiveShowcase() {
                           <motion.div {...enter(0.15)} className="rounded-xl border border-[#1E2838] bg-[#080c14] p-4">
                             <div className="flex items-center justify-between">
                               <p className="text-[12px] font-semibold text-white">Recovery codes</p>
-                              <span className="inline-flex items-center gap-1 text-[11px] text-[#F07A26]">{stage >= 2 ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />} {stage >= 2 ? "Visible" : "Hidden"}</span>
+                              <button
+                                type="button"
+                                onClick={() => setShowRecovery((value) => !value)}
+                                className="inline-flex items-center gap-1 text-[11px] text-[#F07A26] hover:underline"
+                              >
+                                {showRecovery ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                {showRecovery ? "Visible" : "Hidden"}
+                              </button>
                             </div>
                             <div className="mt-3 grid grid-cols-2 gap-2 font-mono text-[11px] text-slate-300">
-                              {(stage >= 2 ? ["9F8C-12A7", "3D2E-8B1C", "7A4F-9E2D", "5C1B-4A8E"] : ["••••-••••", "••••-••••", "••••-••••", "••••-••••"]).map((code, i) => <span key={i} className="rounded bg-white/[0.04] p-2 text-center">{code}</span>)}
+                              {(showRecovery ? ["9F8C-12A7", "3D2E-8B1C", "7A4F-9E2D", "5C1B-4A8E"] : ["••••-••••", "••••-••••", "••••-••••", "••••-••••"]).map((code, i) => <span key={i} className="rounded bg-white/[0.04] p-2 text-center">{code}</span>)}
                             </div>
                           </motion.div>
                           <motion.div {...enter(0.4)} className="rounded-xl border border-[#1E2838] bg-[#080c14] p-4 text-[11px] leading-6 text-[#94A3B8]">
@@ -350,7 +432,6 @@ export function InteractiveShowcase() {
                           {[
                             { device: "Safari · macOS", ip: "103.24.18.9" },
                             { device: "Chrome · Windows", ip: "49.207.44.12" },
-                            { device: "iPhone · Safari", ip: "117.239.8.41" },
                           ].map((session, i) => (
                             <motion.div
                               key={session.device}
