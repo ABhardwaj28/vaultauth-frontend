@@ -1,0 +1,46 @@
+services:
+  - type: web
+    name: vaultauth-frontend
+    runtime: static
+    repo: https://github.com/ProPlays2312/vaultauth-frontend
+    branch: main
+    buildCommand: bun install && bun run build
+    staticPublishPath: ./dist
+    headers:
+      - path: /*
+        name: Content-Security-Policy
+        value: "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api.vaultauth.proplays2312.eu.org; frame-ancestors 'none'; base-uri 'none'; form-action 'self';"
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
+      - path: /*
+        name: Permissions-Policy
+        value: camera=(), microphone=(), geolocation=()
+    routes:
+      - type: rewrite
+        source: /.well-known/openid-configuration
+        destination: https://api.vaultauth.proplays2312.eu.org/.well-known/openid-configuration
+      - type: rewrite
+        source: /.well-known/jwks.json
+        destination: https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json
+      - type: rewrite
+        source: /oauth/token
+        destination: https://api.vaultauth.proplays2312.eu.org/oauth/token
+      - type: rewrite
+        source: /oauth/userinfo
+        destination: https://api.vaultauth.proplays2312.eu.org/oauth/userinfo
+      - type: rewrite
+        source: /oauth/revoke
+        destination: https://api.vaultauth.proplays2312.eu.org/oauth/revoke
+      - type: rewrite
+        source: /oauth/consent
+        destination: https://api.vaultauth.proplays2312.eu.org/oauth/consent
+      - type: rewrite
+        source: /*
+        destination: /index.html
