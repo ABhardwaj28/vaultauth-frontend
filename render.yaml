@@ -2,7 +2,7 @@ services:
   - type: web
     name: vaultauth-frontend
     runtime: static
-    repo: https://github.com/ProPlays2312/vaultauth-frontend
+    repo: https://github.com/ABhardwaj28/vaultauth-frontend
     branch: main
     buildCommand: bun install && bun run build
     staticPublishPath: ./dist
