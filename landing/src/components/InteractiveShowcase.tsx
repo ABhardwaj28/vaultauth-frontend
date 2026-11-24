@@ -26,6 +26,24 @@ const chambers = [
 
 const STEP_TIMES = [220, 440, 660, 880, 1100, 1320];
 
+type PointerPoint = { left: string; top: string };
+
+function DemoPointer({ stage, reduce, points }: { stage: number; reduce: boolean | null; points: PointerPoint[] }) {
+  if (reduce || stage < 1) return null;
+  const point = points[Math.min(stage - 1, points.length - 1)];
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+      initial={{ opacity: 0, left: points[0].left, top: points[0].top }}
+      animate={{ opacity: 1, left: point.left, top: point.top }}
+      transition={{ type: "spring", stiffness: 300, damping: 26 }}
+    >
+      <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
+    </motion.div>
+  );
+}
+
 export function InteractiveShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
@@ -78,8 +96,8 @@ export function InteractiveShowcase() {
 
   // Chamber values derived from the current stage.
   const password = stage >= 1 ? "Password12345!" : "";
-  const strikes = Math.min(3, Math.max(0, stage - 1));
-  const locked = strikes >= 3;
+  const signedIn = stage >= 4;
+  const clickPulse = stage >= 3;
 
   const otp = "482913";
   const shownDigits = Math.min(6, Math.max(0, stage));
@@ -92,9 +110,9 @@ export function InteractiveShowcase() {
     { active: stage < 2 },
   ];
   const auditLines = [
-    "09:41  AUTH_SUCCESS  103.24.18.9",
-    ...(stage >= 1 ? ["now    SESSION_REVOKED  49.207.44.12"] : []),
-    ...(stage >= 2 ? ["now    SESSION_REVOKED  117.239.8.41"] : []),
+    ...(stage >= 2 ? ["11:04  SESSION_REVOKED  117.239.8.41"] : []),
+    ...(stage >= 1 ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
+    "11:01  AUTH_SUCCESS  103.24.18.9",
   ];
 
   const clientName = stage >= 1 ? "Analytics Dashboard" : "";
@@ -175,14 +193,24 @@ export function InteractiveShowcase() {
                           <motion.div {...enter(0.2)} className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 transition-colors focus-within:border-[#F07A26]">
                             <input readOnly value={password} aria-label="Demo password" placeholder="Password" className="w-full bg-transparent py-2.5 font-mono text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
                           </motion.div>
-                          <motion.button {...enter(0.3)} type="button" className="w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink">Sign in</motion.button>
+                          <motion.div {...enter(0.3)}>
+                            <motion.button
+                              type="button"
+                              animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
+                              transition={{ duration: 0.2 }}
+                              className="w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
+                            >
+                              {signedIn ? "Signed in" : "Sign in"}
+                            </motion.button>
+                          </motion.div>
                           <motion.button {...enter(0.4)} type="button" className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E2838] py-2.5 text-[12px] text-[#94A3B8]">
                             <Fingerprint className="h-4 w-4" /> Continue with passkey
                           </motion.button>
                           <AnimatePresence>
-                            {strikes > 0 ? (
-                              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className={`rounded-lg border p-3 text-[11px] leading-5 ${locked ? "border-red-500/40 bg-red-500/10 text-red-300" : "border-[#1E2838] bg-white/[0.03] text-[#94A3B8]"}`}>
-                                {locked ? "Account locked for 5 minutes after 3 failed attempts." : `Invalid credentials. Strike ${strikes} of 3.`}
+                            {signedIn ? (
+                              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="rounded-lg border border-[#10B981]/30 bg-[#10B981]/10 p-3 text-[11px] leading-5 text-[#10B981]">
+                                <span className="inline-flex items-center gap-1.5 font-semibold"><CheckCircle2 className="h-3.5 w-3.5" /> Sign in successful</span>
+                                <span className="mt-1 block text-[10px] text-[#94A3B8]">Opaque session token issued after Argon2id verification.</span>
                               </motion.div>
                             ) : null}
                           </AnimatePresence>
@@ -195,7 +223,7 @@ export function InteractiveShowcase() {
                               initial={{ opacity: 0, left: "48%", top: "30%" }}
                               animate={{
                                 opacity: 1,
-                                left: ["48%", "26%", "50%", "74%", "50%", "50%"][Math.min(stage - 1, 5)],
+                                left: ["48%", "28%", "50%", "50%", "50%", "50%"][Math.min(stage - 1, 5)],
                                 top: ["30%", "42%", "56%", "56%", "56%", "56%"][Math.min(stage - 1, 5)],
                               }}
                               transition={{ type: "spring", stiffness: 300, damping: 26 }}
@@ -216,7 +244,7 @@ export function InteractiveShowcase() {
                             <p className="text-[11px] font-semibold text-white">3-strike defense</p>
                             <div className="mt-3 flex gap-2">
                               {[1, 2, 3].map((n) => (
-                                <motion.span key={n} animate={strikes >= n ? { backgroundColor: "#b42318", color: "#ffffff" } : {}} className={`flex h-7 w-7 items-center justify-center rounded font-mono text-[11px] ${strikes >= n ? "" : "bg-white/[0.05] text-[#94A3B8]"}`}>{n}</motion.span>
+                                <span key={n} className="flex h-7 w-7 items-center justify-center rounded bg-white/[0.05] font-mono text-[11px] text-[#94A3B8]">{n}</span>
                               ))}
                             </div>
                             <p className="mt-3 text-[10px] leading-4 text-[#94A3B8]">Three failures lock the account for exactly five minutes.</p>
@@ -249,6 +277,18 @@ export function InteractiveShowcase() {
                             ) : null}
                           </AnimatePresence>
 
+                          <DemoPointer
+                            stage={stage}
+                            reduce={reduce}
+                            points={[
+                              { left: "34%", top: "56%" },
+                              { left: "43%", top: "56%" },
+                              { left: "52%", top: "56%" },
+                              { left: "61%", top: "56%" },
+                              { left: "70%", top: "56%" },
+                              { left: "50%", top: "78%" },
+                            ]}
+                          />
                         </motion.div>
 
                         <div className="space-y-4">
@@ -270,7 +310,7 @@ export function InteractiveShowcase() {
                     ) : null}
 
                     {active === 2 ? (
-                      <div className="space-y-4">
+                      <div className="relative space-y-4">
                         <motion.div {...enter(0)} className="flex items-center justify-between border-b border-[#1E2838] pb-2">
                           <p className="text-xs font-semibold text-white">Active session registry</p>
                           <span className="font-mono text-[10px] text-[#10B981]">{sessionStates.filter((s) => s.active).length} ACTIVE</span>
@@ -281,27 +321,48 @@ export function InteractiveShowcase() {
                             { device: "Chrome · Windows", ip: "49.207.44.12" },
                             { device: "iPhone · Safari", ip: "117.239.8.41" },
                           ].map((session, i) => (
-                            <motion.div key={session.device} {...enter(0.15 + i * 0.15)} className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3.5 ${sessionStates[i].active ? "border-[#1E2838] bg-[#080c14]" : "border-white/[0.05] bg-white/[0.01] opacity-55"}`}>
+                            <motion.div
+                              key={session.device}
+                              layout
+                              initial={{ opacity: 0, y: 8 }}
+                              animate={{ opacity: sessionStates[i].active ? 1 : 0.45, y: 0 }}
+                              transition={{ duration: 0.3, delay: 0.1 + i * 0.1 }}
+                              className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3.5 ${sessionStates[i].active ? "border-[#1E2838] bg-[#080c14]" : "border-red-500/20 bg-red-500/[0.04]"}`}
+                            >
                               <div>
                                 <p className="text-[12px] font-semibold text-white">{session.device}</p>
                                 <p className="font-mono text-[10px] text-[#94A3B8]">{session.ip} · {sessionStates[i].active ? "ACTIVE" : "REVOKED"}</p>
                               </div>
                               {sessionStates[i].active ? (
                                 <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 px-2.5 py-1.5 text-[11px] text-red-300"><Trash2 className="h-3 w-3" /> Revoke</span>
-                              ) : <span className="text-[11px] text-[#94A3B8]">Revoked</span>}
+                              ) : (
+                                <motion.span initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 font-mono text-[10px] text-red-300">REVOKED</motion.span>
+                              )}
                             </motion.div>
                           ))}
                         </div>
                         <motion.div {...enter(0.6)} className="rounded-lg border border-[#1E2838] bg-[#080c14] p-4 font-mono text-[10px]">
-                          <div className="mb-2 flex items-center gap-2 text-white"><Terminal className="h-3.5 w-3.5 text-[#F07A26]" /> Audit stream</div>
+                          <div className="mb-2 flex items-center gap-2 text-white"><Terminal className="h-3.5 w-3.5 text-[#F07A26]" /> Audit stream <span className="ml-auto inline-flex items-center gap-1 text-[9px] text-[#10B981]"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#10B981]" /> LIVE</span></div>
                           {auditLines.map((line, i) => <motion.p key={line} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.2 }} className="mt-1 text-[#94A3B8]">{line}</motion.p>)}
                         </motion.div>
+                        <DemoPointer
+                          stage={stage}
+                          reduce={reduce}
+                          points={[
+                            { left: "50%", top: "30%" },
+                            { left: "70%", top: "44%" },
+                            { left: "70%", top: "62%" },
+                            { left: "70%", top: "62%" },
+                            { left: "50%", top: "82%" },
+                            { left: "50%", top: "82%" },
+                          ]}
+                        />
                       </div>
                     ) : null}
 
                     {active === 3 ? (
                       <div className="grid gap-6 md:grid-cols-[0.9fr_1.1fr]">
-                        <div className="space-y-3">
+                        <div className="relative space-y-3">
                           <motion.p {...enter(0)} className="border-b border-[#1E2838] pb-2 text-xs font-semibold text-white">Register an OAuth client</motion.p>
                           <motion.div {...enter(0.15)}>
                             <label className="text-[11px] text-[#94A3B8]" htmlFor="demo-client-name">Application name</label>
@@ -318,6 +379,18 @@ export function InteractiveShowcase() {
                           <motion.button {...enter(0.6)} type="button" className="inline-flex items-center gap-1.5 rounded-lg bg-[#F07A26] px-4 py-2.5 text-[12px] font-semibold va-amber-ink">
                             <Plus className="h-3.5 w-3.5" /> Register application
                           </motion.button>
+                          <DemoPointer
+                            stage={stage}
+                            reduce={reduce}
+                            points={[
+                              { left: "50%", top: "26%" },
+                              { left: "30%", top: "34%" },
+                              { left: "30%", top: "48%" },
+                              { left: "22%", top: "58%" },
+                              { left: "50%", top: "72%" },
+                              { left: "50%", top: "72%" },
+                            ]}
+                          />
                         </div>
                         <div className="space-y-3">
                           <motion.div {...enter(0.2)} className="rounded-xl border border-[#1E2838] bg-[#080c14] p-4 font-mono text-[11px]">
