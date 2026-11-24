@@ -166,7 +166,7 @@ export function InteractiveShowcase() {
                   <div className="rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
                     {active === 0 ? (
                       <div className="grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
-                        <div className="space-y-3">
+                        <div className="relative space-y-3">
                           <motion.div {...enter(0)} className="flex items-center justify-between border-b border-[#1E2838] pb-2">
                             <span className="text-xs font-semibold text-white">Enterprise sign-in</span>
                             <span className="font-mono text-[10px] text-[#94A3B8]">demo shell</span>
@@ -186,6 +186,23 @@ export function InteractiveShowcase() {
                               </motion.div>
                             ) : null}
                           </AnimatePresence>
+
+                          {/* Cursor drives the login demo */}
+                          {!reduce && stage > 0 ? (
+                            <motion.div
+                              aria-hidden="true"
+                              className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                              initial={{ opacity: 0, left: "48%", top: "30%" }}
+                              animate={{
+                                opacity: 1,
+                                left: ["48%", "26%", "50%", "74%", "50%", "50%"][Math.min(stage - 1, 5)],
+                                top: ["30%", "42%", "56%", "56%", "56%", "56%"][Math.min(stage - 1, 5)],
+                              }}
+                              transition={{ type: "spring", stiffness: 300, damping: 26 }}
+                            >
+                              <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
+                            </motion.div>
+                          ) : null}
                         </div>
 
                         <div className="space-y-4">
@@ -232,22 +249,6 @@ export function InteractiveShowcase() {
                             ) : null}
                           </AnimatePresence>
 
-                          {/* Self-driving pointer that types the code and taps verify */}
-                          {!reduce && stage > 0 ? (
-                            <motion.div
-                              aria-hidden="true"
-                              className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
-                              initial={{ opacity: 0, left: "34%", top: "52%" }}
-                              animate={{
-                                opacity: stage > 0 ? 1 : 0,
-                                left: ["34%", "43%", "52%", "61%", "70%", "50%"][Math.min(stage - 1, 5)],
-                                top: ["56%", "56%", "56%", "56%", "56%", "78%"][Math.min(stage - 1, 5)],
-                              }}
-                              transition={{ type: "spring", stiffness: 320, damping: 26 }}
-                            >
-                              <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
-                            </motion.div>
-                          ) : null}
                         </motion.div>
 
                         <div className="space-y-4">
