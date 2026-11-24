@@ -42,6 +42,34 @@ export function AuditLogsTab() {
   const [error, setError] = useState<string | null>(null);
   const [expandedId, setExpandedId] = useState<number | string | null>(null);
 
+  // Hourly request volume over the last 24 hours, derived from the loaded logs.
+  const requestBars = (() => {
+    const now = new Date();
+    const currentHour = new Date(now);
+    currentHour.setMinutes(0, 0, 0);
+    const buckets = Array.from({ length: 24 }, (_, i) => {
+      const hour = new Date(currentHour);
+      hour.setHours(currentHour.getHours() - (23 - i));
+      return { hour, count: 0 };
+    });
+
+    for (const log of logs) {
+      const ts = log.ts || (log as { created_at?: string }).created_at;
+      if (!ts) continue;
+      const time = new Date(ts).getTime();
+      if (Number.isNaN(time)) continue;
+      const index = buckets.findIndex(
+        (bucket) =>
+          time >= bucket.hour.getTime() &&
+          time < bucket.hour.getTime() + 60 * 60 * 1000
+      );
+      if (index >= 0 && buckets[index]) buckets[index].count += 1;
+    }
+
+    const peak = Math.max(1, ...buckets.map((bucket) => bucket.count));
+    return buckets.map((bucket) => ({ ...bucket, height: Math.max(4, (bucket.count / peak) * 100) }));
+  })();
+
   const fetchUsers = useCallback(async () => {
     try {
       const res = await api.getAdminUsers({ limit: 100, fetchAll: true });
@@ -181,6 +209,35 @@ export function AuditLogsTab() {
               >
                 {evt}
               </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Access requests — hourly volume from audit events */}
+      <div className="rounded-lg border border-border bg-card">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3.5 sm:px-5">
+          <div>
+            <h2 className="font-display text-[15px] font-semibold text-foreground">Access requests</h2>
+            <p className="text-xs text-muted-foreground">Hourly · last 24 hours</p>
+          </div>
+          <Badge variant="outline" className="rounded-md px-2 py-0 font-mono text-[11px] text-muted-foreground">
+            {logs.length} events
+          </Badge>
+        </div>
+        <div className="px-4 py-5 sm:px-5">
+          <div className="flex h-32 items-stretch gap-1 sm:gap-1.5" role="img" aria-label="Hourly access request volume over the last 24 hours">
+            {requestBars.map((bar, index) => (
+              <div key={bar.hour.toISOString()} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
+                <div
+                  className={`w-full rounded-sm transition-all ${index === 23 ? "bg-primary" : "bg-primary/35"}`}
+                  style={{ height: `${bar.height}%` }}
+                  title={`${bar.hour.getHours().toString().padStart(2, "0")}:00 — ${bar.count} events`}
+                />
+                <span className="font-mono text-[9px] text-muted-foreground">
+                  {index % 4 === 0 ? bar.hour.getHours().toString().padStart(2, "0") : ""}
+                </span>
+              </div>
             ))}
           </div>
         </div>

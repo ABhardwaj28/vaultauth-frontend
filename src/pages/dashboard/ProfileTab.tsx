@@ -118,7 +118,24 @@ export function ProfileTab() {
         <div className="h-[3px] w-full bg-gradient-to-r from-primary via-primary/50 to-transparent" />
         <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-12 lg:gap-10">
           <div className="lg:col-span-5">
-            <p className="font-display text-xs font-semibold tracking-wide text-muted-foreground">
+            <div className="flex items-center gap-2.5">
+              <span
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-primary/30 bg-primary/10 font-display text-[11px] font-bold text-primary"
+                title={effectiveUser?.email}
+              >
+                {(effectiveUser?.email || "?").slice(0, 2).toUpperCase()}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate text-[13px] font-semibold text-foreground">
+                  {effectiveUser?.email?.split("@")[0] || "Principal"}
+                </span>
+                <span className="block font-mono text-[10px] text-muted-foreground">
+                  {isAdmin ? "Administrator" : "Employee"}
+                </span>
+              </span>
+            </div>
+
+            <p className="mt-5 font-display text-xs font-semibold tracking-wide text-muted-foreground">
               Identity posture
             </p>
             <h2 className="mt-3 font-display text-[26px] font-bold leading-tight tracking-[-0.025em] text-foreground">
