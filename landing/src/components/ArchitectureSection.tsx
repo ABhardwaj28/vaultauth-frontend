@@ -84,8 +84,16 @@ export function ArchitectureSection() {
                   type="button"
                   onClick={() => setActive(index)}
                   aria-pressed={isActive}
-                  className={`rounded-xl border p-2.5 text-left transition-all sm:p-5 ${isActive ? "border-[#F07A26]/50 bg-[#121a28] shadow-[0_25px_60px_-40px_rgba(240,122,38,0.8)]" : "border-[#1E2838] bg-[#0E1420] hover:border-[#3a475c]"}`}
+                  className={`relative rounded-xl border p-2.5 text-left transition-all sm:p-5 ${isActive ? "border-[#F07A26]/50 bg-[#121a28] shadow-[0_25px_60px_-40px_rgba(240,122,38,0.8)]" : "border-[#1E2838] bg-[#0E1420] hover:border-[#3a475c]"}`}
                 >
+                  {index < 3 ? (
+                    <span
+                      aria-hidden="true"
+                      className={`pointer-events-none absolute left-full top-[26px] h-px w-2 bg-[#F07A26]/40 sm:top-[42px] sm:w-4 ${
+                        index === 1 ? "hidden sm:block" : "block"
+                      }`}
+                    />
+                  ) : null}
                   <div className="flex items-center justify-between">
                     <span className={`flex h-8 w-8 items-center justify-center rounded-lg border sm:h-11 sm:w-11 ${isActive ? "border-[#F07A26]/40 bg-[#F07A26]/10 text-[#F07A26]" : "border-[#1E2838] text-slate-500"}`}>
                       <Icon className="h-4 w-4 sm:h-5 sm:w-5" />
