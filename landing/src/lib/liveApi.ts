@@ -2,8 +2,8 @@
 
 export const API_ORIGIN = "https://api.vaultauth.proplays2312.eu.org";
 
-/** In dev, fetch through the Vite proxy so the browser stays same-origin. */
-export const API_FETCH_BASE = import.meta.env.DEV ? "/va-api" : API_ORIGIN;
+/** Dev uses the Vite proxy; production uses same-origin paths rewritten by Render. */
+export const API_FETCH_BASE = import.meta.env.DEV ? "/va-api" : "";
 
 export type KeyInfo = { kid: string; alg: string };
 
