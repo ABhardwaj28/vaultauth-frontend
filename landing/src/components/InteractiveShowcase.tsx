@@ -25,6 +25,7 @@ const chambers = [
 ];
 
 const STEP_TIMES = [220, 440, 660, 880, 1100, 1320, 1540];
+const REVOKE_STAGE = 3;
 
 type PointerProps = {
   stage: number;
@@ -166,10 +167,10 @@ export function InteractiveShowcase() {
 
   const sessionStates = [
     { active: true },
-    { active: stage < 1 },
+    { active: stage < REVOKE_STAGE },
   ];
   const auditLines = [
-    ...(stage >= 1 ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
+    ...(stage >= REVOKE_STAGE ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
     "11:01  AUTH_SUCCESS  103.24.18.9",
   ];
 
@@ -184,7 +185,7 @@ export function InteractiveShowcase() {
       : active === 1
         ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit"]
         : active === 2
-          ? ["revoke-1", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream"]
+          ? ["revoke-1", "revoke-1", "revoke-1", "revoke-1", "audit-stream", "audit-stream", "audit-stream"]
           : [];
 
   const enter = (delay: number) => ({
@@ -448,7 +449,7 @@ export function InteractiveShowcase() {
                               {sessionStates[i]?.active ? (
                                 <motion.span
                                   data-pointer={`revoke-${i}`}
-                                  animate={stage === i ? { scale: [1, 0.88, 1] } : { scale: 1 }}
+                                  animate={i === 1 && stage === REVOKE_STAGE ? { scale: [1, 0.88, 1] } : { scale: 1 }}
                                   transition={{ duration: 0.2 }}
                                   className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 px-2.5 py-1.5 text-[11px] text-red-300"
                                 >
