@@ -221,13 +221,15 @@ export function AuditLogsTab() {
         <div className="px-4 py-5 sm:px-5">
           <div className="flex h-32 items-stretch gap-1 sm:gap-1.5" role="img" aria-label="Hourly access request volume over the last 24 hours">
             {requestBars.map((bar, index) => (
-              <div key={bar.hour.toISOString()} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-2">
-                <div
-                  className={`w-full rounded-sm transition-all ${index === 23 ? "bg-primary" : "bg-primary/35"}`}
-                  style={{ height: `${bar.height}%` }}
-                  title={`${bar.hour.getHours().toString().padStart(2, "0")}:00 — ${bar.count} events`}
-                />
-                <span className="font-mono text-[9px] text-muted-foreground">
+              <div key={bar.hour.toISOString()} className="flex h-full min-w-0 flex-1 flex-col items-center gap-1.5">
+                <div className="flex h-[104px] w-full items-end">
+                  <div
+                    className={`w-full rounded-sm transition-all ${index === 23 ? "bg-primary" : "bg-primary/35"}`}
+                    style={{ height: `${bar.height}%` }}
+                    title={`${bar.hour.getHours().toString().padStart(2, "0")}:00 — ${bar.count} events`}
+                  />
+                </div>
+                <span className="flex h-3.5 w-full items-start justify-center font-mono text-[9px] text-muted-foreground">
                   {index % 4 === 0 ? bar.hour.getHours().toString().padStart(2, "0") : ""}
                 </span>
               </div>
