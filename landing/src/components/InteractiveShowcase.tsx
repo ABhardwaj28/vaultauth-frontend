@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   Check,
@@ -24,22 +24,42 @@ const chambers = [
   { title: "Client registry", subtitle: "Register an OAuth application", route: "/dashboard/admin/apps", link: "See OAuth clients" },
 ];
 
-const STEP_TIMES = [220, 440, 660, 880, 1100, 1320];
+const STEP_TIMES = [220, 440, 660, 880, 1100, 1320, 1540];
 
-type PointerPoint = { left: string; top: string };
+type PointerProps = {
+  stage: number;
+  reduce: boolean | null;
+  panelRef: RefObject<HTMLDivElement | null>;
+  targets: string[];
+};
 
-function DemoPointer({ stage, reduce, points }: { stage: number; reduce: boolean | null; points: PointerPoint[] }) {
-  if (reduce || stage < 1) return null;
-  const point = points[Math.min(stage - 1, points.length - 1)];
-  const start = points[0];
-  if (!point || !start) return null;
+/** Cursor that measures real DOM targets and moves to their centres. */
+function DemoPointer({ stage, reduce, panelRef, targets }: PointerProps) {
+  const key = targets[Math.min(stage - 1, targets.length - 1)];
+  const [pos, setPos] = useState<{ x: number; y: number } | null>(null);
+
+  useLayoutEffect(() => {
+    if (!key || !panelRef.current) return;
+    const panel = panelRef.current;
+    const target = panel.querySelector<HTMLElement>(`[data-pointer="${key}"]`);
+    if (!target) return;
+    const panelBox = panel.getBoundingClientRect();
+    const box = target.getBoundingClientRect();
+    setPos({
+      x: box.left - panelBox.left + box.width / 2 - 9,
+      y: box.top - panelBox.top + box.height / 2 - 9,
+    });
+  }, [key, panelRef, stage]);
+
+  if (reduce || stage < 1 || !pos) return null;
+
   return (
     <motion.div
       aria-hidden="true"
-      className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
-      initial={{ opacity: 0, left: start.left, top: start.top }}
-      animate={{ opacity: 1, left: point.left, top: point.top }}
-      transition={{ type: "spring", stiffness: 300, damping: 26 }}
+      className="pointer-events-none absolute left-0 top-0 z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+      initial={{ opacity: 0, x: pos.x, y: pos.y }}
+      animate={{ opacity: 1, x: pos.x, y: pos.y }}
+      transition={{ type: "spring", stiffness: 520, damping: 34 }}
     >
       <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
     </motion.div>
@@ -48,6 +68,7 @@ function DemoPointer({ stage, reduce, points }: { stage: number; reduce: boolean
 
 export function InteractiveShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, restDelta: 0.001 });
@@ -80,7 +101,7 @@ export function InteractiveShowcase() {
       return;
     }
     if (reduce) {
-      setStage(6);
+      setStage(7);
       return;
     }
     setStage(0);
@@ -104,8 +125,8 @@ export function InteractiveShowcase() {
   const otp = "482913";
   const shownDigits = Math.min(6, Math.max(0, stage));
   const seconds = Math.max(25, 30 - stage);
-  const verified = stage >= 6;
-  const otpClick = stage >= 6;
+  const verified = stage >= 7;
+  const otpClick = stage >= 7;
 
   const sessionStates = [
     { active: true },
@@ -122,6 +143,15 @@ export function InteractiveShowcase() {
   const redirectUri = stage >= 2 ? "http://localhost:3000/callback" : "";
   const ack = stage >= 3;
   const secret = stage >= 4 ? "va_secret_7f3a91c4e8b2d0a6f15c" : null;
+
+  const pointerTargets =
+    active === 0
+      ? ["login-password", "login-password", "login-submit", "login-submit", "login-submit", "login-submit", "login-submit"]
+      : active === 1
+        ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit"]
+        : active === 2
+          ? ["revoke-1", "revoke-2", "audit-stream", "audit-stream", "audit-stream", "audit-stream", "audit-stream"]
+          : [];
 
   const enter = (delay: number) => ({
     initial: { opacity: 0, y: 10 },
@@ -184,7 +214,7 @@ export function InteractiveShowcase() {
                     <SeeLive href={chambers[active]?.route || "#"}>{chambers[active]?.link}</SeeLive>
                   </div>
 
-                  <div className="rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
+                  <div ref={panelRef} className="relative rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
                     {active === 0 ? (
                       <div className="grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
                         <div className="relative space-y-3">
@@ -194,11 +224,12 @@ export function InteractiveShowcase() {
                           </motion.div>
                           <motion.div {...enter(0.1)} className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 py-2.5 text-[12px] text-slate-300">shaurya@example.com</motion.div>
                           <motion.div {...enter(0.2)} className="rounded-lg border border-[#1E2838] bg-[#080c14] px-3 transition-colors focus-within:border-[#F07A26]">
-                            <input readOnly value={password} aria-label="Demo password" placeholder="Password" className="w-full bg-transparent py-2.5 font-mono text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
+                            <input readOnly value={password} aria-label="Demo password" data-pointer="login-password" placeholder="Password" className="w-full bg-transparent py-2.5 font-mono text-[12px] text-white outline-none placeholder:text-[#94A3B8]" />
                           </motion.div>
                           <motion.div {...enter(0.3)}>
                             <motion.button
                               type="button"
+                              data-pointer="login-submit"
                               animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
                               transition={{ duration: 0.2 }}
                               className="relative w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
@@ -226,23 +257,6 @@ export function InteractiveShowcase() {
                               </motion.div>
                             ) : null}
                           </AnimatePresence>
-
-                          {/* Cursor drives the login demo */}
-                          {!reduce && stage > 0 ? (
-                            <motion.div
-                              aria-hidden="true"
-                              className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
-                              initial={{ opacity: 0, left: "48%", top: "30%" }}
-                              animate={{
-                                opacity: 1,
-                                left: ["48%", "28%", "50%", "50%", "50%", "50%"][Math.min(stage - 1, 5)],
-                                top: ["30%", "42%", "56%", "56%", "56%", "56%"][Math.min(stage - 1, 5)],
-                              }}
-                              transition={{ type: "spring", stiffness: 300, damping: 26 }}
-                            >
-                              <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
-                            </motion.div>
-                          ) : null}
                         </div>
 
                         <div className="space-y-4">
@@ -278,13 +292,14 @@ export function InteractiveShowcase() {
                           <p className="mt-5 text-sm font-semibold text-white">Email OTP verification</p>
                           <div className="mt-4 flex justify-center gap-2">
                             {otp.split("").map((digit, i) => (
-                              <motion.span key={i} initial={{ opacity: 0, y: 6 }} animate={i < shownDigits ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.3, delay: i * 0.12 }} className="flex h-11 w-9 items-center justify-center rounded-md border border-[#1E2838] bg-[#0e1420] font-mono text-lg text-white">
+                              <motion.span key={i} data-pointer={`otp-digit-${i}`} initial={{ opacity: 0, y: 6 }} animate={i < shownDigits ? { opacity: 1, y: 0 } : {}} transition={{ duration: 0.3, delay: i * 0.12 }} className="flex h-11 w-9 items-center justify-center rounded-md border border-[#1E2838] bg-[#0e1420] font-mono text-lg text-white">
                                 {i < shownDigits ? digit : "·"}
                               </motion.span>
                             ))}
                           </div>
                           <motion.button
                             type="button"
+                            data-pointer="otp-submit"
                             animate={otpClick ? { scale: [1, 0.96, 1] } : { scale: 1 }}
                             transition={{ duration: 0.2 }}
                             className="relative mt-5 rounded-lg bg-[#F07A26] px-5 py-2 text-[11px] font-semibold va-amber-ink"
@@ -305,19 +320,6 @@ export function InteractiveShowcase() {
                               <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
                             ) : null}
                           </AnimatePresence>
-
-                          <DemoPointer
-                            stage={stage}
-                            reduce={reduce}
-                            points={[
-                              { left: "34%", top: "56%" },
-                              { left: "43%", top: "56%" },
-                              { left: "52%", top: "56%" },
-                              { left: "61%", top: "56%" },
-                              { left: "70%", top: "56%" },
-                              { left: "50%", top: "76%" },
-                            ]}
-                          />
                         </motion.div>
 
                         <div className="space-y-4">
@@ -364,6 +366,7 @@ export function InteractiveShowcase() {
                               </div>
                               {sessionStates[i]?.active ? (
                                 <motion.span
+                                  data-pointer={`revoke-${i}`}
                                   animate={stage === i ? { scale: [1, 0.88, 1] } : { scale: 1 }}
                                   transition={{ duration: 0.2 }}
                                   className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 px-2.5 py-1.5 text-[11px] text-red-300"
@@ -376,22 +379,10 @@ export function InteractiveShowcase() {
                             </motion.div>
                           ))}
                         </div>
-                        <motion.div {...enter(0.6)} className="rounded-lg border border-[#1E2838] bg-[#080c14] p-4 font-mono text-[10px]">
+                        <motion.div {...enter(0.6)} data-pointer="audit-stream" className="rounded-lg border border-[#1E2838] bg-[#080c14] p-4 font-mono text-[10px]">
                           <div className="mb-2 flex items-center gap-2 text-white"><Terminal className="h-3.5 w-3.5 text-[#F07A26]" /> Audit stream <span className="ml-auto inline-flex items-center gap-1 text-[9px] text-[#10B981]"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#10B981]" /> LIVE</span></div>
                           {auditLines.map((line, i) => <motion.p key={line} initial={{ opacity: 0, x: -6 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.7 + i * 0.2 }} className="mt-1 text-[#94A3B8]">{line}</motion.p>)}
                         </motion.div>
-                        <DemoPointer
-                          stage={stage}
-                          reduce={reduce}
-                          points={[
-                            { left: "50%", top: "30%" },
-                            { left: "70%", top: "44%" },
-                            { left: "70%", top: "62%" },
-                            { left: "70%", top: "62%" },
-                            { left: "50%", top: "82%" },
-                            { left: "50%", top: "82%" },
-                          ]}
-                        />
                       </div>
                     ) : null}
 
@@ -442,6 +433,15 @@ export function InteractiveShowcase() {
                           </AnimatePresence>
                         </div>
                       </div>
+                    ) : null}
+
+                    {active !== 3 ? (
+                      <DemoPointer
+                        stage={stage}
+                        reduce={reduce}
+                        panelRef={panelRef}
+                        targets={pointerTargets}
+                      />
                     ) : null}
                   </div>
                 </motion.div>

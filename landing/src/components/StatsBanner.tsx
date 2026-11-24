@@ -13,7 +13,6 @@ const offerings = [
   "Client Secrets",
   "30-Min Idle",
   "8-Hour Cap",
-  "NIST 800-63B",
 ];
 
 const benchmarks = [
