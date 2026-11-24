@@ -1,25 +1,18 @@
 import { useState } from "react";
 import {
-  ShieldCheck,
-  KeyRound,
   Laptop,
   CheckCircle2,
   AlertCircle,
   LogOut,
-  Moon,
-  Sun,
-  Monitor,
   Eye,
   EyeOff,
   Loader2,
   Lock,
   Clock,
-  Radio,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 import { api } from "@/lib/api";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -43,6 +36,36 @@ export function SettingsTab() {
   const [updatingPassword, setUpdatingPassword] = useState(false);
   const [passwordSuccess, setPasswordSuccess] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // Two-factor control state — backed by POST /api/v1/me/2fa
+  const [twoFactorPassword, setTwoFactorPassword] = useState("");
+  const [updatingTwoFactor, setUpdatingTwoFactor] = useState(false);
+  const [twoFactorMessage, setTwoFactorMessage] = useState<string | null>(null);
+  const [twoFactorError, setTwoFactorError] = useState<string | null>(null);
+
+  const twoFactorEnabled = Boolean(user?.two_factor_enabled ?? user?.totp_enabled);
+  const twoFactorEnforced = Boolean(user?.two_factor_enforced);
+
+  const handleToggleTwoFactor = async (enabled: boolean) => {
+    setTwoFactorMessage(null);
+    setTwoFactorError(null);
+    if (!twoFactorPassword) {
+      setTwoFactorError("Enter your password to change this setting.");
+      return;
+    }
+
+    setUpdatingTwoFactor(true);
+    try {
+      const res = await api.setOwn2FA(enabled, twoFactorPassword);
+      setTwoFactorMessage(res.message || (enabled ? "Two-factor authentication enabled." : "Two-factor authentication disabled."));
+      setTwoFactorPassword("");
+      await refreshProfile();
+    } catch (err: unknown) {
+      setTwoFactorError((err as { message?: string })?.message || "Unable to update two-factor authentication.");
+    } finally {
+      setUpdatingTwoFactor(false);
+    }
+  };
 
   const handleRevokeAllOtherSessions = async () => {
     setRevokingAll(true);
@@ -116,360 +139,406 @@ export function SettingsTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-1">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Account & Security Settings
+      <div className="flex flex-col gap-3 border-b border-border/80 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[28px] sm:leading-tight">
+            Account and security settings
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Manage your authentication credentials, two-factor security, and interface preferences.
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Credentials, verification, and appearance for this account.
           </p>
         </div>
       </div>
 
-      {/* Global Notifications */}
+      {/* Global notices */}
       {successMsg && (
-        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span>{successMsg}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{successMsg}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         </div>
       )}
 
       {errorMsg && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span>{errorMsg}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{errorMsg}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
         </div>
       )}
 
-      {/* Symmetrical 2x2 Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 items-stretch">
-        {/* ROW 1 - LEFT: Change Password Card */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <KeyRound className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                Credentials
-              </Badge>
-            </div>
-
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Authentication Secret
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Change Password
+      {/* One ledger sheet — hairline-divided sections */}
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        {/* Credentials */}
+        <section className="px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="font-display text-[17px] font-semibold tracking-tight text-foreground">
+                Password
               </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Update your corporate access credentials (minimum 12 characters).
+              <p className="text-sm text-muted-foreground">
+                Update the credential you use to sign in.
               </p>
             </div>
+            <span className="font-mono text-[11px] text-muted-foreground">
+              min. 12 characters
+            </span>
+          </div>
 
-            <form onSubmit={handleChangePassword} className="space-y-3.5 text-xs mt-5 pt-4 border-t border-border/60">
-              {passwordSuccess && (
-                <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
-                  <CheckCircle2 className="h-4 w-4 shrink-0" />
-                  <span>{passwordSuccess}</span>
-                </div>
-              )}
-
-              {passwordError && (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
-                  <AlertCircle className="h-4 w-4 shrink-0" />
-                  <span>{passwordError}</span>
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <Label htmlFor="current-password" className="text-xs font-medium text-foreground">
-                  Current Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="current-password"
-                    type={showCurrentPassword ? "text" : "password"}
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password"
-                    className="h-9 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
-                    autoComplete="current-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                  >
-                    {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+          <form onSubmit={handleChangePassword} className="mt-5 max-w-xl space-y-3.5">
+            {passwordSuccess && (
+              <div className="flex items-start gap-2.5 rounded-md border border-border bg-background/60 px-3 py-2.5 text-sm">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1 leading-relaxed">{passwordSuccess}</span>
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
               </div>
+            )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="new-password" className="text-xs font-medium text-foreground">
-                  New Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="new-password"
-                    type={showNewPassword ? "text" : "password"}
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Minimum 12 characters"
-                    className="h-9 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowNewPassword(!showNewPassword)}
-                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                  >
-                    {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+            {passwordError && (
+              <div className="flex items-start gap-2.5 rounded-md border border-border bg-background/60 px-3 py-2.5 text-sm">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <span className="flex-1 leading-relaxed">{passwordError}</span>
+                <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
               </div>
+            )}
 
-              <div className="space-y-1.5">
-                <Label htmlFor="confirm-password" className="text-xs font-medium text-foreground">
-                  Confirm New Password
-                </Label>
-                <div className="relative">
-                  <Input
-                    id="confirm-password"
-                    type={showConfirmPassword ? "text" : "password"}
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Repeat new password"
-                    className="h-9 text-xs pr-9 rounded-lg border-border/80 bg-background/50 focus:bg-background"
-                    autoComplete="new-password"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-2.5 top-2.5 text-muted-foreground hover:text-foreground"
-                    tabIndex={-1}
-                  >
-                    {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                  </button>
-                </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="current-password" className="text-[13px] font-medium text-foreground">
+                Current password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="current-password"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Enter current password"
+                  className="h-9 rounded-md border-border/70 bg-background/60 pr-9 text-sm focus:bg-card"
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showCurrentPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
               </div>
+            </div>
 
+            <div className="space-y-1.5">
+              <Label htmlFor="new-password" className="text-[13px] font-medium text-foreground">
+                New password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="new-password"
+                  type={showNewPassword ? "text" : "password"}
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Minimum 12 characters"
+                  className="h-9 rounded-md border-border/70 bg-background/60 pr-9 text-sm focus:bg-card"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirm-password" className="text-[13px] font-medium text-foreground">
+                Confirm new password
+              </Label>
+              <div className="relative">
+                <Input
+                  id="confirm-password"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                  className="h-9 rounded-md border-border/70 bg-background/60 pr-9 text-sm focus:bg-card"
+                  autoComplete="new-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground transition-colors hover:text-foreground"
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                </button>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-1">
               <Button
                 type="submit"
                 disabled={updatingPassword || !currentPassword || !newPassword || !confirmPassword}
-                className="w-full h-9 text-xs font-semibold rounded-lg mt-2 shadow-xs"
+                className="h-9 rounded-md px-4 text-sm font-semibold"
               >
                 {updatingPassword ? (
-                  <span className="flex items-center space-x-2">
-                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                    <span>Updating Credentials...</span>
+                  <span className="flex items-center">
+                    <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />
+                    Updating credentials
                   </span>
                 ) : (
-                  <span>Update Password</span>
+                  <span>Update password</span>
                 )}
               </Button>
-            </form>
-          </div>
-        </div>
-
-        {/* ROW 1 - RIGHT: Two-Factor Authentication (2FA) Card */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <ShieldCheck className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="success" className="font-mono text-[10px] uppercase">
-                Enforced
-              </Badge>
-            </div>
-
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Secondary Verification
+              <span className="text-[11px] text-muted-foreground">
+                Takes effect on the next sign-in.
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Two-Factor Authentication (2FA)
+            </div>
+          </form>
+        </section>
+
+        {/* Verification */}
+        <section className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="font-display text-[17px] font-semibold tracking-tight text-foreground">
+                Two-factor authentication
               </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Out-of-band verification required for all corporate logins.
+              <p className="text-sm text-muted-foreground">
+                Out-of-band verification required for every corporate sign-in.
               </p>
             </div>
-
-            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                  <Lock className="h-3 w-3 text-muted-foreground" />
-                  Challenge Mode
-                </span>
-                <span className="text-foreground font-medium">Email Challenge (OTP)</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Delivery Channel</span>
-                <span className="text-foreground font-mono truncate max-w-[200px]" title={user?.email || ""}>
-                  {user?.email || "—"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium flex items-center gap-1.5">
-                  <Clock className="h-3 w-3 text-muted-foreground" />
-                  Code Validity
-                </span>
-                <span className="text-foreground font-mono font-medium">10 Minutes</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground font-medium">Policy Status</span>
-                <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Mandatory Policy</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Symmetrical Security Callout Banner */}
-          <div className="mt-5 p-3 rounded-lg bg-primary/5 border border-primary/20 text-xs flex items-start space-x-2.5">
-            <Radio className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-            <p className="text-[11px] text-muted-foreground leading-relaxed">
-              Two-factor authentication is enforced across your corporate organization to protect against credential stuffing and session takeovers. Single-use OTP codes are dispatched automatically upon email and password verification.
-            </p>
-          </div>
-        </div>
-
-        {/* ROW 2 - LEFT: Theme Preference Card */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <Sun className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="outline" className="font-mono text-[10px] uppercase">
-                Interface
-              </Badge>
-            </div>
-
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Display Styling
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Theme Preference
-              </h2>
-              <p className="text-xs text-muted-foreground mt-1">
-                Customize interface appearance for your device or follow system defaults.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2.5 mt-5 pt-4 border-t border-border/60">
-              <button
-                type="button"
-                onClick={() => setTheme("light")}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
-                  theme === "light"
-                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
-                    : "border-border/80 bg-background/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
-              >
-                <Sun className="h-4 w-4 mb-1.5" />
-                <span className="font-semibold text-xs">Light</span>
-                <span className="text-[10px] opacity-75 mt-0.5">Executive</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTheme("dark")}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
-                  theme === "dark"
-                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
-                    : "border-border/80 bg-background/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
-              >
-                <Moon className="h-4 w-4 mb-1.5" />
-                <span className="font-semibold text-xs">Dark</span>
-                <span className="text-[10px] opacity-75 mt-0.5">Carbon Slate</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setTheme("system")}
-                className={`flex flex-col items-center justify-center p-3 rounded-lg border text-xs font-medium transition-all ${
-                  theme === "system"
-                    ? "border-primary bg-primary/10 text-primary font-semibold shadow-xs"
-                    : "border-border/80 bg-background/50 text-muted-foreground hover:bg-muted/50 hover:text-foreground"
-                }`}
-              >
-                <Monitor className="h-4 w-4 mb-1.5" />
-                <span className="font-semibold text-xs">System</span>
-                <span className="text-[10px] opacity-75 mt-0.5">OS Synchronized</span>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between text-xs">
-            <span className="text-muted-foreground text-[11px]">Active Mode</span>
-            <span className="font-mono text-[11px] font-semibold uppercase text-primary">
-              {theme}
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 text-[11px] text-foreground">
+              <span className={`h-1.5 w-1.5 rounded-full ${twoFactorEnabled ? "bg-emerald-500" : "bg-amber-500"}`} />
+              {twoFactorEnabled ? twoFactorEnforced ? "Enforced" : "Enabled" : "Not enabled"}
             </span>
           </div>
-        </div>
 
-        {/* ROW 2 - RIGHT: Revoke Other Workstations Card */}
-        <div className="relative overflow-hidden rounded-xl border border-destructive/30 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-destructive/[0.035] before:via-transparent before:to-transparent before:pointer-events-none transition-all flex flex-col justify-between">
-          <div>
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive flex items-center justify-center shrink-0 shadow-xs">
-                <Laptop className="w-5 h-5 text-destructive" />
-              </div>
-              <Badge variant="destructive" className="font-mono text-[10px] uppercase">
-                Danger Zone
-              </Badge>
-            </div>
-
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-destructive">
-                Emergency Control
+          <div className="mt-5 max-w-xl divide-y divide-border/60 rounded-md border border-border/70 bg-background/50 px-3.5 text-sm">
+            <div className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Lock className="h-3.5 w-3.5" />
+                Challenge mode
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Revoke Other Workstations
+              <span className="text-right font-medium text-foreground">Email code</span>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2.5">
+              <span className="text-muted-foreground">Delivery address</span>
+              <span className="max-w-[180px] truncate font-mono text-[13px] text-foreground" title={user?.email || ""}>
+                {user?.email || "—"}
+              </span>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2.5">
+              <span className="flex items-center gap-1.5 text-muted-foreground">
+                <Clock className="h-3.5 w-3.5" />
+                Code validity
+              </span>
+              <span className="font-mono text-[13px] text-foreground">10 minutes</span>
+            </div>
+            <div className="flex items-center justify-between gap-3 py-2.5">
+              <span className="text-muted-foreground">Policy</span>
+              <span className="flex items-center gap-1.5 text-foreground">
+                {twoFactorEnabled ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-500" />
+                ) : (
+                  <AlertCircle className="h-3.5 w-3.5 text-amber-500" />
+                )}
+                <span className="text-[13px]">
+                  {twoFactorEnabled ? twoFactorEnforced ? "Mandatory" : "Active" : "Off"}
+                </span>
+              </span>
+            </div>
+          </div>
+
+          {twoFactorMessage && (
+            <p className="mt-4 max-w-xl text-[13px] text-emerald-600 dark:text-emerald-400">{twoFactorMessage}</p>
+          )}
+          {twoFactorError && (
+            <p className="mt-4 max-w-xl text-[13px] text-destructive">{twoFactorError}</p>
+          )}
+
+          <div className="mt-5 max-w-xl space-y-3 border-t border-border/60 pt-4">
+            <Label htmlFor="two-factor-password" className="text-sm">Confirm your password</Label>
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                id="two-factor-password"
+                type="password"
+                autoComplete="current-password"
+                placeholder="Current password"
+                value={twoFactorPassword}
+                onChange={(e) => {
+                  setTwoFactorPassword(e.target.value);
+                  setTwoFactorError(null);
+                }}
+                className="h-10 flex-1"
+                disabled={updatingTwoFactor}
+              />
+              <Button
+                type="button"
+                variant={twoFactorEnabled ? "outline" : "default"}
+                onClick={() => handleToggleTwoFactor(!twoFactorEnabled)}
+                disabled={updatingTwoFactor || !twoFactorPassword}
+                className="h-10"
+              >
+                {updatingTwoFactor ? (
+                  <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving…</>
+                ) : twoFactorEnabled ? (
+                  "Turn off two-factor"
+                ) : (
+                  "Turn on two-factor"
+                )}
+              </Button>
+            </div>
+            <p className="text-[13px] leading-relaxed text-muted-foreground">
+              When enabled, a single-use code is sent to your email after password verification. Your next sign-in will open the code screen.
+            </p>
+          </div>
+        </section>
+
+        {/* Appearance */}
+        <section className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div className="space-y-1">
+              <h2 className="font-display text-[17px] font-semibold tracking-tight text-foreground">
+                Appearance
               </h2>
-              <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-                Terminate all active sessions across other devices. Your current workstation session will remain intact.
+              <p className="text-sm text-muted-foreground">
+                Choose how the interface renders on this device.
               </p>
             </div>
+          </div>
 
-            <div className="mt-5 space-y-2 pt-4 border-t border-border/60 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Revocation Scope</span>
-                <span className="text-foreground font-medium">All sessions except current</span>
-              </div>
-              <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground font-medium">Token Invalidation</span>
-                <span className="text-destructive font-mono font-medium text-[11px]">Immediate & Irreversible</span>
+          <div className="mt-5 grid max-w-xl grid-cols-1 gap-2.5 sm:grid-cols-3">
+            <button
+              type="button"
+              onClick={() => setTheme("light")}
+              aria-pressed={theme === "light"}
+              className={`relative rounded-md border p-2.5 text-left transition-colors ${
+                theme === "light"
+                  ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
+                  : "border-border/70 bg-background/50 hover:border-primary/30"
+              }`}
+            >
+              {theme === "light" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+              <span className="block overflow-hidden rounded-sm border border-border/70 bg-white">
+                <span className="flex h-3 items-center gap-1 border-b border-slate-200 bg-slate-50 px-1.5">
+                  <span className="h-1 w-1 rounded-full bg-slate-300" />
+                  <span className="h-1 w-1 rounded-full bg-slate-300" />
+                </span>
+                <span className="block space-y-1.5 p-2">
+                  <span className="block h-1.5 w-3/4 rounded-full bg-slate-200" />
+                  <span className="block h-1.5 w-1/2 rounded-full bg-slate-200" />
+                </span>
+              </span>
+              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "light" ? "text-primary" : "text-foreground"}`}>
+                Light
+              </span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">Bright canvas</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme("dark")}
+              aria-pressed={theme === "dark"}
+              className={`relative rounded-md border p-2.5 text-left transition-colors ${
+                theme === "dark"
+                  ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
+                  : "border-border/70 bg-background/50 hover:border-primary/30"
+              }`}
+            >
+              {theme === "dark" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+              <span className="block overflow-hidden rounded-sm border border-[#272A38] bg-[#14151C]">
+                <span className="flex h-3 items-center gap-1 border-b border-[#272A38] bg-[#1C1D27] px-1.5">
+                  <span className="h-1 w-1 rounded-full bg-[#3A3D4D]" />
+                  <span className="h-1 w-1 rounded-full bg-[#3A3D4D]" />
+                </span>
+                <span className="block space-y-1.5 p-2">
+                  <span className="block h-1.5 w-3/4 rounded-full bg-[#333545]" />
+                  <span className="block h-1.5 w-1/2 rounded-full bg-[#333545]" />
+                </span>
+              </span>
+              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "dark" ? "text-primary" : "text-foreground"}`}>
+                Dark
+              </span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">Low-light canvas</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setTheme("system")}
+              aria-pressed={theme === "system"}
+              className={`relative rounded-md border p-2.5 text-left transition-colors ${
+                theme === "system"
+                  ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
+                  : "border-border/70 bg-background/50 hover:border-primary/30"
+              }`}
+            >
+              {theme === "system" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+              <span className="flex overflow-hidden rounded-sm border border-border/70">
+                <span className="flex w-1/2 flex-col bg-white">
+                  <span className="h-3 border-b border-slate-200 bg-slate-50" />
+                  <span className="space-y-1.5 p-1.5">
+                    <span className="block h-1.5 w-4/5 rounded-full bg-slate-200" />
+                    <span className="block h-1.5 w-1/2 rounded-full bg-slate-200" />
+                  </span>
+                </span>
+                <span className="flex w-1/2 flex-col bg-[#14151C]">
+                  <span className="h-3 border-b border-[#272A38] bg-[#1C1D27]" />
+                  <span className="space-y-1.5 p-1.5">
+                    <span className="block h-1.5 w-4/5 rounded-full bg-[#333545]" />
+                    <span className="block h-1.5 w-1/2 rounded-full bg-[#333545]" />
+                  </span>
+                </span>
+              </span>
+              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "system" ? "text-primary" : "text-foreground"}`}>
+                System
+              </span>
+              <span className="mt-0.5 block text-[11px] text-muted-foreground">Follow device setting</span>
+            </button>
+          </div>
+
+          <div className="mt-4 flex max-w-xl items-center justify-between border-t border-border/60 pt-3 text-[13px]">
+            <span className="text-muted-foreground">Active mode</span>
+            <span className="font-mono text-xs text-primary">{theme}</span>
+          </div>
+        </section>
+      </div>
+
+      {/* Danger zone — separated by a thin rule */}
+      <div className="border-t border-border pt-5">
+        <section className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
+            <div className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/40 text-muted-foreground">
+              <Laptop className="h-4 w-4" />
+            </div>
+            <div className="min-w-0 space-y-1">
+              <h2 className="font-display text-[17px] font-semibold tracking-tight text-foreground">
+                Other workstations
+              </h2>
+              <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+                End every session on other devices. This workstation stays signed in.
+              </p>
+              <div className="flex flex-wrap gap-x-5 gap-y-1 pt-1 font-mono text-[11px] text-muted-foreground">
+                <span>Scope: all other sessions</span>
+                <span>Invalidation: immediate</span>
               </div>
             </div>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-border/40">
-            <Button
-              variant="destructive"
-              onClick={handleRevokeAllOtherSessions}
-              disabled={revokingAll}
-              className="w-full h-9 text-xs font-semibold rounded-lg shadow-xs"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              <span>{revokingAll ? "Terminating other sessions..." : "Sign Out From All Other Devices"}</span>
-            </Button>
-          </div>
-        </div>
+          <Button
+            variant="outline"
+            onClick={handleRevokeAllOtherSessions}
+            disabled={revokingAll}
+            className="h-9 shrink-0 rounded-md border-border bg-transparent px-3.5 text-sm font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/[0.04]"
+          >
+            <LogOut className="mr-2 h-3.5 w-3.5" />
+            <span>{revokingAll ? "Ending other sessions" : "Sign out everywhere else"}</span>
+          </Button>
+        </section>
       </div>
     </div>
   );

@@ -16,7 +16,6 @@ import {
 import { api } from "@/lib/api";
 import { SessionItem } from "@/types/api";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/ui/copy-button";
@@ -69,10 +68,10 @@ export function GlobalSessionsTab() {
     setLoading(true);
     setError(null);
     try {
-      const [data] = await Promise.all([
-        api.getGlobalSessions(100),
-        fetchUsers(),
-      ]);
+      // The user directory only enriches emails — it must never block or fail
+      // the sessions view. Fetch it independently and ignore failures.
+      void fetchUsers();
+      const data = await api.getGlobalSessions(100);
       const now = Date.now();
       const activeSessions = (data || []).filter((s) => {
         const isStatusActive = !s.status || s.status.toUpperCase() === "ACTIVE";
@@ -211,29 +210,29 @@ export function GlobalSessionsTab() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-1">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-border/80">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Global Active Sessions
+      <div className="flex flex-col gap-3 border-b border-border/80 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[28px] sm:leading-tight">
+            Global active sessions
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Directory-wide live authentication grants, client footprints, and instant remote revocation.
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Live authentication grants across the directory, with immediate remote revocation.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
+        <div className="flex shrink-0 items-center gap-2 self-start sm:self-auto">
           {groupedSessions.length > 0 && (
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleAllExpand}
-              className="h-8 px-2.5 text-xs font-medium rounded-lg text-muted-foreground hover:text-foreground"
+              className="h-8 rounded-md px-2.5 text-[13px] font-medium text-muted-foreground hover:text-foreground"
             >
               {groupedSessions.every((g) => expandedUsers[g.userId])
-                ? "Collapse All"
-                : "Expand All"}
+                ? "Collapse all"
+                : "Expand all"}
             </Button>
           )}
 
@@ -242,68 +241,93 @@ export function GlobalSessionsTab() {
             size="sm"
             onClick={fetchGlobalSessions}
             disabled={loading}
-            className="h-8 px-3 text-xs font-medium rounded-lg"
+            className="h-8 rounded-md border-border px-3 text-sm font-medium"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+            Refresh
           </Button>
         </div>
       </div>
 
-      {/* Notifications */}
+      {/* Notices */}
       {message && (
-        <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span className="font-medium">{message}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{message}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         </div>
       )}
 
       {error && (
-        <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span className="font-medium">{error}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{error}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
         </div>
       )}
 
-      {/* Filter & Counter Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
-          <Input
-            placeholder="Search by User ID, email, IP, or browser..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8 h-8 rounded-lg bg-background/50 focus:bg-background text-xs"
-          />
+      {/* Search, counts, and summary strip */}
+      <div className="space-y-3">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search by user, email, IP, or browser"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="h-9 rounded-md border-border/70 bg-background/60 pl-9 text-sm focus:bg-card"
+            />
+          </div>
+
+          <div className="flex items-center gap-3 font-mono text-[11px] text-muted-foreground">
+            <span>{uniqueUserCount} {uniqueUserCount === 1 ? "user" : "users"}</span>
+            <span className="h-3 w-px bg-border" />
+            <span>{sessions.length} live {sessions.length === 1 ? "session" : "sessions"}</span>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md border-primary/30 text-foreground bg-primary/5">
-            {uniqueUserCount} {uniqueUserCount === 1 ? "User" : "Users"}
-          </Badge>
-          <Badge variant="secondary" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
-            {sessions.length} Live {sessions.length === 1 ? "Session" : "Sessions"}
-          </Badge>
+        <div className="flex flex-wrap items-center rounded-md border border-border bg-card px-4 py-3">
+          <div className="flex items-center gap-2.5 pr-5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/70 bg-muted/40 text-muted-foreground">
+              <User className="h-3.5 w-3.5" />
+            </span>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-muted-foreground">Active users</span>
+              <span className="font-display text-base font-semibold leading-tight text-foreground">{uniqueUserCount}</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2.5 border-l border-border/70 px-5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border/70 bg-muted/40 text-muted-foreground">
+              <Laptop className="h-3.5 w-3.5" />
+            </span>
+            <div className="flex flex-col">
+              <span className="text-[11px] text-muted-foreground">Live sessions</span>
+              <span className="font-display text-base font-semibold leading-tight text-foreground">{sessions.length}</span>
+            </div>
+          </div>
+          <div className="ml-auto border-l border-border/70 py-1 pl-5 text-[11px] text-muted-foreground">
+            Grouped by user identity
+          </div>
         </div>
       </div>
 
-      {/* User Sessions Dropdown Cards */}
+      {/* Grouped user surfaces */}
       {loading ? (
-        <div className="rounded-xl border border-border/80 bg-card p-10 flex flex-col items-center justify-center text-xs text-muted-foreground space-y-2">
-          <RefreshCw className="h-5 w-5 animate-spin text-primary" />
-          <span className="font-medium">Querying active sessions across enterprise directory...</span>
+        <div className="flex flex-col items-center justify-center gap-2 rounded-md border border-border bg-card p-10 text-sm text-muted-foreground">
+          <RefreshCw className="h-4 w-4 animate-spin text-muted-foreground" />
+          Reading the session directory
         </div>
       ) : groupedSessions.length === 0 ? (
-        <div className="rounded-xl border border-border/80 bg-card p-10 flex flex-col items-center justify-center text-xs text-muted-foreground space-y-1.5 text-center">
-          <ShieldAlert className="h-6 w-6 text-muted-foreground mb-0.5" />
+        <div className="flex flex-col items-center justify-center gap-1.5 rounded-md border border-border bg-card p-10 text-center text-sm text-muted-foreground">
+          <ShieldAlert className="mb-0.5 h-5 w-5 text-muted-foreground" />
           <span className="font-medium text-foreground">
-            {searchQuery ? "No sessions match filter criteria." : "No active sessions found across enterprise directory."}
+            {searchQuery ? "No sessions match this search." : "No active sessions found."}
           </span>
-          <span className="text-[11px] text-muted-foreground">Only active and valid sessions appear here.</span>
+          <span className="text-[12px]">Only valid, unexpired grants appear here.</span>
         </div>
       ) : (
         <TooltipProvider>
-          <div className="space-y-2.5">
+          <div className="space-y-2">
             {groupedSessions.map((group) => {
               const isExpanded = Boolean(expandedUsers[group.userId]);
               const latest = group.latestSession;
@@ -316,31 +340,29 @@ export function GlobalSessionsTab() {
               return (
                 <div
                   key={group.userId}
-                  className="overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all"
+                  className="overflow-hidden rounded-md border border-border bg-card"
                 >
-                  {/* Big User Header: Click to Drop Down Sessions Table */}
                   <div
                     onClick={() => toggleUserExpand(group.userId)}
-                    className="py-2.5 px-3.5 sm:px-4 bg-muted/20 hover:bg-muted/30 cursor-pointer transition-colors border-b border-border/80 flex items-center justify-between gap-3 select-none"
+                    className="flex cursor-pointer select-none items-center justify-between gap-3 border-b border-border/70 bg-muted/20 px-3.5 py-3 transition-colors hover:bg-muted/30 sm:px-4"
                   >
-                    {/* Left: Chevron + User Avatar + Email + User ID */}
-                    <div className="flex items-center space-x-3 min-w-0 flex-1">
-                      <div className="p-1 rounded-md text-muted-foreground hover:text-foreground">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div className="rounded-sm p-0.5 text-muted-foreground">
                         {isExpanded ? (
-                          <ChevronDown className="h-4 w-4 text-primary transition-transform" />
+                          <ChevronDown className="h-4 w-4" />
                         ) : (
-                          <ChevronRight className="h-4 w-4 text-muted-foreground transition-transform" />
+                          <ChevronRight className="h-4 w-4" />
                         )}
                       </div>
 
-                      <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0">
-                        <User className="h-4 w-4" />
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/40 font-display text-[11px] font-semibold text-muted-foreground">
+                        {((emailDisplay || group.userId).split("@")[0] || "?").slice(0, 2).toUpperCase()}
                       </div>
 
-                      <div className="flex flex-col min-w-0">
-                        <div className="flex items-center space-x-2">
+                      <div className="flex min-w-0 flex-col gap-1">
+                        <div className="flex items-center gap-2">
                           <span
-                            className="text-xs font-semibold text-foreground font-mono truncate"
+                            className="max-w-[260px] truncate text-[13px] font-medium text-foreground"
                             title={emailDisplay || group.userId}
                           >
                             {emailDisplay || group.userId}
@@ -348,104 +370,87 @@ export function GlobalSessionsTab() {
                           <span onClick={(e) => e.stopPropagation()} className="inline-flex items-center">
                             <CopyButton
                               value={group.userId}
-                              className="h-4 px-1 text-[9px] rounded"
+                              className="h-4 rounded px-1 text-[9px]"
                             />
                           </span>
-                          <Badge
-                            variant="outline"
-                            className={`font-mono text-[10px] py-0 px-2 rounded-md shrink-0 ${
-                              hasMultiple
-                                ? "border-primary/40 bg-primary/10 text-primary font-semibold"
-                                : "text-muted-foreground"
-                            }`}
-                          >
-                            {group.allSessions.length} {group.allSessions.length === 1 ? "Session" : "Sessions"}
-                          </Badge>
+                          <span className="shrink-0 rounded-md border border-border/70 bg-background/60 px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                            {group.allSessions.length} {group.allSessions.length === 1 ? "session" : "sessions"}
+                          </span>
                         </div>
-                        <span className="text-[10px] font-mono text-muted-foreground truncate">
-                          ID: {group.userId}
+                        <span className="truncate font-mono text-[10px] text-muted-foreground">
+                          {group.userId}
                         </span>
                       </div>
                     </div>
 
-                    {/* Right: Summary Telemetry + Terminate All */}
                     <div
-                      className="flex items-center space-x-3 shrink-0"
+                      className="flex shrink-0 items-center gap-3"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      {/* Compact Telemetry Summary on Header */}
-                      <div className="hidden md:flex items-center space-x-3 text-[11px] font-mono text-muted-foreground pr-2">
+                      <div className="hidden items-center gap-3 font-mono text-[11px] text-muted-foreground md:flex">
                         <span className="flex items-center text-foreground/80">
-                          <Globe className="h-3 w-3 mr-1 text-primary opacity-70" />
+                          <Globe className="mr-1 h-3 w-3 text-muted-foreground" />
                           {rawIp}
                         </span>
-                        <span>•</span>
+                        <span className="h-3 w-px bg-border" />
                         <span>{formatRelativeTime(latest.last_active_at || latest.created_at)}</span>
                       </div>
 
-                      {/* Terminate All Button */}
                       {hasMultiple && (
                         <Button
-                          variant="destructive"
+                          variant="outline"
                           size="sm"
                           disabled={isRevokingThisUser}
                           onClick={() => handleRevokeAllForUser(group.userId, group.allSessions)}
-                          className="h-7 px-2.5 text-xs rounded-lg font-medium"
-                          title="Terminate all active sessions for this user"
+                          className="h-7 rounded-md border-border/70 bg-transparent px-2.5 text-[12px] font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/[0.04]"
+                          title="Terminate all sessions for this user"
                         >
-                          <Trash2 className="h-3 w-3 mr-1" />
-                          <span>
-                            {isRevokingThisUser
-                              ? "Terminating..."
-                              : `Terminate All (${group.allSessions.length})`}
-                          </span>
+                          <Trash2 className="mr-1 h-3 w-3" />
+                          {isRevokingThisUser
+                            ? "Terminating"
+                            : `Terminate all (${group.allSessions.length})`}
                         </Button>
                       )}
                     </div>
                   </div>
 
-                  {/* Big Drop Down Content: Full Detailed Sessions Table for this User */}
                   {isExpanded && (
-                    <div className="p-0 overflow-x-auto">
+                    <div className="overflow-x-auto">
                       <Table className="min-w-[720px]">
                         <TableHeader>
-                          <TableRow className="border-b border-border/80 bg-muted/10 hover:bg-transparent text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                            <TableHead className="min-w-[160px] py-2.5">Browser</TableHead>
-                            <TableHead className="min-w-[140px] py-2.5">IP Address</TableHead>
-                            <TableHead className="min-w-[120px] py-2.5">Last Active</TableHead>
-                            <TableHead className="min-w-[140px] py-2.5">Signed In</TableHead>
-                            <TableHead className="min-w-[140px] py-2.5">Expires</TableHead>
-                            <TableHead className="min-w-[100px] py-2.5 text-right">Action</TableHead>
+                          <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
+                            <TableHead className="min-w-[160px] py-2.5 font-sans normal-case tracking-normal">Browser</TableHead>
+                            <TableHead className="min-w-[140px] py-2.5 font-sans normal-case tracking-normal">IP address</TableHead>
+                            <TableHead className="min-w-[120px] py-2.5 font-sans normal-case tracking-normal">Last active</TableHead>
+                            <TableHead className="min-w-[140px] py-2.5 font-sans normal-case tracking-normal">Signed in</TableHead>
+                            <TableHead className="min-w-[140px] py-2.5 font-sans normal-case tracking-normal">Expires</TableHead>
+                            <TableHead className="min-w-[100px] py-2.5 text-right font-sans normal-case tracking-normal">Action</TableHead>
                           </TableRow>
                         </TableHeader>
 
                         <TableBody>
                           {group.allSessions.map((session, sIdx) => {
-                            const sRawUa = session.device || session.user_agent || "Client Device";
+                            const sRawUa = session.device || session.user_agent || "Client device";
                             const sRawIp = (session.ip || session.ip_address || "—").replace(/\/32$/, "");
                             const sParsed = parseUserAgent(sRawUa);
                             const isSubRevoking = revokingId === session.id;
                             const isCurrent = Boolean(session.current ?? session.is_current ?? (sIdx === 0 && !hasMultiple));
 
                             return (
-                              <TableRow
-                                key={session.id || sIdx}
-                                className="border-b border-border/60 hover:bg-muted/20 text-xs transition-colors"
-                              >
-                                {/* Browser */}
+                              <TableRow key={session.id || sIdx} className="border-b border-border/60 text-sm hover:bg-muted/25">
                                 <TableCell className="py-2.5">
-                                  <div className="flex items-center space-x-2">
-                                    <div className="p-1 rounded-md bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                  <div className="flex items-center gap-2">
+                                    <div className="shrink-0 rounded-md border border-border/70 bg-muted/40 p-1 text-muted-foreground">
                                       {sParsed.isMobile ? (
                                         <Smartphone className="h-3.5 w-3.5" />
                                       ) : (
                                         <Laptop className="h-3.5 w-3.5" />
                                       )}
                                     </div>
-                                    <div className="flex items-center space-x-1.5 min-w-0">
+                                    <div className="flex min-w-0 items-center gap-1.5">
                                       <Tooltip>
                                         <TooltipTrigger asChild>
-                                          <span className="font-semibold text-xs text-foreground cursor-help whitespace-nowrap">
+                                          <span className="cursor-help whitespace-nowrap text-[13px] font-medium text-foreground">
                                             {sParsed.browser}
                                           </span>
                                         </TooltipTrigger>
@@ -454,56 +459,49 @@ export function GlobalSessionsTab() {
                                         </TooltipContent>
                                       </Tooltip>
                                       {isCurrent && (
-                                        <Badge
-                                          variant="outline"
-                                          className="text-[9px] py-0 px-1 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 shrink-0"
-                                        >
+                                        <span className="inline-flex shrink-0 items-center gap-1 rounded-md border border-border/70 bg-background/60 px-1.5 py-0 text-[10px] text-foreground">
+                                          <span className="h-1 w-1 rounded-full bg-emerald-500" />
                                           Current
-                                        </Badge>
+                                        </span>
                                       )}
                                     </div>
                                   </div>
                                 </TableCell>
 
-                                {/* IP Address */}
-                                <TableCell className="py-2.5 font-mono text-xs text-foreground whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap py-2.5 font-mono text-[11px] text-foreground">
                                   <span className="flex items-center">
-                                    <Globe className="h-3 w-3 mr-1 text-primary opacity-80 shrink-0" />
+                                    <Globe className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
                                     {sRawIp}
                                   </span>
                                 </TableCell>
 
-                                {/* Last Active */}
-                                <TableCell className="py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap py-2.5 font-mono text-[11px] text-muted-foreground">
                                   <span title={session.last_active_at || session.created_at || ""}>
                                     {formatRelativeTime(session.last_active_at || session.created_at)}
                                   </span>
                                 </TableCell>
 
-                                {/* Signed In */}
-                                <TableCell className="py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap py-2.5 font-mono text-[11px] text-muted-foreground">
                                   {session.created_at ? formatDateTime(session.created_at) : "—"}
                                 </TableCell>
 
-                                {/* Expiration */}
-                                <TableCell className="py-2.5 font-mono text-xs text-muted-foreground whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap py-2.5 font-mono text-[11px] text-muted-foreground">
                                   <span title={session.expires_at ? formatDateTime(session.expires_at) : "Active"}>
                                     {session.expires_at ? formatDateTime(session.expires_at) : "Active"}
                                   </span>
                                 </TableCell>
 
-                                {/* Action */}
-                                <TableCell className="py-2.5 text-right whitespace-nowrap">
+                                <TableCell className="whitespace-nowrap py-2.5 text-right">
                                   <Button
-                                    variant="destructive"
+                                    variant="outline"
                                     size="sm"
                                     disabled={isSubRevoking}
                                     onClick={() => handleRevoke(session.id)}
-                                    className="h-7 px-2.5 text-xs rounded-lg font-medium"
+                                    className="h-7 rounded-md border-border/70 bg-transparent px-2.5 text-[12px] font-medium text-destructive hover:border-destructive/40 hover:bg-destructive/[0.04]"
                                     title="Terminate this session"
                                   >
-                                    <Trash2 className="h-3 w-3 mr-1" />
-                                    <span>{isSubRevoking ? "..." : "Terminate"}</span>
+                                    <Trash2 className="mr-1 h-3 w-3" />
+                                    {isSubRevoking ? "..." : "Terminate"}
                                   </Button>
                                 </TableCell>
                               </TableRow>

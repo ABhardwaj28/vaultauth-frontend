@@ -16,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    /* Signature Safety Amber / Orange (#F6821F) - Brand Unified */
-    --primary: 28 92% 54%;
+    /* Signature Safety Amber / Orange (#F07A26) - Brand Unified */
+    --primary: 25 87% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 95%; /* #F1F3F6 */
@@ -26,8 +26,8 @@
     --muted: 220 14% 95%; /* #F1F3F6 */
     --muted-foreground: 215 16% 45%; /* #64748B */
 
-    --accent: 28 100% 97%; /* #FFF7ED */
-    --accent-foreground: 24 95% 36%; /* #9A3412 */
+    --accent: 25 100% 97%; /* #FFF7ED */
+    --accent-foreground: 22 90% 32%; /* #9A3412 */
 
     --destructive: 0 84% 60%; /* #EF4444 */
     --destructive-foreground: 0 0% 100%;
@@ -35,7 +35,7 @@
     /* Soft, elegant hairline border */
     --border: 220 13% 90%; /* #E2E5E9 */
     --input: 220 13% 90%; /* #E2E5E9 */
-    --ring: 28 92% 54%;
+    --ring: 25 87% 55%;
 
     --radius: 0.5rem; /* 8px modern luxury precision radius */
   }
@@ -53,8 +53,8 @@
     --popover: 228 14% 11%;
     --popover-foreground: 220 14% 96%;
 
-    /* Safety Amber / Orange (#F6821F) - Preserved in Dark Mode */
-    --primary: 28 92% 54%;
+    /* Safety Amber / Orange (#F07A26) - Preserved in Dark Mode */
+    --primary: 25 87% 55%;
     --primary-foreground: 0 0% 100%;
 
     --secondary: 228 14% 15%; /* #21232F */
@@ -72,7 +72,7 @@
     /* Crisp 1px hairline slate border */
     --border: 228 12% 18%; /* #272A38 */
     --input: 228 12% 18%; /* #272A38 */
-    --ring: 28 92% 54%;
+    --ring: 25 87% 55%;
   }
 }
 

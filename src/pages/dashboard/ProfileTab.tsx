@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
-import { User, Shield, Key, RefreshCw, AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { Link } from "react-router-dom";
+import { User, Shield, Key, RefreshCw, AlertCircle, Clock } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { UserProfile } from "@/types/api";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CopyButton } from "@/components/ui/copy-button";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 
 export function ProfileTab() {
   const { user: authUser } = useAuth();
@@ -34,16 +35,62 @@ export function ProfileTab() {
   const effectiveUser = profile || authUser;
   const isAdmin = effectiveUser?.role === "admin";
 
+  // Posture is derived only from real profile data. `two_factor_enabled` is
+  // supported defensively when a backend exposes it; `totp_enabled` is the
+  // canonical field on UserProfile.
+  const status = (effectiveUser?.status || "").toUpperCase();
+  const identityVerified = status === "ACTIVE";
+  const mfaEnabled = Boolean(
+    (effectiveUser as (UserProfile & { two_factor_enabled?: boolean }) | null)?.two_factor_enabled ??
+      effectiveUser?.totp_enabled
+  );
+  const sessionPolicyActive = true; // platform-enforced; not a per-user claim
+  const roleAssigned = Boolean(effectiveUser?.role);
+
+  const posture = [
+    {
+      label: "Identity verified",
+      value: identityVerified ? "Verified" : "Unverified",
+      active: identityVerified,
+    },
+    {
+      label: "MFA active",
+      value: mfaEnabled ? "Enrolled" : "Not enrolled",
+      active: mfaEnabled,
+    },
+    {
+      label: "Session policy",
+      value: "Enforced",
+      active: sessionPolicyActive,
+    },
+    {
+      label: "Access role",
+      value: roleAssigned ? (isAdmin ? "Administrator" : "Standard user") : "Unassigned",
+      active: roleAssigned,
+    },
+  ];
+  const activeCount = posture.filter((item) => item.active).length;
+  const postureHeadline =
+    activeCount === posture.length
+      ? "All controls satisfied"
+      : activeCount >= 2
+      ? "Review recommended"
+      : "Attention required";
+
+  const statusLabel = effectiveUser?.status
+    ? status.charAt(0) + status.slice(1).toLowerCase()
+    : "Unknown";
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Profile & Identity
+      <div className="flex flex-col gap-5 border-b border-border pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div className="max-w-2xl">
+          <h1 className="font-display text-[34px] font-bold leading-[1.1] tracking-[-0.03em] text-foreground sm:text-[38px]">
+            Profile &amp; identity
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Identity claims, role-based authorization governance, and two-factor security credentials.
+          <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
+            Identity claims, role-based authorization, and two-factor credentials for this principal.
           </p>
         </div>
 
@@ -52,216 +99,249 @@ export function ProfileTab() {
           size="sm"
           onClick={loadProfile}
           disabled={loading}
-          className="h-8 px-3 text-xs font-medium self-start sm:self-auto border-border hover:bg-muted/60"
+          className="h-9 shrink-0 gap-2 self-start border-border px-3.5 font-display text-[13px] font-medium hover:bg-muted/60 sm:self-auto"
         >
-          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh Identity</span>
+          <RefreshCw className={cn("h-3.5 w-3.5", loading && "animate-spin")} />
+          <span>{loading ? "Refreshing" : "Refresh identity"}</span>
         </Button>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2">
-          <AlertCircle className="h-4 w-4 shrink-0" />
+        <div className="flex items-start gap-3 border-l-2 border-destructive bg-muted/40 py-3 pl-4 pr-3 text-sm text-foreground">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Main Identity Cards Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Card 1: Principal Identity (User) */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
-          <div>
-            {/* Header with matching icon & status indicator */}
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <User className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="success" className="gap-1 font-mono text-[10px] uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                Active
-              </Badge>
-            </div>
+      {/* The single focal graphic: identity posture ledger */}
+      <section className="relative overflow-hidden rounded-lg border border-border bg-card">
+        <div className="h-[3px] w-full bg-gradient-to-r from-primary via-primary/50 to-transparent" />
+        <div className="grid gap-8 p-6 sm:p-8 lg:grid-cols-12 lg:gap-10">
+          <div className="lg:col-span-5">
+            <p className="font-display text-xs font-semibold tracking-wide text-muted-foreground">
+              Identity posture
+            </p>
+            <h2 className="mt-3 font-display text-[26px] font-bold leading-tight tracking-[-0.025em] text-foreground">
+              {postureHeadline}
+            </h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              {activeCount} of {posture.length} access controls active for this principal.
+            </p>
 
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                Principal Identity
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground truncate mt-0.5" title={effectiveUser?.email}>
-                {effectiveUser?.email || "—"}
-              </h2>
-            </div>
-
-            {/* Detailed Metadata Rows */}
-            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
+            <div className="mt-6 space-y-3 border-t border-border pt-5">
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block">Unique User ID</span>
-                <div className="flex items-center justify-between mt-1 p-1.5 rounded bg-muted/40 border border-border/60">
-                  <span className="font-mono text-[11px] text-foreground truncate mr-2">
-                    {effectiveUser?.id || "usr_identity"}
-                  </span>
-                  <CopyButton value={effectiveUser?.id || ""} className="h-6 px-1.5 text-[10px] shrink-0" />
-                </div>
+                <p className="text-[11px] font-medium text-muted-foreground">Principal</p>
+                <p className="mt-1 truncate font-mono text-[13px] text-foreground" title={effectiveUser?.email}>
+                  {effectiveUser?.email || "—"}
+                </p>
               </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Directory Realm</span>
-                <span className="text-foreground font-mono font-medium">corporate-sso</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Member Since</span>
-                <span className="text-foreground font-mono">
-                  {formatDateTime(effectiveUser?.created_at)}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground font-medium">Verification Status</span>
-                <div className="flex items-center space-x-1 text-emerald-600 dark:text-emerald-400 font-medium text-[11px]">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
-                  <span>Email Verified</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Card 2: RBAC Authority (Shield) */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
-          <div>
-            {/* Header with matching icon & Role badge */}
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <Shield className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant={isAdmin ? "default" : "secondary"} className="font-mono text-[10px] tracking-wider uppercase">
-                {effectiveUser?.role?.toUpperCase() || "USER"}
-              </Badge>
-            </div>
-
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                RBAC Authority
-              </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                {isAdmin ? "Enterprise Administrator" : "Standard Employee"}
-              </h2>
-            </div>
-
-            {/* Detailed Scope Rows */}
-            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Clearance Level</span>
-                <span className="text-foreground font-semibold">
-                  {isAdmin ? "Tier-1 Governance" : "Tier-2 Employee"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Access Scope</span>
-                <span className="text-foreground font-medium">
-                  {isAdmin ? "Full System Control" : "Self-Service Workspace"}
-                </span>
-              </div>
-
               <div>
-                <span className="text-[11px] text-muted-foreground font-medium block mb-1.5">Authorized Capabilities</span>
-                <div className="space-y-1.5">
-                  {isAdmin ? (
-                    <>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>User lifecycle governance (create, lock, promote)</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>OAuth / OIDC application client registration</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>System-wide audit logs & cross-tenant telemetry</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>Global session termination & emergency revoking</span>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>Identity profile inspection & credential review</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>Self active device & browser session management</span>
-                      </div>
-                      <div className="flex items-center space-x-1.5 text-[11px] text-foreground font-medium">
-                        <span className="w-1 h-1 rounded-full bg-primary" />
-                        <span>Enterprise Single Sign-On (SSO) authentication</span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                <p className="text-[11px] font-medium text-muted-foreground">User ID</p>
+                <p className="mt-1 truncate font-mono text-[12px] text-foreground">
+                  {effectiveUser?.id || "usr_identity"}
+                </p>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Card 3: 2FA & Credentials (Key) */}
-        <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-5 sm:p-6 shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] transition-all hover:border-border hover:shadow-[0_4px_16px_rgba(15,23,42,0.06)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none flex flex-col justify-between">
-          <div>
-            {/* Header with matching icon & Enforced badge */}
-            <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-                <Key className="w-5 h-5 text-primary" />
-              </div>
-              <Badge variant="warning" className="font-mono text-[10px] tracking-wider uppercase">
-                Enforced
-              </Badge>
+          <div className="flex flex-col justify-center lg:col-span-7">
+            <div
+              className="flex gap-1.5 sm:gap-2"
+              role="img"
+              aria-label={`${activeCount} of ${posture.length} identity controls active`}
+            >
+              {posture.map((item) => (
+                <div key={item.label} className="min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      "h-2.5 rounded-full transition-colors sm:h-3",
+                      item.active ? "bg-primary shadow-glow-sm" : "bg-muted"
+                    )}
+                  />
+                  <div className="mt-3.5 border-t border-border pt-3">
+                    <p className="font-display text-[12px] font-semibold leading-snug text-foreground">
+                      {item.label}
+                    </p>
+                    <p className="mt-1 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                      <span
+                        className={cn(
+                          "h-1.5 w-1.5 shrink-0 rounded-full",
+                          item.active ? "bg-emerald-500" : "bg-muted-foreground/40"
+                        )}
+                      />
+                      {item.value}
+                    </p>
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="mt-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                2FA & Credentials
+      {/* Detail ledger — one wide identity column, two quieter context columns */}
+      <div className="grid grid-cols-1 divide-y divide-border rounded-lg border border-border bg-card lg:grid-cols-12 lg:divide-x lg:divide-y-0">
+        {/* Principal identity — wide */}
+        <section className="p-6 sm:p-7 lg:col-span-6">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted/50 text-muted-foreground">
+                <User className="h-4 w-4" />
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-foreground mt-0.5">
-                Two-Factor Authentication (2FA)
-              </h2>
+              <h3 className="font-display text-base font-semibold text-foreground">Principal identity</h3>
             </div>
-
-            {/* Detailed Security & Policy Rows */}
-            <div className="mt-5 space-y-3 pt-4 border-t border-border/60 text-xs">
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Second Factor (2FA)</span>
-                <span className="text-foreground font-medium">Email Challenge (OTP)</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Code Expiration</span>
-                <div className="flex items-center space-x-1 font-mono text-[11px] text-foreground">
-                  <Clock className="w-3 h-3 text-muted-foreground" />
-                  <span>10 Minutes</span>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Idle Session Timeout</span>
-                <span className="text-foreground font-mono font-medium">30 Minutes</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1 border-b border-border/40">
-                <span className="text-muted-foreground font-medium">Absolute Session Cap</span>
-                <span className="text-foreground font-mono font-medium">8 Hours</span>
-              </div>
-
-              <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground font-medium">Lockout Threshold</span>
-                <span className="text-foreground font-medium">3 Consecutive Strikes</span>
-              </div>
-            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border px-2 py-1 font-display text-[11px] font-medium text-muted-foreground">
+              <span
+                className={cn(
+                  "h-1.5 w-1.5 rounded-full",
+                  identityVerified ? "bg-emerald-500" : "bg-destructive"
+                )}
+              />
+              {statusLabel}
+            </span>
           </div>
-        </div>
+
+          <p className="mt-5 truncate font-mono text-sm text-foreground" title={effectiveUser?.email}>
+            {effectiveUser?.email || "—"}
+          </p>
+
+          <dl className="mt-5 space-y-3 border-t border-border pt-5 text-[13px]">
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted-foreground">Directory realm</dt>
+              <dd className="font-mono text-foreground">corporate-sso</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted-foreground">Member since</dt>
+              <dd className="font-mono text-[12px] text-foreground">
+                {formatDateTime(effectiveUser?.created_at)}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted-foreground">Verification</dt>
+              <dd className="flex items-center gap-1.5 text-foreground">
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                Email verified
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-4">
+              <dt className="text-muted-foreground">Unique user ID</dt>
+              <dd className="flex items-center gap-1.5">
+                <code className="max-w-[180px] truncate font-mono text-[12px] text-foreground">
+                  {effectiveUser?.id || "usr_identity"}
+                </code>
+                <CopyButton value={effectiveUser?.id || ""} className="h-6 shrink-0 px-1.5 text-[10px]" />
+              </dd>
+            </div>
+          </dl>
+        </section>
+
+        {/* Access authority */}
+        <section className="p-6 sm:p-7 lg:col-span-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted/50 text-muted-foreground">
+              <Shield className="h-4 w-4" />
+            </span>
+            <h3 className="font-display text-base font-semibold text-foreground">Access authority</h3>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <Badge
+              variant="outline"
+              className="border-border bg-muted/40 font-mono text-[10px] uppercase tracking-wider text-foreground"
+            >
+              {effectiveUser?.role || "USER"}
+            </Badge>
+            <span className="text-[13px] text-muted-foreground">
+              {isAdmin ? "Enterprise administrator" : "Standard employee"}
+            </span>
+          </div>
+
+          <dl className="mt-5 space-y-3 border-t border-border pt-5 text-[13px]">
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Clearance</dt>
+              <dd className="text-right font-medium text-foreground">
+                {isAdmin ? "Tier-1 governance" : "Tier-2 employee"}
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Scope</dt>
+              <dd className="text-right font-medium text-foreground">
+                {isAdmin ? "Full system control" : "Self-service workspace"}
+              </dd>
+            </div>
+          </dl>
+
+          <div className="mt-5 border-t border-border pt-5">
+            <p className="text-[11px] font-medium text-muted-foreground">Authorized capabilities</p>
+            <ul className="mt-2.5 space-y-2">
+              {(isAdmin
+                ? [
+                    "User lifecycle governance (create, lock, promote)",
+                    "OAuth / OIDC application client registration",
+                    "System-wide audit logs & cross-tenant telemetry",
+                    "Global session termination & emergency revoking",
+                  ]
+                : [
+                    "Identity profile inspection & credential review",
+                    "Self active device & browser session management",
+                    "Enterprise Single Sign-On (SSO) authentication",
+                  ]
+              ).map((capability) => (
+                <li key={capability} className="flex gap-2 text-[12px] leading-snug text-foreground">
+                  <span className="mt-1.5 h-px w-2 shrink-0 bg-muted-foreground/50" />
+                  {capability}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+
+        {/* Credential policy */}
+        <section className="p-6 sm:p-7 lg:col-span-3">
+          <div className="flex items-center gap-3">
+            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted/50 text-muted-foreground">
+              <Key className="h-4 w-4" />
+            </span>
+            <h3 className="font-display text-base font-semibold text-foreground">Credential policy</h3>
+          </div>
+
+          <p className="mt-5 text-[13px] font-medium text-foreground">Two-factor authentication</p>
+
+          <dl className="mt-4 space-y-3 border-t border-border pt-5 text-[13px]">
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Second factor</dt>
+              <dd className="text-right font-medium text-foreground">Email challenge (OTP)</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Code expiration</dt>
+              <dd className="flex items-center gap-1.5 font-mono text-[12px] text-foreground">
+                <Clock className="h-3 w-3 text-muted-foreground" />
+                10 minutes
+              </dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Idle timeout</dt>
+              <dd className="font-mono text-[12px] text-foreground">30 minutes</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Absolute cap</dt>
+              <dd className="font-mono text-[12px] text-foreground">8 hours</dd>
+            </div>
+            <div className="flex items-baseline justify-between gap-3">
+              <dt className="text-muted-foreground">Lockout threshold</dt>
+              <dd className="text-right font-medium text-foreground">3 consecutive strikes</dd>
+            </div>
+          </dl>
+        </section>
+      </div>
+
+      <div className="mt-6 flex justify-end border-t border-border pt-4">
+        <Link
+          to="/dashboard/settings"
+          className="font-display text-[13px] font-semibold text-primary underline-offset-4 hover:underline"
+        >
+          View policy
+        </Link>
       </div>
     </div>
   );

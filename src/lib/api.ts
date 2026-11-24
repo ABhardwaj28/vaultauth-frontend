@@ -11,6 +11,7 @@ import {
   TwoFactorVerifyResponse,
   UserProfile,
   SessionItem,
+  AdminSessionItem,
   OAuthClient,
   CreateOAuthClientPayload,
   AdminUsersFilter,
@@ -19,10 +20,41 @@ import {
   AuditLogItem,
   GenericMessageResponse,
   HealthCheckResponse,
+  ChangePasswordResponse,
+  AuthActionResponse,
+  User2FAResponse,
+  AdminEnforce2FAResponse,
+  AdminActionResponse,
 } from "@/types/api";
 
 const DEFAULT_BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "https://api.vaultauth.proplays2312.eu.org";
+
+/**
+ * Unauthenticated auth flows. A 401 from one of these endpoints is a normal
+ * credential/code failure — it must not clear a valid session or emit a
+ * `vaultauth:session_expired` event.
+ */
+const PUBLIC_AUTH_ENDPOINTS = new Set([
+  "/api/v1/auth/login",
+  "/api/v1/auth/logout",
+  "/api/v1/auth/register",
+  "/api/v1/auth/2fa/resend",
+  "/api/v1/auth/2fa/verify",
+  "/api/v1/auth/forgot-password",
+  "/api/v1/auth/verify-reset-code",
+  "/api/v1/auth/reset-password",
+]);
+
+/** Descriptive, non-network error for endpoints absent from the internal spec. */
+function endpointUnavailable(method: string, reason: string): ApiError {
+  return {
+    status: 501,
+    code: "ERR_ENDPOINT_UNAVAILABLE",
+    message: `${reason} (api.${method} is not defined by the internal OpenAPI specification).`,
+    timestamp: new Date().toISOString(),
+  };
+}
 
 export interface RequestOptions extends RequestInit {
   skipAuthExpiredEvent?: boolean;
@@ -39,6 +71,23 @@ class ApiClient {
 
   invalidateUserCache(): void {
     this.userDirectoryCache = null;
+  }
+
+  /**
+   * The internal API reports 2FA via `two_factor_required` / `challenge_id`.
+   * Older UI code still reads `state` / `requires_2fa`, so derive those aliases
+   * from the authoritative fields rather than inventing new state.
+   */
+  private normalizeLoginResponse(data: LoginResponse): LoginResponse {
+    const requires2FA =
+      data.two_factor_required === true ||
+      Boolean(data.challenge_id) ||
+      data.requires_2fa === true;
+    return {
+      ...data,
+      requires_2fa: data.requires_2fa ?? requires2FA,
+      state: data.state ?? (requires2FA ? "OTP_REQUIRED" : "AUTHENTICATED"),
+    };
   }
 
   // Ephemeral storage helpers
@@ -143,11 +192,12 @@ class ApiClient {
       const responseRequestId =
         response.headers.get("X-Request-ID") || responseBody?.error?.request_id || requestId;
 
-      // Handle 401 Unauthorized globally (except login / logout or when explicitly bypassed during hydration)
+      // Handle 401 Unauthorized globally, except for public auth endpoints and
+      // explicit hydration bypasses. A bad reset code / login must never log a
+      // signed-in user out.
       if (
         response.status === 401 &&
-        endpoint !== "/api/v1/auth/login" &&
-        endpoint !== "/api/v1/auth/logout" &&
+        !PUBLIC_AUTH_ENDPOINTS.has(endpoint.split("?")[0] || endpoint) &&
         !options.skipAuthExpiredEvent
       ) {
         this.clearToken();
@@ -246,7 +296,7 @@ class ApiClient {
     if (res.data.token) {
       this.setToken(res.data.token);
     }
-    return res.data;
+    return this.normalizeLoginResponse(res.data);
   }
 
   async verify2FA(payload: TwoFactorVerifyPayload): Promise<TwoFactorVerifyResponse> {
@@ -257,6 +307,15 @@ class ApiClient {
     if (res.data.token) {
       this.setToken(res.data.token);
     }
+    return this.normalizeLoginResponse(res.data);
+  }
+
+  /** Internal spec: POST /api/v1/auth/2fa/resend — { challenge_id } -> { status, message }. */
+  async resend2FA(challengeId: string): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/auth/2fa/resend", {
+      method: "POST",
+      body: JSON.stringify({ challenge_id: challengeId }),
+    });
     return res.data;
   }
 
@@ -268,46 +327,93 @@ class ApiClient {
     return res.data;
   }
 
-  async verifyEmail(email: string, code: string): Promise<GenericMessageResponse> {
-    const res = await this.request<GenericMessageResponse>("/api/v1/auth/verify-email", {
+  /**
+   * Compatibility shim only. The internal OpenAPI specification defines no
+   * email-verification endpoint, so calling this never issues a request and
+   * never fakes success — it throws `ERR_ENDPOINT_UNAVAILABLE` instead.
+   * Kept because legacy registration UI still imports the method name.
+   */
+  async verifyEmail(_email: string, _code: string): Promise<GenericMessageResponse> {
+    throw endpointUnavailable(
+      "verifyEmail",
+      "Email verification is not available in the internal API"
+    );
+  }
+
+  /**
+   * Compatibility shim only — see `verifyEmail`. No resend endpoint exists in
+   * the internal specification.
+   */
+  async resendVerifyEmail(_email: string): Promise<GenericMessageResponse> {
+    throw endpointUnavailable(
+      "resendVerifyEmail",
+      "Email verification code resend is not available in the internal API"
+    );
+  }
+
+  async changePassword(currentPassword: string, newPassword: string): Promise<ChangePasswordResponse> {
+    // Single authoritative endpoint from the internal spec. Real errors are
+    // always propagated; no fallback route and no simulated success path.
+    const res = await this.request<ChangePasswordResponse>("/api/v1/auth/change-password", {
       method: "POST",
-      body: JSON.stringify({ email, code }),
+      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
     return res.data;
   }
 
-  async resendVerifyEmail(email: string): Promise<GenericMessageResponse> {
-    const res = await this.request<GenericMessageResponse>("/api/v1/auth/verify-email/resend", {
+  // --- Password recovery (public) ---
+  async requestPasswordReset(email: string): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/auth/forgot-password", {
       method: "POST",
       body: JSON.stringify({ email }),
     });
     return res.data;
   }
 
-  async changePassword(currentPassword: string, newPassword: string): Promise<GenericMessageResponse> {
-    try {
-      const res = await this.request<GenericMessageResponse>("/api/v1/me/password", {
+  async verifyResetCode(email: string, code: string): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/auth/verify-reset-code", {
+      method: "POST",
+      body: JSON.stringify({ email, code }),
+    });
+    return res.data;
+  }
+
+  async resetPassword(email: string, code: string, newPassword: string): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ email, code, new_password: newPassword }),
+    });
+    return res.data;
+  }
+
+  // --- Two-factor administration ---
+  async setOwn2FA(enabled: boolean, password: string): Promise<User2FAResponse> {
+    const res = await this.request<User2FAResponse>("/api/v1/me/2fa", {
+      method: "POST",
+      body: JSON.stringify({ enabled, password }),
+    });
+    return res.data;
+  }
+
+  async adminSetUser2FA(userId: string, enforced: boolean): Promise<AdminEnforce2FAResponse> {
+    this.invalidateUserCache();
+    const res = await this.request<AdminEnforce2FAResponse>(
+      `/api/v1/admin/users/${userId}/2fa`,
+      {
         method: "POST",
-        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-      });
-      return res.data;
-    } catch (err: unknown) {
-      const apiErr = err as ApiError;
-      if (apiErr.status === 404) {
-        // Fallback endpoint if implemented under auth prefix
-        try {
-          const fallback = await this.request<GenericMessageResponse>("/api/v1/auth/change-password", {
-            method: "POST",
-            body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
-          });
-          return fallback.data;
-        } catch {
-          // If neither endpoint exists yet, return simulated success for UI testing
-          return { message: "Password updated successfully." };
-        }
+        body: JSON.stringify({ enforced }),
       }
-      throw err;
-    }
+    );
+    return res.data;
+  }
+
+  async adminResetUserPassword(userId: string): Promise<AdminActionResponse> {
+    this.invalidateUserCache();
+    const res = await this.request<AdminActionResponse>(
+      `/api/v1/admin/users/${userId}/reset-password`,
+      { method: "POST" }
+    );
+    return res.data;
   }
 
   async logout(): Promise<void> {
@@ -362,10 +468,15 @@ class ApiClient {
 
     return activeList.map((s) => ({
       ...s,
-      ip_address: s.ip_address || s.ip || "Unknown IP",
+      // Internal `SessionItem` uses `ip`, `device`, `current` and
+      // `last_seen_at`; mirror them onto the legacy aliases the UI reads.
       ip: s.ip || s.ip_address || "Unknown IP",
-      user_agent: s.user_agent || s.device || "Unknown Device",
+      ip_address: s.ip_address || s.ip || "Unknown IP",
       device: s.device || s.user_agent || "Unknown Device",
+      user_agent: s.user_agent || s.device || "Unknown Device",
+      status: s.status || "ACTIVE",
+      last_seen_at: s.last_seen_at || s.created_at,
+      last_active_at: s.last_active_at || s.last_seen_at || s.created_at,
       is_current: s.current ?? s.is_current ?? false,
       current: s.current ?? s.is_current ?? false,
     }));
@@ -448,10 +559,18 @@ class ApiClient {
     const totalCount =
       typeof res.data?.total === "number" ? res.data.total : userList.length;
 
-    // If fetchAll is requested, fetch all remaining pages in parallel
+    // If fetchAll is requested, fetch the remaining pages in parallel. Start
+    // after the rows actually returned (plus the caller's initial offset) so a
+    // non-zero offset or a short first page cannot cause gaps/duplicates.
+    let hadPageError = false;
     if (filter?.fetchAll && totalCount > userList.length) {
+      const initialOffset = Math.max(0, filter?.offset ?? 0);
       const remainingOffsets: number[] = [];
-      for (let offset = userList.length; offset < totalCount; offset += 100) {
+      for (
+        let offset = initialOffset + userList.length;
+        offset < totalCount;
+        offset += limit
+      ) {
         remainingOffsets.push(offset);
       }
 
@@ -459,7 +578,7 @@ class ApiClient {
         remainingOffsets.map(async (offset) => {
           const pageParams = new URLSearchParams(params);
           pageParams.set("offset", offset.toString());
-          pageParams.set("limit", "100");
+          pageParams.set("limit", limit.toString());
           try {
             const nextRes = await this.request<any>(
               `/api/v1/admin/users?${pageParams.toString()}`,
@@ -471,17 +590,32 @@ class ApiClient {
               (Array.isArray(nextRes.data) ? nextRes.data : []);
             return nextBatch;
           } catch {
+            // Per-page isolation: one failed page must not discard the rest.
+            hadPageError = true;
             return [] as AdminUserListItem[];
           }
         })
       );
 
-      for (const batch of results) {
-        userList = [...userList, ...batch];
+      const seen = new Set<string>();
+      for (const user of userList) {
+        const key = user.id || user.email;
+        if (key) seen.add(key);
       }
+      for (const batch of results) {
+        for (const user of batch) {
+          const key = user.id || user.email;
+          if (key && seen.has(key)) continue;
+          if (key) seen.add(key);
+          userList.push(user);
+        }
+      }
+      // Never report more rows than the authoritative total.
+      userList = userList.slice(0, totalCount);
     }
 
-    if (isUnfilteredAll) {
+    // Do not cache a partially fetched directory.
+    if (isUnfilteredAll && !hadPageError) {
       this.userDirectoryCache = {
         users: userList,
         total: totalCount,
@@ -531,10 +665,11 @@ class ApiClient {
     return res.data;
   }
 
-  async getAuditLogs(params?: { event?: string; limit?: number }): Promise<AuditLogItem[]> {
+  async getAuditLogs(params?: { event?: string; limit?: number; offset?: number }): Promise<AuditLogItem[]> {
     const query = new URLSearchParams();
     if (params?.event && params.event !== "All") query.set("event", params.event);
     if (params?.limit) query.set("limit", params.limit.toString());
+    if (params?.offset != null && params.offset > 0) query.set("offset", params.offset.toString());
 
     const queryString = query.toString() ? `?${query.toString()}` : "";
     const res = await this.request<any>(
@@ -548,7 +683,13 @@ class ApiClient {
       res.data?.items ||
       (Array.isArray(res.data) ? res.data : []);
 
-    return rawList;
+    // Internal schema uses `ip` and `ts`; keep the legacy aliases in sync.
+    return rawList.map((log) => ({
+      ...log,
+      ip: log.ip ?? log.ip_address ?? null,
+      ip_address: log.ip_address ?? log.ip ?? undefined,
+      ts: log.ts || log.created_at || log.timestamp || "",
+    }));
   }
 
   async getGlobalSessions(limit = 50): Promise<SessionItem[]> {
@@ -557,7 +698,7 @@ class ApiClient {
       { method: "GET" }
     );
 
-    const rawList: any[] =
+    const rawList: AdminSessionItem[] =
       res.data?.sessions ||
       res.data?.items ||
       (Array.isArray(res.data) ? res.data : []);
@@ -575,12 +716,16 @@ class ApiClient {
 
     return activeList.map((s) => ({
       ...s,
-      ip_address: s.ip_address || s.ip || "Unknown IP",
+      // Internal AdminSessionItem uses `ip`, `device` and `email`; mirror them
+      // onto the legacy aliases consumed by the admin session tables.
       ip: s.ip || s.ip_address || "Unknown IP",
-      user_agent: s.user_agent || s.device || "Unknown Device",
+      ip_address: s.ip_address || s.ip || "Unknown IP",
       device: s.device || s.user_agent || "Unknown Device",
+      user_agent: s.user_agent || s.device || "Unknown Device",
+      status: s.status || "ACTIVE",
       user_email: s.user_email || s.email || "Unknown User",
       email: s.email || s.user_email || "Unknown User",
+      last_seen_at: s.last_seen_at || s.created_at,
       last_active_at: s.last_active_at || s.last_seen_at || s.created_at,
       expires_at: s.expires_at || s.idle_expires_at || s.absolute_expires_at,
     }));

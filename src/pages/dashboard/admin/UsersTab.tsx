@@ -36,6 +36,19 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatDateTime, formatRelativeTime, parseUserAgent } from "@/lib/utils";
 
+const ROLE_FILTERS = [
+  { value: "All", label: "All Roles" },
+  { value: "user", label: "User" },
+  { value: "admin", label: "Admin" },
+];
+
+const STATUS_FILTERS = [
+  { value: "All", label: "All Statuses" },
+  { value: "ACTIVE", label: "ACTIVE" },
+  { value: "LOCKED", label: "LOCKED" },
+  { value: "DISABLED", label: "DISABLED" },
+];
+
 export function UsersTab() {
   const { user: currentUser } = useAuth();
 
@@ -246,15 +259,15 @@ export function UsersTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-1">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            User Governance & Access Control
+      <div className="flex flex-col gap-3 border-b border-border/80 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[28px] sm:leading-tight">
+            User governance and access control
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Administer enterprise corporate accounts grouped by User ID and email with live session inspection.
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            Corporate accounts with live session inspection. Changes apply immediately.
           </p>
         </div>
 
@@ -263,131 +276,149 @@ export function UsersTab() {
           size="sm"
           onClick={() => fetchUsersAndSessions(true)}
           disabled={loading}
-          className="h-8 px-3 text-xs font-medium rounded-lg self-start sm:self-auto"
+          className="h-8 shrink-0 self-start rounded-md border-border px-3 text-sm font-medium sm:self-auto"
         >
-          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-          <span>Refresh</span>
+          <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          Refresh
         </Button>
       </div>
 
-      {/* Notifications */}
+      {/* Notices */}
       {message && (
-        <div className="p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs flex items-center space-x-2.5">
-          <CheckCircle2 className="h-4 w-4 shrink-0" />
-          <span className="font-medium">{message}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{message}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-emerald-500" />
         </div>
       )}
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2.5">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span className="font-medium">{error}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{error}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
         </div>
       )}
 
-      {/* Filters & Search Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="relative flex-1 max-w-sm">
-          <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+      {/* Search and filter chips */}
+      <div className="flex flex-col gap-4 border-b border-border/60 pb-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="relative w-full lg:max-w-xs">
+          <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by corporate email or user ID..."
+            placeholder="Search by email or user ID"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 h-9 rounded-lg bg-background/50 focus:bg-background text-xs"
+            className="h-9 rounded-md border-border/70 bg-background/60 pl-9 text-sm focus:bg-card"
           />
         </div>
 
-        <div className="flex items-center space-x-2.5">
-          {/* Alphabetical Sort Toggle */}
+        <div className="flex flex-wrap items-end gap-x-5 gap-y-3">
+          <div className="space-y-1.5">
+            <span className="block text-[11px] text-muted-foreground">Role</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {ROLE_FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setRoleFilter(option.value)}
+                  aria-pressed={roleFilter === option.value}
+                  className={`rounded-md border px-2.5 py-1 text-[12px] transition-colors ${
+                    roleFilter === option.value
+                      ? "border-primary/40 bg-primary/[0.06] text-primary"
+                      : "border-border/70 text-muted-foreground hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <span className="block text-[11px] text-muted-foreground">Status</span>
+            <div className="flex flex-wrap items-center gap-1.5">
+              {STATUS_FILTERS.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setStatusFilter(option.value)}
+                  aria-pressed={statusFilter === option.value}
+                  className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1 font-mono text-[11px] transition-colors ${
+                    statusFilter === option.value
+                      ? "border-primary/40 bg-primary/[0.06] text-primary"
+                      : "border-border/70 text-muted-foreground hover:border-border hover:text-foreground"
+                  }`}
+                >
+                  {option.value !== "All" && (
+                    <span className={`h-1.5 w-1.5 rounded-full ${
+                      option.value === "ACTIVE"
+                        ? "bg-emerald-500"
+                        : option.value === "LOCKED"
+                        ? "bg-amber-500"
+                        : "bg-destructive"
+                    }`} />
+                  )}
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <Button
             variant="outline"
             size="sm"
             onClick={() => setSortAsc(!sortAsc)}
-            className="h-9 px-3 rounded-lg text-xs font-medium border-border/80 flex items-center space-x-1.5"
-            title={sortAsc ? "Sort Alphabetically: A to Z" : "Sort Alphabetically: Z to A"}
+            className="h-8 rounded-md border-border/70 px-2.5 text-[12px] font-medium"
+            title={sortAsc ? "Sort by email, A to Z" : "Sort by email, Z to A"}
           >
             {sortAsc ? (
-              <>
-                <ArrowDownAZ className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Alphabetical (A–Z)</span>
-              </>
+              <ArrowDownAZ className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
             ) : (
-              <>
-                <ArrowUpAZ className="h-3.5 w-3.5 text-primary" />
-                <span className="hidden sm:inline">Alphabetical (Z–A)</span>
-              </>
+              <ArrowUpAZ className="mr-1.5 h-3.5 w-3.5 text-muted-foreground" />
             )}
+            {sortAsc ? "A to Z" : "Z to A"}
           </Button>
-
-          <div className="flex items-center space-x-1.5">
-            <span className="text-xs text-muted-foreground font-medium">Role:</span>
-            <select
-              value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
-            >
-              <option value="All">All Roles</option>
-              <option value="user">User</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div className="flex items-center space-x-1.5">
-            <span className="text-xs text-muted-foreground font-medium">Status:</span>
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
-            >
-              <option value="All">All Statuses</option>
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="LOCKED">LOCKED</option>
-              <option value="DISABLED">DISABLED</option>
-            </select>
-          </div>
         </div>
       </div>
 
-      {/* Users Table Card */}
-      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
-        <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-              <Users className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                Employee Directory
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Grouped by Corporate Email & User ID • Sorted alphabetically ({sortAsc ? "A–Z" : "Z–A"}).
-              </p>
-            </div>
+      {/* One directory surface */}
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="flex flex-col gap-2 border-b border-border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex items-center gap-2.5">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-display text-[15px] font-semibold tracking-tight text-foreground">
+              Employee directory
+            </h2>
           </div>
-          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
-            {total || users.length} Accounts
-          </Badge>
+          <div className="flex items-center gap-3">
+            <span className="text-[11px] text-muted-foreground">
+              Sorted by email, {sortAsc ? "A to Z" : "Z to A"}
+            </span>
+            <Badge variant="outline" className="rounded-md px-2 py-0 font-mono text-[11px] text-muted-foreground">
+              {total || users.length} accounts
+            </Badge>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[960px]">
             <TableHeader>
-              <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
-                <TableHead className="w-[300px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Corporate Email / User ID</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Role</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Account Status</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Active Sessions</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Failed Strikes</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Registered</TableHead>
-                <TableHead className="text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Manage</TableHead>
+              <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
+                <TableHead className="w-[300px] py-2.5 font-sans normal-case tracking-normal">Corporate email</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Role</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Status</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Sessions</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Failed strikes</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Registered</TableHead>
+                <TableHead className="py-2.5 text-right font-sans normal-case tracking-normal">Manage</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {!sortedUsers || sortedUsers.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-28 text-center text-muted-foreground text-xs">
-                    {loading ? "Searching enterprise directory..." : "No accounts match the current filter."}
+                  <TableCell colSpan={7} className="h-28 text-center text-sm text-muted-foreground">
+                    {loading ? "Reading the directory" : "No accounts match the current filters."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -395,7 +426,6 @@ export function UsersTab() {
                   const isLocked = item.status === "LOCKED" || (item.failed_attempts || 0) >= 3;
                   const isCurrent = item.id === currentUser?.id;
 
-                  // Find correlated active sessions for this user
                   const userSessions =
                     sessionsMap.get(item.id) ||
                     sessionsMap.get(item.email.toLowerCase().trim()) ||
@@ -403,54 +433,56 @@ export function UsersTab() {
                   const hasMultipleSessions = userSessions.length > 1;
 
                   return (
-                    <TableRow key={item.id} className="border-b border-border/60 hover:bg-muted/20 transition-colors">
-                      {/* Grouped by Corporate Email & User ID */}
-                      <TableCell className="py-3">
-                        <div className="flex flex-col space-y-1">
-                          <div className="flex items-center space-x-2">
-                            <span className="font-semibold text-xs text-foreground font-mono">
-                              {item.email}
-                            </span>
-                            {isCurrent && (
-                              <Badge variant="secondary" className="text-[10px] py-0 px-1.5 rounded-md font-medium">
-                                You
-                              </Badge>
-                            )}
-                          </div>
-                          <div className="flex items-center space-x-1.5 text-[11px] font-mono text-muted-foreground">
-                            <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">ID:</span>
-                            <span className="truncate max-w-[170px]">{item.id}</span>
-                            <CopyButton value={item.id} className="h-4 px-1 text-[9px] rounded" />
+                    <TableRow key={item.id} className="border-b border-border/60 hover:bg-muted/25">
+                      <TableCell className="py-2.5">
+                        <div className="flex items-center gap-3">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border/70 bg-muted/40 font-display text-[11px] font-semibold text-muted-foreground">
+                            {(item.email || item.id || "?").slice(0, 2).toUpperCase()}
+                          </span>
+                          <div className="flex min-w-0 flex-col gap-1">
+                            <div className="flex items-center gap-2">
+                              <span className="truncate text-[13px] font-medium text-foreground">
+                                {item.email}
+                              </span>
+                              {isCurrent && (
+                                <span className="shrink-0 rounded border border-border/70 bg-background/60 px-1.5 py-0 text-[10px] text-muted-foreground">
+                                  You
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-1.5 font-mono text-[11px] text-muted-foreground">
+                              <span className="text-[10px] text-muted-foreground/70">ID</span>
+                              <span className="max-w-[170px] truncate">{item.id}</span>
+                              <CopyButton value={item.id} className="h-4 rounded px-1 text-[9px]" />
+                            </div>
                           </div>
                         </div>
                       </TableCell>
 
                       <TableCell>
-                        <Badge variant={item.role === "admin" ? "default" : "secondary"} className="rounded-md text-[10px] uppercase font-semibold">
-                          {item.role}
-                        </Badge>
+                        <span className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 text-[11px] text-foreground">
+                          <span className={`h-1.5 w-1.5 rounded-full ${item.role === "admin" ? "bg-foreground/60" : "bg-muted-foreground/50"}`} />
+                          {item.role === "admin" ? "Admin" : "User"}
+                        </span>
                       </TableCell>
 
                       <TableCell>
-                        <Badge
-                          variant={
+                        <span className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 font-mono text-[10px] text-foreground">
+                          <span className={`h-1.5 w-1.5 rounded-full ${
                             item.status === "ACTIVE"
-                              ? "success"
+                              ? "bg-emerald-500"
                               : item.status === "LOCKED"
-                              ? "warning"
-                              : "destructive"
-                          }
-                          className="rounded-md text-[10px] uppercase font-semibold"
-                        >
+                              ? "bg-amber-500"
+                              : "bg-destructive"
+                          }`} />
                           {item.status}
-                        </Badge>
+                        </span>
                       </TableCell>
 
-                      {/* Dropdown Menu for Active Sessions */}
                       <TableCell>
                         {userSessions.length === 0 ? (
-                          <span className="text-xs text-muted-foreground/60 italic font-mono">
-                            No active sessions
+                          <span className="font-mono text-[11px] italic text-muted-foreground/60">
+                            None
                           </span>
                         ) : (
                           <DropdownMenu>
@@ -458,77 +490,67 @@ export function UsersTab() {
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className={`h-7 px-2.5 text-xs font-mono rounded-lg transition-all flex items-center space-x-1.5 ${
-                                  hasMultipleSessions
-                                    ? "border-primary/40 bg-primary/10 text-primary font-semibold hover:bg-primary/20"
-                                    : "border-border/80 bg-muted/30 text-foreground hover:bg-muted/60"
-                                }`}
+                                className="h-7 rounded-md border-border/70 bg-background/60 px-2.5 font-mono text-[11px] hover:bg-muted/40"
                               >
-                                <span className={`h-1.5 w-1.5 rounded-full ${hasMultipleSessions ? "bg-primary animate-pulse" : "bg-emerald-500"}`} />
-                                <span>
-                                  {userSessions.length} {userSessions.length === 1 ? "Session" : "Sessions"}
-                                </span>
-                                <ChevronDown className="h-3 w-3 opacity-60 ml-0.5" />
+                                <span className={`mr-1.5 h-1.5 w-1.5 rounded-full ${hasMultipleSessions ? "bg-foreground/60" : "bg-emerald-500"}`} />
+                                {userSessions.length} {userSessions.length === 1 ? "session" : "sessions"}
+                                <ChevronDown className="ml-1 h-3 w-3 opacity-60" />
                               </Button>
                             </DropdownMenuTrigger>
 
-                            <DropdownMenuContent align="start" className="w-80 p-2 text-xs rounded-xl border border-border/80 shadow-xl bg-card">
-                              <DropdownMenuLabel className="text-xs font-semibold px-2 py-1.5 border-b border-border/60 flex items-center justify-between">
-                                <span className="flex items-center space-x-1.5">
-                                  <Users className="h-3.5 w-3.5 text-primary" />
-                                  <span>Active User Sessions ({userSessions.length})</span>
+                            <DropdownMenuContent align="start" className="w-80 rounded-md border border-border bg-card p-1.5 text-sm shadow-lg">
+                              <DropdownMenuLabel className="flex items-center justify-between border-b border-border/60 px-2 py-1.5 text-[12px] font-medium">
+                                <span className="flex items-center gap-1.5">
+                                  <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                                  Active sessions ({userSessions.length})
                                 </span>
                                 {hasMultipleSessions && (
-                                  <Badge variant="outline" className="text-[10px] py-0 px-1 font-mono text-primary border-primary/30 bg-primary/5">
-                                    Multiple Devices
-                                  </Badge>
+                                  <span className="font-mono text-[10px] text-muted-foreground">Multiple devices</span>
                                 )}
                               </DropdownMenuLabel>
 
-                              <div className="max-h-60 overflow-y-auto divide-y divide-border/50 py-1">
+                              <div className="max-h-60 divide-y divide-border/60 py-1">
                                 {userSessions.map((session, sIdx) => {
-                                  const rawUa = session.device || session.user_agent || "Client Device";
+                                  const rawUa = session.device || session.user_agent || "Client device";
                                   const rawIp = (session.ip || session.ip_address || "—").replace(/\/32$/, "");
                                   const parsed = parseUserAgent(rawUa);
                                   const isRevoking = revokingSessionId === session.id;
 
                                   return (
-                                    <div key={session.id || sIdx} className="p-2 space-y-1.5 hover:bg-muted/30 rounded-lg transition-colors">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center space-x-2 min-w-0">
-                                          <div className="p-1 rounded bg-primary/10 text-primary border border-primary/20 shrink-0">
+                                    <div key={session.id || sIdx} className="space-y-1.5 rounded-sm px-2 py-2">
+                                      <div className="flex items-center justify-between gap-2">
+                                        <div className="flex min-w-0 items-center gap-2">
+                                          <div className="shrink-0 rounded border border-border/70 bg-muted/40 p-1 text-muted-foreground">
                                             {parsed.isMobile ? (
                                               <Smartphone className="h-3 w-3" />
                                             ) : (
                                               <Laptop className="h-3 w-3" />
                                             )}
                                           </div>
-                                          <span className="font-semibold text-xs text-foreground truncate">
+                                          <span className="truncate text-[13px] font-medium text-foreground">
                                             {parsed.device}
                                           </span>
                                         </div>
 
                                         <Button
-                                          variant="destructive"
+                                          variant="outline"
                                           size="sm"
                                           disabled={isRevoking}
                                           onClick={() => handleRevokeSession(session.id)}
-                                          className="h-6 px-2 text-[10px] font-mono rounded"
+                                          className="h-6 rounded-md border-border/70 bg-transparent px-2 text-[11px] text-destructive hover:border-destructive/40 hover:bg-destructive/[0.04]"
                                           title="Revoke this session"
                                         >
-                                          <Trash2 className="h-2.5 w-2.5 mr-1" />
-                                          <span>{isRevoking ? "..." : "Revoke"}</span>
+                                          <Trash2 className="mr-1 h-2.5 w-2.5" />
+                                          {isRevoking ? "..." : "Revoke"}
                                         </Button>
                                       </div>
 
-                                      <div className="flex items-center justify-between text-[11px] font-mono text-muted-foreground pt-0.5">
+                                      <div className="flex items-center justify-between gap-2 font-mono text-[11px] text-muted-foreground">
                                         <span className="flex items-center">
-                                          <Globe className="h-3 w-3 mr-1 text-primary opacity-70 shrink-0" />
+                                          <Globe className="mr-1 h-3 w-3 shrink-0 text-muted-foreground" />
                                           {rawIp}
                                         </span>
-                                        <span>
-                                          {formatRelativeTime(session.last_active_at || session.created_at)}
-                                        </span>
+                                        <span>{formatRelativeTime(session.last_active_at || session.created_at)}</span>
                                       </div>
                                     </div>
                                   );
@@ -539,25 +561,23 @@ export function UsersTab() {
                         )}
                       </TableCell>
 
-                      <TableCell className="font-mono text-xs tabular-nums">
-                        <span
-                          className={
+                      <TableCell className="font-mono text-[12px] tabular-nums">
+                        <span className="inline-flex items-center gap-1.5 text-foreground">
+                          <span className={`h-1.5 w-1.5 rounded-full ${
                             isLocked
-                              ? "text-destructive font-bold"
+                              ? "bg-destructive"
                               : (item.failed_attempts || 0) > 0
-                              ? "text-amber-500 font-semibold"
-                              : "text-muted-foreground"
-                          }
-                        >
+                              ? "bg-amber-500"
+                              : "bg-muted-foreground/40"
+                          }`} />
                           {item.failed_attempts || 0} / 3
                         </span>
                       </TableCell>
 
-                      <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                      <TableCell className="whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                         {formatDateTime(item.created_at)}
                       </TableCell>
 
-                      {/* Manage Actions Dropdown Menu */}
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -565,59 +585,56 @@ export function UsersTab() {
                               variant="ghost"
                               size="icon"
                               disabled={actionLoadingId === item.id}
-                              className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                              className="h-8 w-8 rounded-md text-muted-foreground hover:text-foreground"
                             >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-56 text-xs rounded-xl border border-border/80 shadow-md">
-                            <DropdownMenuLabel className="text-xs font-semibold">Account Controls</DropdownMenuLabel>
+                          <DropdownMenuContent align="end" className="w-56 rounded-md border border-border bg-card p-1.5 text-sm shadow-lg">
+                            <DropdownMenuLabel className="px-2 py-1.5 text-[12px] font-medium">
+                              Account controls
+                            </DropdownMenuLabel>
 
-                            {/* Unlock Action */}
                             <DropdownMenuItem
                               disabled={!isLocked}
                               onClick={() => handleUnlock(item.id)}
-                              className="cursor-pointer text-xs"
+                              className="cursor-pointer text-[13px]"
                             >
-                              <Unlock className="h-3.5 w-3.5 mr-2 text-amber-500" />
-                              <span>Unlock Account (Reset Strikes)</span>
+                              <Unlock className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                              <span>Unlock account (reset strikes)</span>
                             </DropdownMenuItem>
 
-                            {/* Explicit Disable User / Enable User Action */}
                             <DropdownMenuItem
                               disabled={isCurrent}
                               onClick={() => handleToggleStatus(item)}
-                              className="cursor-pointer text-xs"
+                              className="cursor-pointer text-[13px]"
                             >
                               {item.status === "DISABLED" ? (
                                 <>
-                                  <UserCheck className="h-3.5 w-3.5 mr-2 text-emerald-500" />
-                                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">Enable User</span>
+                                  <UserCheck className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="font-medium">Enable user</span>
                                 </>
                               ) : (
                                 <>
-                                  <UserX className="h-3.5 w-3.5 mr-2 text-destructive" />
-                                  <span className="text-destructive font-medium">Disable User</span>
+                                  <UserX className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+                                  <span className="font-medium">Disable user</span>
                                 </>
                               )}
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
 
-                            {/* Change Role (Only allowed on ACTIVE accounts by backend) */}
                             <DropdownMenuItem
                               disabled={isCurrent || item.status !== "ACTIVE"}
                               onClick={() => handleChangeRole(item)}
-                              className="cursor-pointer text-xs"
+                              className="cursor-pointer text-[13px]"
                             >
-                              <Shield className="h-3.5 w-3.5 mr-2 text-primary" />
+                              <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
                               <div className="flex flex-col">
-                                <span>
-                                  {item.role === "admin" ? "Demote to User" : "Promote to Admin"}
-                                </span>
+                                <span>{item.role === "admin" ? "Demote to user" : "Promote to admin"}</span>
                                 {item.status !== "ACTIVE" && (
-                                  <span className="text-[10px] text-muted-foreground/80 font-normal">
-                                    Requires ACTIVE status
+                                  <span className="text-[10px] text-muted-foreground">
+                                    Requires active status
                                   </span>
                                 )}
                               </div>

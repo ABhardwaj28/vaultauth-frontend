@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, useLocation, useSearchParams } from "react-router-dom";
-import { KeyRound, Loader2, AlertCircle, RefreshCw } from "lucide-react";
+import { Loader2, AlertCircle, RefreshCw, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -8,6 +8,11 @@ import { OtpInput } from "@/components/ui/otp-input";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
+
+// Countdown ring geometry — r=44 on a 100x100 viewBox.
+const RING_RADIUS = 44;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+const RESEND_COOLDOWN_SECONDS = 60;
 
 export function VerifyOtpPage() {
   const navigate = useNavigate();
@@ -98,11 +103,20 @@ export function VerifyOtpPage() {
     setError(null);
     setResendMessage(null);
 
+    if (!isRegistration && !challengeId) {
+      setError("This verification challenge is no longer available. Return to sign in and start again.");
+      return;
+    }
+    if (isRegistration) {
+      setError("Email verification is not available on this service. Please contact support.");
+      return;
+    }
+
     try {
-      if (isRegistration) {
-        await api.resendVerifyEmail(email);
-      }
-      setResendMessage("A new 6-digit verification code has been dispatched.");
+      const res = await api.resend2FA(challengeId as string);
+      setResendMessage(
+        res.message || "A new 6-digit verification code has been dispatched."
+      );
       setResendCooldown(60);
       setAttemptsRemaining(3);
     } catch (err: unknown) {
@@ -111,22 +125,69 @@ export function VerifyOtpPage() {
     }
   };
 
+  const ringOffset =
+    RING_CIRCUMFERENCE *
+    (1 - Math.min(resendCooldown, RESEND_COOLDOWN_SECONDS) / RESEND_COOLDOWN_SECONDS);
+
   return (
     <AuthShell>
-      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card p-6 sm:p-8 shadow-[0_4px_20px_rgba(15,23,42,0.05)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] transition-all">
-        <div className="space-y-1.5 pb-6 text-center">
-          <div className="flex justify-center mb-2">
-            <div className="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shadow-xs">
-              <KeyRound className="w-5 h-5" />
+      {/* Exact auth canvas colors over the shared shell */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 bg-[#F6F7F9] dark:bg-[#0B0D11]" />
+
+      <div className="relative overflow-hidden rounded-xl border border-border/70 bg-white p-7 shadow-[0_12px_40px_-16px_rgba(16,24,40,0.18)] dark:border-white/[0.06] dark:bg-[#11141A] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.5)] sm:p-8">
+        <div className="space-y-3 pb-7 text-center">
+          {/* Circular refresh countdown ring — the one signature element */}
+          <div className="flex justify-center">
+            <div className="relative h-28 w-28">
+              <svg
+                viewBox="0 0 100 100"
+                className="absolute inset-0 h-full w-full -rotate-90"
+                aria-hidden="true"
+              >
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={RING_RADIUS}
+                  className="stroke-border dark:stroke-white/10"
+                  strokeWidth="4"
+                  fill="transparent"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r={RING_RADIUS}
+                  stroke="#F07A26"
+                  className="transition-[stroke-dashoffset] duration-500 ease-linear"
+                  strokeWidth="4"
+                  strokeLinecap="round"
+                  fill="transparent"
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={ringOffset}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="font-mono text-3xl font-semibold tabular-nums text-foreground">
+                  {resendCooldown}s
+                </span>
+                <span className="mt-1 text-[10px] font-medium tracking-[0.14em] text-muted-foreground">
+                  Resend in
+                </span>
+              </div>
             </div>
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Two-Factor Verification
+
+          <div className="flex items-center justify-center gap-2 pt-1 text-muted-foreground">
+            <ShieldCheck className="h-4 w-4" />
+            <span className="font-mono text-[11px] tracking-[0.14em]">Verification required</span>
+          </div>
+
+          <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.02em] text-foreground sm:text-[1.6rem]">
+            Check your email
           </h1>
-          <p className="text-xs text-muted-foreground max-w-xs mx-auto">
-            Enter the 6-digit security code dispatched to{" "}
-            <span className="font-mono text-foreground font-medium">
-              {email || "your corporate email"}
+          <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted-foreground">
+            Enter the 6-digit code sent to{" "}
+            <span className="font-mono text-[13px] font-medium text-foreground">
+              {email || "your email address"}
             </span>
           </p>
         </div>
@@ -134,22 +195,22 @@ export function VerifyOtpPage() {
         <form onSubmit={handleVerify} className="space-y-5">
           {/* Error Banner */}
           {error && (
-            <Alert variant="destructive" className="text-xs py-2.5 px-3 rounded-lg">
+            <Alert variant="destructive" className="rounded-lg border-destructive/25 bg-destructive/[0.06] text-sm text-destructive">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle className="text-xs font-semibold">Verification Failed</AlertTitle>
-              <AlertDescription className="text-xs mt-0.5">{error}</AlertDescription>
+              <AlertTitle className="text-sm font-semibold">Verification failed</AlertTitle>
+              <AlertDescription className="mt-1 text-sm leading-relaxed">{error}</AlertDescription>
             </Alert>
           )}
 
           {/* Resend Notice */}
           {resendMessage && (
-            <Alert variant="success" className="text-xs py-2.5 px-3 rounded-lg">
-              <AlertDescription className="text-xs">{resendMessage}</AlertDescription>
+            <Alert variant="default" className="rounded-lg border-border/70 bg-muted/40 text-sm text-foreground/80">
+              <AlertDescription className="text-sm leading-relaxed">{resendMessage}</AlertDescription>
             </Alert>
           )}
 
-          {/* 6-Cell Segmented OtpInput */}
-          <div className="py-2">
+          {/* 6-Cell Mono Code Cells */}
+          <div className="py-1 [&_input]:h-14 [&_input]:w-full [&_input]:min-w-0 [&_input]:rounded-lg [&_input]:border-border/80 [&_input]:bg-background/60 [&_input]:text-2xl [&_input]:font-semibold [&_input]:shadow-none [&_input]:dark:bg-white/[0.03]">
             <OtpInput
               value={code}
               onChange={(val) => {
@@ -164,55 +225,57 @@ export function VerifyOtpPage() {
           </div>
 
           {/* Attempt Feedback & Timer */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground font-mono">
-            <span className="tabular-nums">
-              Attempts:{" "}
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>
+              Attempts remaining:{" "}
               <span
-                className={
+                className={`font-mono font-medium tabular-nums ${
                   attemptsRemaining <= 1
-                    ? "text-destructive font-semibold"
-                    : "text-foreground font-medium"
-                }
+                    ? "text-destructive"
+                    : "text-foreground"
+                }`}
               >
-                {attemptsRemaining} of 3 left
+                {attemptsRemaining} of 3
               </span>
             </span>
 
-            <button
-              type="button"
-              onClick={handleResend}
-              disabled={resendCooldown > 0}
-              className="hover:text-foreground disabled:opacity-50 transition-colors focus:outline-none"
-            >
-              {resendCooldown > 0 ? (
-                <span className="tabular-nums">Resend in {resendCooldown}s</span>
-              ) : (
-                <span className="flex items-center text-primary font-sans font-medium">
-                  <RefreshCw className="h-3 w-3 mr-1" />
-                  Resend Code
-                </span>
-              )}
-            </button>
+            <span className="font-mono tabular-nums">
+              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Ready to resend"}
+            </span>
           </div>
 
-          <div className="pt-2 space-y-2">
+          {/* Bottom action row */}
+          <div className="grid grid-cols-2 gap-3 pt-1">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleResend}
+              disabled={resendCooldown > 0}
+              className="h-11 rounded-lg border-border/80 bg-transparent text-sm font-medium"
+            >
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Resend code
+            </Button>
+
             <Button
               type="submit"
               disabled={loading || code.length < 6 || attemptsRemaining === 0}
-              className="w-full h-10 font-semibold rounded-lg shadow-xs"
+              className="h-11 rounded-lg bg-[#F07A26] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#DB6A16]"
             >
               {loading ? (
-                <span className="flex items-center space-x-2">
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                  <span>Validating Passcode...</span>
+                <span className="flex items-center gap-2">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Verifying…
                 </span>
               ) : (
-                <span>Verify & Proceed</span>
+                "Verify code"
               )}
             </Button>
+          </div>
 
-            <Button asChild variant="ghost" className="w-full h-9 rounded-lg text-xs font-medium">
-              <Link to="/login">Cancel & Return to Sign In</Link>
+          <div className="pt-1 text-center">
+            <Button asChild variant="ghost" className="h-9 rounded-lg text-sm font-medium text-muted-foreground">
+              <Link to="/login">Back to sign in</Link>
             </Button>
           </div>
         </form>

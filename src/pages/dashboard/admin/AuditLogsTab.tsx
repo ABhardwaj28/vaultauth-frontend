@@ -24,6 +24,15 @@ const AUDIT_EVENTS = [
   "ROLE_CHANGED",
 ];
 
+const QUICK_EVENTS = [
+  "All",
+  "LOGIN_SUCCESS",
+  "LOGIN_FAILED",
+  "LOGOUT",
+  "SESSION_REVOKED",
+  "ROLE_CHANGED",
+];
+
 export function AuditLogsTab() {
   const [logs, setLogs] = useState<AuditLogItem[]>([]);
   const [usersMap, setUsersMap] = useState<Record<string, string>>({});
@@ -85,108 +94,129 @@ export function AuditLogsTab() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5 pb-1">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border/80">
-        <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
-            Security Audit Trail
+      <div className="flex flex-col gap-3 border-b border-border/80 pb-5 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1.5">
+          <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-[28px] sm:leading-tight">
+            Security audit trail
           </h1>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Immutable system audit logs recording authentication events, administrative actions, and authorization grants.
+          <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+            An immutable record of sign-ins, administrative changes, and session events.
           </p>
         </div>
 
-        <div className="flex items-center space-x-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchLogs}
-            disabled={loading}
-            className="h-8 px-3 text-xs font-medium rounded-lg"
-          >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
-            <span>Refresh</span>
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={fetchLogs}
+          disabled={loading}
+          className="h-8 shrink-0 self-start rounded-md border-border px-3 text-sm font-medium sm:self-auto"
+        >
+          <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       {error && (
-        <div className="p-3.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center space-x-2.5">
-          <AlertCircle className="h-4 w-4 shrink-0" />
-          <span className="font-medium">{error}</span>
+        <div className="flex items-start gap-2.5 rounded-md border border-border bg-card px-3.5 py-2.5 text-sm text-foreground">
+          <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <span className="flex-1 leading-relaxed">{error}</span>
+          <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-destructive" />
         </div>
       )}
 
-      {/* Filter Toolbar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground font-medium">Event Type:</span>
-          <select
-            value={selectedEvent}
-            onChange={(e) => setSelectedEvent(e.target.value)}
-            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
-          >
-            {AUDIT_EVENTS.map((evt) => (
-              <option key={evt} value={evt}>
-                {evt}
-              </option>
-            ))}
-          </select>
+      {/* Query controls */}
+      <div className="flex flex-col gap-3 rounded-md border border-border bg-card px-3.5 py-3 lg:flex-row lg:items-end lg:justify-between">
+        <div className="flex flex-wrap items-end gap-5">
+          <div className="space-y-1.5">
+            <label htmlFor="audit-event" className="block text-[11px] text-muted-foreground">
+              Event
+            </label>
+            <select
+              id="audit-event"
+              value={selectedEvent}
+              onChange={(e) => setSelectedEvent(e.target.value)}
+              className="h-8 rounded-md border border-border/70 bg-background/60 px-2.5 font-mono text-[11px] focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              {AUDIT_EVENTS.map((evt) => (
+                <option key={evt} value={evt}>
+                  {evt}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label htmlFor="audit-limit" className="block text-[11px] text-muted-foreground">
+              Rows
+            </label>
+            <select
+              id="audit-limit"
+              value={limit}
+              onChange={(e) => setLimit(Number(e.target.value))}
+              className="h-8 rounded-md border border-border/70 bg-background/60 px-2.5 font-mono text-[11px] focus:bg-card focus:outline-none focus:ring-1 focus:ring-ring"
+            >
+              <option value={25}>25 entries</option>
+              <option value={50}>50 entries</option>
+              <option value={100}>100 entries</option>
+            </select>
+          </div>
         </div>
 
-        <div className="flex items-center space-x-2">
-          <span className="text-xs text-muted-foreground font-medium">Fetch Limit:</span>
-          <select
-            value={limit}
-            onChange={(e) => setLimit(Number(e.target.value))}
-            className="h-9 rounded-lg border border-input bg-background/50 focus:bg-background px-3 py-1 text-xs shadow-xs focus:outline-none focus:ring-1 focus:ring-ring font-medium"
-          >
-            <option value={25}>25 Entries</option>
-            <option value={50}>50 Entries</option>
-            <option value={100}>100 Entries</option>
-          </select>
+        <div className="space-y-1.5">
+          <span className="block text-[11px] text-muted-foreground">Quick filters</span>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {QUICK_EVENTS.map((evt) => (
+              <button
+                key={evt}
+                type="button"
+                onClick={() => setSelectedEvent(evt)}
+                aria-pressed={selectedEvent === evt}
+                className={`rounded-md border px-2 py-1 font-mono text-[10px] transition-colors ${
+                  selectedEvent === evt
+                    ? "border-primary/40 bg-primary/[0.06] text-primary"
+                    : "border-border/70 text-muted-foreground hover:border-border hover:text-foreground"
+                }`}
+              >
+                {evt}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* Audit Log Table Card */}
-      <div className="relative overflow-hidden rounded-xl border border-border/80 bg-card shadow-[0_2px_8px_rgba(15,23,42,0.04),0_1px_2px_rgba(15,23,42,0.02)] dark:shadow-[0_4px_18px_rgba(0,0,0,0.35)] before:absolute before:inset-0 before:bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] before:from-primary/[0.035] before:via-transparent before:to-transparent before:pointer-events-none">
-        <div className="p-5 sm:p-6 border-b border-border/80 flex items-center justify-between gap-4">
-          <div className="flex items-center space-x-3.5">
-            <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-lg bg-primary/10 border border-primary/20 text-primary flex items-center justify-center shrink-0 shadow-xs">
-              <FileText className="w-4 h-4 sm:w-5 sm:h-5" />
-            </div>
-            <div>
-              <h2 className="text-base sm:text-lg font-bold tracking-tight text-foreground">
-                Activity Records
-              </h2>
-              <p className="text-xs text-muted-foreground mt-0.5">
-                Timestamped security operations with IP attribution and telemetry details.
-              </p>
-            </div>
+      {/* Ledger surface */}
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <div className="flex flex-col gap-2 border-b border-border px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+          <div className="flex items-center gap-2.5">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <h2 className="font-display text-[15px] font-semibold tracking-tight text-foreground">
+              Activity records
+            </h2>
           </div>
-          <Badge variant="outline" className="font-mono text-xs px-2.5 py-0.5 rounded-md">
-            {logs.length} Recorded
+          <Badge variant="outline" className="self-start rounded-md px-2 py-0 font-mono text-[11px] text-muted-foreground sm:self-auto">
+            {logs.length} events
           </Badge>
         </div>
 
         <div className="overflow-x-auto">
-          <Table>
+          <Table className="min-w-[880px]">
             <TableHeader>
-              <TableRow className="border-b border-border/80 bg-muted/20 hover:bg-transparent">
-                <TableHead className="w-10 py-3"></TableHead>
-                <TableHead className="w-[180px] text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Timestamp</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Event Action</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Principal User</TableHead>
-                <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground py-3">Client IP Address</TableHead>
+              <TableRow className="border-b border-border bg-muted/30 hover:bg-muted/30">
+                <TableHead className="w-9 px-3" />
+                <TableHead className="w-[170px] py-2.5 font-sans normal-case tracking-normal">Timestamp</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Event</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Principal</TableHead>
+                <TableHead className="py-2.5 font-sans normal-case tracking-normal">Client IP</TableHead>
               </TableRow>
             </TableHeader>
 
             <TableBody>
               {logs.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-28 text-center text-muted-foreground text-xs">
-                    {loading ? "Streaming security audit records..." : "No audit trail records found."}
+                  <TableCell colSpan={5} className="h-28 text-center text-sm text-muted-foreground">
+                    {loading ? "Reading the audit trail" : "No events recorded for this filter."}
                   </TableCell>
                 </TableRow>
               ) : (
@@ -199,7 +229,6 @@ export function AuditLogsTab() {
                   const actorId = log.actor_user_id || details.actor_user_id || details.user_id;
                   const targetId = log.target_user_id || details.target_user_id;
 
-                  // Resolve primary email & user ID
                   let primaryEmail: string | null =
                     (actorId && usersMap[actorId]) ||
                     details.actor_email ||
@@ -218,7 +247,6 @@ export function AuditLogsTab() {
                     primaryId = usersMap[primaryEmail.toLowerCase().trim()] || null;
                   }
 
-                  // Resolve target email & user ID
                   const targetEmail: string | null =
                     (targetId && usersMap[targetId]) ||
                     details.target_email ||
@@ -230,18 +258,20 @@ export function AuditLogsTab() {
                     targetId !== primaryId
                   );
 
+                  const eventVariant = getEventBadgeVariant(log.event);
+
                   return (
                     <React.Fragment key={log.id}>
                       <TableRow
                         onClick={() => toggleExpand(log.id)}
-                        className={`cursor-pointer transition-colors border-b border-border/60 hover:bg-muted/20 ${
-                          isExpanded ? "bg-muted/20" : ""
+                        className={`cursor-pointer border-b border-border/60 hover:bg-muted/25 ${
+                          isExpanded ? "bg-muted/25" : ""
                         }`}
                       >
-                        <TableCell className="w-10 px-3">
+                        <TableCell className="w-9 px-3">
                           <button
                             type="button"
-                            className="p-1 rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                            className="rounded-sm p-1 text-muted-foreground transition-colors hover:text-foreground"
                           >
                             {isExpanded ? (
                               <ChevronDown className="h-3.5 w-3.5" />
@@ -251,23 +281,31 @@ export function AuditLogsTab() {
                           </button>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-muted-foreground whitespace-nowrap">
+                        <TableCell className="whitespace-nowrap font-mono text-[11px] text-muted-foreground">
                           {formatDateTime(timestampStr)}
                         </TableCell>
 
                         <TableCell>
-                          <Badge variant={getEventBadgeVariant(log.event)} className="rounded-md text-[10px] uppercase font-semibold">
+                          <span className="inline-flex items-center gap-1.5 rounded-md border border-border/70 bg-background/60 px-2 py-1 font-mono text-[10px] text-foreground">
+                            <span className={`h-1.5 w-1.5 rounded-full ${
+                              eventVariant === "destructive"
+                                ? "bg-destructive"
+                                : eventVariant === "success"
+                                ? "bg-emerald-500"
+                                : eventVariant === "warning"
+                                ? "bg-amber-500"
+                                : "bg-muted-foreground/50"
+                            }`} />
                             {log.event}
-                          </Badge>
+                          </span>
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-foreground">
+                        <TableCell className="font-mono text-[11px]">
                           {primaryEmail || primaryId ? (
-                            <div className="flex flex-col space-y-1">
-                              {/* Primary User Email */}
-                              <div className="flex items-center space-x-1.5">
+                            <div className="flex flex-col gap-1">
+                              <div className="flex items-center gap-1.5">
                                 <span
-                                  className="font-semibold text-xs text-foreground truncate max-w-[220px]"
+                                  className="max-w-[220px] truncate font-sans text-[13px] font-medium text-foreground"
                                   title={primaryEmail || primaryId || "Principal"}
                                 >
                                   {primaryEmail || primaryId}
@@ -275,44 +313,40 @@ export function AuditLogsTab() {
                                 {primaryEmail && (
                                   <CopyButton
                                     value={primaryEmail}
-                                    className="h-4 px-1 text-[9px] rounded opacity-70 hover:opacity-100"
+                                    className="h-4 rounded px-1 text-[9px] opacity-70 hover:opacity-100"
                                   />
                                 )}
                               </div>
 
-                              {/* User ID */}
                               {primaryId && (
-                                <div className="flex items-center space-x-1.5 text-[11px] text-muted-foreground">
-                                  <span className="text-[10px] uppercase font-semibold text-muted-foreground/70">ID:</span>
-                                  <span className="truncate max-w-[150px]" title={primaryId}>
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                  <span className="text-[10px] text-muted-foreground/70">ID</span>
+                                  <span className="max-w-[150px] truncate" title={primaryId}>
                                     {primaryId}
                                   </span>
                                   <CopyButton
                                     value={primaryId}
-                                    className="h-4 px-1 text-[9px] rounded opacity-70 hover:opacity-100"
+                                    className="h-4 rounded px-1 text-[9px] opacity-70 hover:opacity-100"
                                   />
                                 </div>
                               )}
 
-                              {/* Target User if distinct from actor */}
                               {hasDifferentTarget && (
-                                <div className="pt-1 mt-0.5 border-t border-border/50 flex flex-col space-y-0.5 text-[10px]">
-                                  <span className="text-[9px] uppercase font-semibold text-amber-500/90">
-                                    Target:
-                                  </span>
+                                <div className="mt-0.5 flex flex-col gap-0.5 border-t border-border/60 pt-1 text-[11px]">
+                                  <span className="text-[10px] text-muted-foreground">Target</span>
                                   <span
-                                    className="text-foreground/90 font-medium truncate max-w-[200px]"
+                                    className="max-w-[200px] truncate font-medium text-foreground/90"
                                     title={targetEmail || targetId || ""}
                                   >
                                     {targetEmail || targetId}
                                   </span>
                                   {targetId && targetEmail && (
-                                    <div className="flex items-center space-x-1 text-[10px] text-muted-foreground">
-                                      <span className="text-[9px] uppercase text-muted-foreground/70">ID:</span>
-                                      <span className="truncate max-w-[130px]">{targetId}</span>
+                                    <div className="flex items-center gap-1 text-muted-foreground">
+                                      <span className="text-[10px] text-muted-foreground/70">ID</span>
+                                      <span className="max-w-[130px] truncate">{targetId}</span>
                                       <CopyButton
                                         value={targetId}
-                                        className="h-3.5 px-1 text-[8px] rounded opacity-70 hover:opacity-100"
+                                        className="h-3.5 rounded px-1 text-[8px] opacity-70 hover:opacity-100"
                                       />
                                     </div>
                                   )}
@@ -320,39 +354,37 @@ export function AuditLogsTab() {
                               )}
                             </div>
                           ) : (
-                            <span className="text-muted-foreground italic text-xs">
-                              Anonymous / System
+                            <span className="font-sans text-[13px] italic text-muted-foreground">
+                              Anonymous or system
                             </span>
                           )}
                         </TableCell>
 
-                        <TableCell className="font-mono text-xs text-foreground">
-                          <span className="flex items-center space-x-1.5">
-                            <Globe className="h-3 w-3 text-primary opacity-80 shrink-0" />
-                            <span>{rawIp}</span>
+                        <TableCell className="whitespace-nowrap font-mono text-[11px] text-foreground">
+                          <span className="flex items-center gap-1.5">
+                            <Globe className="h-3 w-3 shrink-0 text-muted-foreground" />
+                            {rawIp}
                           </span>
                         </TableCell>
                       </TableRow>
 
-                      {/* Expandable JSON Detail View */}
                       {isExpanded && (
-                        <TableRow className="bg-muted/10 hover:bg-muted/10 border-b border-border/60">
-                          <TableCell colSpan={5} className="p-4">
-                            <div className="rounded-lg border border-border/80 bg-background/60 p-4 space-y-3 font-mono text-xs">
-                              <div className="flex items-center justify-between border-b border-border/60 pb-2">
-                                <span className="font-semibold text-foreground text-[11px] uppercase tracking-wider font-sans">
-                                  Audit Payload & Event Metadata
+                        <TableRow className="border-b border-border/60 bg-muted/20 hover:bg-muted/20">
+                          <TableCell colSpan={5} className="p-3">
+                            <div className="overflow-hidden rounded-md border border-border/70 bg-background/60">
+                              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-3.5 py-2.5">
+                                <span className="font-display text-[13px] font-semibold text-foreground">
+                                  Event payload
                                 </span>
-                                <div className="flex items-center space-x-2">
-                                  <span className="text-muted-foreground text-[11px]">Log ID: {log.id}</span>
+                                <div className="flex items-center gap-2">
+                                  <span className="font-mono text-[11px] text-muted-foreground">Log {log.id}</span>
                                   <CopyButton
                                     value={JSON.stringify(log, null, 2)}
-                                    className="h-6 px-2 text-[10px] rounded"
+                                    className="h-6 rounded px-2 text-[10px]"
                                   />
                                 </div>
                               </div>
-
-                              <pre className="text-[11px] leading-relaxed text-muted-foreground overflow-x-auto p-2 rounded-md bg-muted/30">
+                              <pre className="overflow-x-auto bg-muted/25 p-3 font-mono text-[11px] leading-relaxed text-muted-foreground">
                                 {JSON.stringify(log.details || log, null, 2)}
                               </pre>
                             </div>
