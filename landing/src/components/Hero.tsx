@@ -98,7 +98,7 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
-            <a href="http://localhost:3000/register" className={ctaPrimaryInk}>Create free account</a>
+            <a href="/register" className={ctaPrimaryInk}>Create free account</a>
             <a href={API_REPO} target="_blank" rel="noreferrer" className={ctaSecondary}>View API repository</a>
           </div>
 

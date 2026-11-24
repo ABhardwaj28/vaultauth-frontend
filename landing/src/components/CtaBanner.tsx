@@ -7,7 +7,7 @@ const actions = [
     icon: KeyRound,
     title: "Create an account",
     body: "Register, verify your email, and sign in with password plus OTP.",
-    href: "http://localhost:3000/register",
+    href: "/register",
     label: "Open registration",
     primary: true,
   },
@@ -15,7 +15,7 @@ const actions = [
     icon: Database,
     title: "Launch the portal",
     body: "Inspect sessions, OAuth clients, and the audit trail from the dashboard.",
-    href: "http://localhost:3000/login",
+    href: "/login",
     label: "Open sign in",
     primary: false,
   },
@@ -42,10 +42,10 @@ export function CtaBanner() {
                 Inspect the protocol. Then ship sign-in.
               </h2>
               <p className="mx-auto mt-5 max-w-xl text-[15px] leading-7 text-[#94A3B8]">
-                Real endpoints, real algorithms, real revocation. Start with the identity portal running on port 3000.
+                Real endpoints, real algorithms, real revocation. Start with the identity portal.
               </p>
               <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <a href="http://localhost:3000/register" className={ctaPrimaryInk}>Create free account</a>
+                <a href="/register" className={ctaPrimaryInk}>Create free account</a>
                 <a href="#developers" className={ctaSecondary}>Explore the protocol</a>
               </div>
             </div>

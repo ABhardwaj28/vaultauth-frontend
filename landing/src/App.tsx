@@ -30,7 +30,7 @@ export default function App() {
 
   return (
     <MotionConfig reducedMotion="user">
-    <div className="relative min-h-screen overflow-x-clip bg-[#080C14] text-white">
+    <div className="landing-root relative min-h-screen overflow-x-clip bg-[#080C14] text-white">
       {/* Ambient canvas: dark base with softly blended bright gradients */}
       <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
         <div className="absolute inset-0 bg-[linear-gradient(180deg,#080C14_0%,#0C1224_28%,#0A1020_52%,#0D1226_74%,#080C14_100%)]" />

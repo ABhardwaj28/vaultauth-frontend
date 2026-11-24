@@ -173,6 +173,8 @@ bun dev
 ```
 Visit `http://localhost:3000` in your web browser. Production API target: `https://api.vaultauth.proplays2312.eu.org`.
 
+This single dev server serves the whole website: `/` renders the marketing landing page (components reused from `landing/src`), while `/login`, `/register`, `/verify-otp`, `/dashboard/*`, `/403`, `/429`, `/500`, `/privacy` and `/terms` render the identity portal. The standalone landing dev server (`cd landing && bun dev`, port 3001) is still available if you want to preview it in isolation.
+
 ---
 
 ## 7. Delivery Milestones

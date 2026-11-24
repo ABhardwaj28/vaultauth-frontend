@@ -131,10 +131,10 @@ export function InteractiveShowcase() {
           <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#1E2838] pb-4">
             <div>
               <p className="font-mono text-[11px] text-[#F07A26]">PANEL 0{active + 1} / 04</p>
-              <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em] text-white">{chambers[active].title}</h3>
-              <p className="mt-0.5 text-[13px] text-[#94A3B8]">{chambers[active].subtitle}</p>
+              <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em] text-white">{chambers[active]!.title}</h3>
+              <p className="mt-0.5 text-[13px] text-[#94A3B8]">{chambers[active]!.subtitle}</p>
             </div>
-            <SeeLive href={chambers[active].route}>{chambers[active].link}</SeeLive>
+            <SeeLive href={chambers[active]!.route}>{chambers[active]!.link}</SeeLive>
           </div>
 
           <AnimatePresence mode="wait">

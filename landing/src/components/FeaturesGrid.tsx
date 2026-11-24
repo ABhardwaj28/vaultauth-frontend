@@ -62,7 +62,7 @@ export function FeaturesGrid() {
           <SectionHeading
             eyebrow="Six pillars"
             title="The primitives behind every VaultAuth session"
-            description="Every capability below is specified in PRD v2.0 and visible in the portal at localhost:3000. Each card links to the exact screen where you can inspect it."
+            description="Every capability below is specified in PRD v2.0 and visible in the identity portal. Each card links to the exact screen where you can inspect it."
           />
         </Reveal>
 

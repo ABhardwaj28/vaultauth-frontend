@@ -12,7 +12,7 @@ type CopyKey = "code" | "install" | "discovery" | "failed";
 export function QuickstartSection() {
   const [active, setActive] = useState(0);
   const [copyState, setCopyState] = useState<CopyKey | null>(null);
-  const framework = frameworks[active];
+  const framework = frameworks[active]!;
 
   const copy = async (text: string, key: CopyKey) => {
     const copied = await copyText(text);
@@ -104,7 +104,7 @@ export function QuickstartSection() {
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <a href={API_REPO} target="_blank" rel="noreferrer" className={ctaPrimaryInk}>View API repository</a>
-            <a href="http://localhost:3000/register" className={ctaSecondary}>Create free account</a>
+            <a href="/register" className={ctaSecondary}>Create free account</a>
           </div>
         </div>
       </div>
