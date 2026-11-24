@@ -74,13 +74,6 @@ export function ArchitectureSection() {
         </Reveal>
 
         <div className="relative mt-14">
-          {/* Circuit trace */}
-          <svg className="pointer-events-none absolute inset-x-0 top-[46px] hidden h-24 w-full lg:block" viewBox="0 0 1000 80" preserveAspectRatio="none" aria-hidden="true">
-            <path d="M60 40 H940" stroke="#1E2838" strokeWidth="1" />
-            <motion.path d="M60 40 H940" stroke="#F07A26" strokeWidth="1.5" initial={{ pathLength: 0 }} whileInView={{ pathLength: 1 }} viewport={{ once: true }} transition={{ duration: 1.6, ease: "easeInOut" }} />
-            {[0, 1, 2, 3].map((i) => <circle key={i} cx={125 + i * 250} cy="40" r="4" fill="#F07A26" />)}
-          </svg>
-
           <div className="relative grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
             {tiers.map((item, index) => {
               const Icon = item.icon;
