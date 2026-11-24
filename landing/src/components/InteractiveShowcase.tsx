@@ -26,6 +26,7 @@ const chambers = [
 
 const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900];
 const REVOKE_STAGE = 4;
+const PANEL_STARTS = [0, 0.24, 0.48, 0.68];
 
 type PointerProps = {
   stage: number;
@@ -84,7 +85,7 @@ export function InteractiveShowcase() {
   const [showRecovery, setShowRecovery] = useState(false);
 
   useMotionValueEvent(smoothProgress, "change", (value) => {
-    const next = Math.min(3, Math.max(0, Math.floor(value * 4)));
+    const next = value >= PANEL_STARTS[3] ? 3 : value >= PANEL_STARTS[2] ? 2 : value >= PANEL_STARTS[1] ? 1 : 0;
     setActive((current) => (current === next ? current : next));
   });
 
@@ -196,7 +197,7 @@ export function InteractiveShowcase() {
 
   return (
     <section id="showcase" ref={sectionRef} className="relative border-y border-[#1E2838]">
-      <div className="h-[340vh]">
+      <div className="h-[380vh]">
         <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-14">
           <div className="va-grid pointer-events-none absolute inset-0 opacity-[0.08]" />
           <div className="va-container relative grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
@@ -216,7 +217,7 @@ export function InteractiveShowcase() {
                     onClick={() => {
                       const top = sectionRef.current?.offsetTop ?? 0;
                       const height = sectionRef.current?.offsetHeight ?? 0;
-                      window.scrollTo({ top: top + (height - window.innerHeight) * (index / 3) + 4, behavior: "smooth" });
+                      window.scrollTo({ top: top + (height - window.innerHeight) * (PANEL_STARTS[index] + 0.02), behavior: "smooth" });
                     }}
                     className={`relative mb-8 block w-full text-left transition-opacity ${active === index ? "opacity-100" : "opacity-45 hover:opacity-80"}`}
                   >
