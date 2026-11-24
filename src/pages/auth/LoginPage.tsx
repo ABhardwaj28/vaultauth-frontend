@@ -518,249 +518,152 @@ export function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
-      {/* Always-dark brand panel — hidden on small screens */}
-      <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] shrink-0 flex-col overflow-hidden bg-[#111318] text-white">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-          <div className="absolute -left-56 -bottom-72 h-[680px] w-[680px] rounded-full border border-white/[0.05]" />
-          <div className="absolute -left-40 -bottom-56 h-[560px] w-[560px] rounded-full border border-white/[0.04]" />
-          <div className="absolute -left-24 -bottom-40 h-[440px] w-[440px] rounded-full border border-white/[0.03]" />
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 22% 82%, rgba(255,255,255,0.045), transparent 55%)",
-            }}
-          />
-        </div>
+    <div className="relative flex min-h-screen flex-col bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 h-72 bg-[radial-gradient(ellipse_60%_100%_at_50%_0%,hsl(var(--primary)/0.08),transparent_70%)]"
+      />
 
-        <div className="relative z-10 flex h-full flex-col px-10 py-10 xl:px-16 xl:py-14">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06]">
-              <ShieldCheck className="h-5 w-5 text-white/80" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-sm font-semibold tracking-tight">VaultAuth</span>
-              <span className="font-mono text-[10px] font-medium tracking-[0.18em] text-white/45">
-                SSO
-              </span>
-            </div>
+      <header className="relative z-10 flex items-center justify-between border-b border-border/60 px-5 py-3.5 sm:px-8">
+        <Link to="/" className="flex items-center gap-2.5">
+          <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F07A26] text-white">
+            <ShieldCheck className="h-4 w-4" />
+          </span>
+          <span className="flex items-baseline gap-1.5">
+            <span className="font-display text-sm font-bold tracking-tight text-foreground">VaultAuth</span>
+            <span className="font-mono text-[10px] font-semibold tracking-[0.16em] text-[#C96B1E]">SSO</span>
+          </span>
+        </Link>
+        <ThemeToggle />
+      </header>
+
+      <main className="relative z-10 flex flex-1 flex-col items-center justify-center px-4 py-8">
+        <div className="w-full max-w-[380px]">
+          <div className="mb-5 text-center">
+            <p className="font-mono text-[10px] font-semibold tracking-[0.18em] text-[#C96B1E]">Secure sign-in</p>
+            <h1 className="mt-2 font-display text-[28px] font-bold leading-tight tracking-[-0.03em] text-foreground">
+              Welcome back
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Sign in with your credentials.</p>
           </div>
 
-          <div className="my-auto max-w-md py-10">
-            <h2 className="font-display text-4xl font-semibold leading-[1.1] tracking-[-0.03em] xl:text-[3.25rem]">
-              Sign in once.
-              <br />
-              Move freely.
-            </h2>
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-slate-400">
-              Zero-trust single sign-on with hardware-backed credential protection.
-            </p>
-
-            <ul className="mt-10 space-y-4">
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Argon2id-protected credentials
-              </li>
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Scoped, short-lived sessions
-              </li>
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Continuous access verification
-              </li>
-            </ul>
-          </div>
-
-          <p className="text-[11px] text-slate-500">
-            © 2026 VaultAuth. Zero-trust identity gateway.
-          </p>
-        </div>
-      </aside>
-
-      {/* Themed form panel */}
-      <section className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-[#F6F7F9] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
-        <div className="absolute right-5 top-5 z-20">
-          <ThemeToggle />
-        </div>
-
-        {/* Brand mark sits above the form on mobile */}
-        <div className="relative z-10 flex items-center gap-2.5 px-6 pt-8 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-foreground/15 bg-foreground/[0.04]">
-            <ShieldCheck className="h-4 w-4 text-foreground/75" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-display text-sm font-semibold tracking-tight text-foreground">
-              VaultAuth
-            </span>
-            <span className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted-foreground">
-              SSO
-            </span>
-          </div>
-        </div>
-
-        <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-10 sm:px-10 sm:py-16">
-          <div className="w-full max-w-[400px] rounded-xl border border-border/70 bg-white p-7 shadow-[0_12px_40px_-16px_rgba(16,24,40,0.18)] dark:border-white/[0.06] dark:bg-[#11141A] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.5)] sm:p-8">
-            <header className="mb-8">
-              <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.02em] text-foreground">
-                Welcome back
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Sign in with your credentials.
-              </p>
-            </header>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Session Expired Notice */}
+          <div className="rounded-xl border border-border/70 bg-white p-6 shadow-[0_16px_40px_-24px_rgba(16,24,40,0.25)] dark:border-white/[0.07] dark:bg-[#11141A] dark:shadow-[0_16px_40px_-24px_rgba(0,0,0,0.8)]">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {sessionExpiredNotice && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-border/70 bg-muted/40 p-3 text-sm text-foreground/80">
+                <div className="flex items-start gap-2.5 rounded-lg border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-                  <span className="font-medium leading-relaxed">{sessionExpiredNotice}</span>
+                  <span className="leading-relaxed">{sessionExpiredNotice}</span>
                 </div>
               )}
 
-              {/* Error Banner */}
               {error && (
-                <div className="flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive/[0.06] p-3 text-sm text-destructive">
+                <div className="flex items-start gap-2.5 rounded-lg border border-destructive/25 bg-destructive/[0.06] p-2.5 text-sm text-destructive">
                   <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-                  <div className="space-y-1">
+                  <div className="space-y-0.5">
                     <span className="block font-semibold">Authentication error</span>
                     <span className="block leading-relaxed">{error}</span>
                   </div>
                 </div>
               )}
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[13px] font-semibold text-foreground">
                   User email
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="email"
-                    type="email"
-                    required
-                    autoFocus
-                    autoComplete="email"
-                    placeholder="name@example.com"
-                    value={email}
+                    id="email" type="email" required autoFocus autoComplete="email"
+                    placeholder="name@example.com" value={email}
                     onChange={(e) => {
                       setEmail(e.target.value);
                       if (error) setError(null);
                       if (sessionExpiredNotice) setSessionExpiredNotice(null);
                     }}
-                    className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
+                    className="h-10 rounded-lg border-border/80 bg-background/60 pl-9 text-sm dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                  <Label htmlFor="password" className="text-[13px] font-semibold text-foreground">
                     Password
                   </Label>
                   <button
-                    type="button"
-                    onClick={() => setResetOpen(true)}
-                    className="text-xs font-medium text-[#B25F12] underline decoration-transparent underline-offset-4 transition-colors hover:text-[#8A4A0E] hover:decoration-current dark:text-[#E5A068] dark:hover:text-[#F7B878]"
+                    type="button" onClick={() => setResetOpen(true)}
+                    className="text-xs font-medium text-[#C96B1E] underline-offset-4 hover:underline dark:text-[#E5A068]"
                   >
                     Forgot password?
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    autoComplete="current-password"
-                    placeholder="••••••••••••"
-                    value={password}
+                    id="password" type={showPassword ? "text" : "password"} required autoComplete="current-password"
+                    placeholder="••••••••••••" value={password}
                     onChange={(e) => {
                       setPassword(e.target.value);
                       if (error) setError(null);
                       if (sessionExpiredNotice) setSessionExpiredNotice(null);
                     }}
-                    className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 pr-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
+                    className="h-10 rounded-lg border-border/80 bg-background/60 pl-9 pr-9 text-sm dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
-                    tabIndex={-1}
+                    type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+                    tabIndex={-1} aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
-                <p className="text-xs text-muted-foreground">Use at least 12 characters.</p>
               </div>
 
-              {/* Live Rate Limit Alert */}
               {rateLimitTimer && rateLimitTimer > 0 && (
-                <div className="flex items-center justify-center gap-1.5 rounded-lg border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
-                  <Clock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span>
-                    You can try again in{" "}
-                    <span className="font-mono font-medium tabular-nums">{rateLimitTimer}s</span>.
-                  </span>
+                <div className="flex items-center gap-2 rounded-lg border border-border/70 bg-muted/40 p-2.5 text-sm text-foreground/80">
+                  <Clock className="h-4 w-4 shrink-0 text-muted-foreground" />
+                  Try again in <span className="font-mono font-medium tabular-nums">{rateLimitTimer}s</span>.
                 </div>
               )}
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={loading || Boolean(rateLimitTimer && rateLimitTimer > 0)}
-                className="h-11 w-full rounded-lg bg-[#F07A26] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#DB6A16]"
+                className="h-10 w-full rounded-lg bg-[#F07A26] text-sm font-semibold text-white transition-colors hover:bg-[#DB6A16]"
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Verifying credentials…
-                  </span>
+                  <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Verifying…</span>
                 ) : (
                   "Continue"
                 )}
               </Button>
 
-              <div className="flex items-center gap-3 py-1">
-                <span className="h-px flex-1 bg-border/80" />
-                <span className="text-xs text-muted-foreground">Or continue with</span>
-                <span className="h-px flex-1 bg-border/80" />
-              </div>
-
-              <p className="text-center text-xs leading-relaxed text-muted-foreground">
-                OIDC federation is configured by your administrator.
-              </p>
-
-              <div className="pt-1 text-center text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link
-                  to="/register"
-                  className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground"
-                >
-                  Sign up
+              <p className="pt-1 text-center text-sm text-muted-foreground">
+                New here?{" "}
+                <Link to="/register" className="font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
+                  Create an account
                 </Link>
-              </div>
+              </p>
             </form>
           </div>
-        </main>
 
-        <footer className="relative z-10 flex flex-wrap items-center justify-between gap-2 px-6 py-5 text-xs text-muted-foreground sm:px-10">
-          <span>Protected by VaultAuth SSO</span>
-          <span className="font-mono text-[11px]">req_8f2c41d9</span>
-        </footer>
-      </section>
+          <div className="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-xs text-muted-foreground">
+            {["Argon2id protected", "Opaque sessions", "Instant revocation"].map((item) => (
+              <span key={item} className="flex items-center gap-1.5">
+                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                {item}
+              </span>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      <footer className="relative z-10 flex items-center justify-between px-5 py-4 text-xs text-muted-foreground sm:px-8">
+        <span>Protected by VaultAuth SSO</span>
+        <span className="font-mono text-[11px]">req_8f2c41d9</span>
+      </footer>
 
       <PasswordResetDialog
         open={resetOpen}
