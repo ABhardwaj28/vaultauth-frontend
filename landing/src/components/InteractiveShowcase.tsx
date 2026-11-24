@@ -24,8 +24,8 @@ const chambers = [
   { title: "Client registry", subtitle: "Register an OAuth application", route: "/dashboard/admin/apps", link: "See OAuth clients" },
 ];
 
-const STEP_TIMES = [220, 440, 660, 880, 1100, 1320, 1540];
-const REVOKE_STAGE = 3;
+const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900];
+const REVOKE_STAGE = 4;
 
 type PointerProps = {
   stage: number;
