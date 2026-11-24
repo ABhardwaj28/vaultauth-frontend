@@ -131,6 +131,8 @@ export interface AuditLogItem {
 export interface LoginPayload {
   email: string;
   password: string;
+  /** Request an email OTP or TOTP code explicitly (internal spec: email | totp). */
+  factor?: "email" | "totp";
 }
 
 /** Mirrors the internal `LoginResponse` schema. */

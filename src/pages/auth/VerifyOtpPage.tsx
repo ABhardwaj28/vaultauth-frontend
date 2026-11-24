@@ -26,15 +26,20 @@ export function VerifyOtpPage() {
     | {
         email?: string;
         challengeId?: string;
+        expiresIn?: number;
+        method?: string;
         isRegistration?: boolean;
         redirectUrl?: string;
       }
     | undefined;
 
   const email = locationState?.email || searchParams.get("email") || "";
-  const challengeId = locationState?.challengeId || searchParams.get("challenge_id") || undefined;
+  // URL is authoritative so a refresh of this page keeps the challenge alive.
+  const challengeId = searchParams.get("challenge_id") || locationState?.challengeId || undefined;
   const isRegistration = locationState?.isRegistration || searchParams.get("type") === "register";
-  const redirectUrl = locationState?.redirectUrl || "/dashboard";
+  const redirectUrl = locationState?.redirectUrl || searchParams.get("redirect") || "/dashboard";
+  const method = searchParams.get("method") || locationState?.method || "email";
+  const isTotp = method === "totp";
 
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
@@ -182,13 +187,19 @@ export function VerifyOtpPage() {
           </div>
 
           <h1 className="font-display text-2xl font-semibold leading-tight tracking-[-0.02em] text-foreground sm:text-[1.6rem]">
-            Check your email
+            {isTotp ? "Authenticator app" : "Check your email"}
           </h1>
           <p className="mx-auto max-w-xs text-sm leading-relaxed text-muted-foreground">
-            Enter the 6-digit code sent to{" "}
-            <span className="font-mono text-[13px] font-medium text-foreground">
-              {email || "your email address"}
-            </span>
+            {isTotp ? (
+              <>Enter the 6-digit code from your authenticator app.</>
+            ) : (
+              <>
+                Enter the 6-digit code sent to{" "}
+                <span className="font-mono text-[13px] font-medium text-foreground">
+                  {email || "your email address"}
+                </span>
+              </>
+            )}
           </p>
         </div>
 
@@ -273,11 +284,20 @@ export function VerifyOtpPage() {
             </Button>
           </div>
 
-          <div className="pt-1 text-center">
-            <Button asChild variant="ghost" className="h-9 rounded-lg text-sm font-medium text-muted-foreground">
-              <Link to="/login">Back to sign in</Link>
-            </Button>
-          </div>
+          {attemptsRemaining === 0 ? (
+            <div className="rounded-lg border border-destructive/25 bg-destructive/[0.05] px-3 py-2.5 text-center text-[13px] text-muted-foreground">
+              No attempts left. {" "}
+              <Link to="/login" className="font-semibold text-primary underline-offset-4 hover:underline">
+                Start a new sign-in
+              </Link>
+            </div>
+          ) : (
+            <div className="pt-1 text-center">
+              <Button asChild variant="ghost" className="h-9 rounded-lg text-sm font-medium text-muted-foreground">
+                <Link to="/login">Back to sign in</Link>
+              </Button>
+            </div>
+          )}
         </form>
       </div>
     </AuthShell>

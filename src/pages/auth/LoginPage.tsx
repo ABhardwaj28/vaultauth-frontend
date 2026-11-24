@@ -444,15 +444,23 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await api.login({ email: cleanEmail, password });
+      const res = await api.login({ email: cleanEmail, password, factor: "email" });
 
       // If 2FA OTP is required
       if (res.state === "OTP_REQUIRED" || res.challenge_id || res.requires_2fa) {
-        navigate(`/verify-otp?email=${encodeURIComponent(cleanEmail)}`, {
+        const challengeParam = res.challenge_id
+          ? `&challenge_id=${encodeURIComponent(res.challenge_id)}`
+          : "";
+        const redirectParam = redirectUrl && redirectUrl !== "/dashboard"
+          ? `&redirect=${encodeURIComponent(redirectUrl)}`
+          : "";
+        const methodParam = res.method ? `&method=${encodeURIComponent(res.method)}` : "";
+        navigate(`/verify-otp?email=${encodeURIComponent(cleanEmail)}${challengeParam}${redirectParam}${methodParam}`, {
           state: {
             email: cleanEmail,
             challengeId: res.challenge_id,
             expiresIn: res.expires_in,
+            method: res.method,
             isRegistration: false,
             redirectUrl,
           },

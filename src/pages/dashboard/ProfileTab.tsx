@@ -235,16 +235,16 @@ export function ProfileTab() {
           </dl>
         </section>
 
-        {/* Access authority */}
-        <section className="p-6 sm:p-7 lg:col-span-3">
-          <div className="flex items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-muted/50 text-muted-foreground">
-              <Shield className="h-4 w-4" />
+        {/* Access authority — brief */}
+        <section className="p-5 sm:p-6 lg:col-span-3">
+          <div className="flex items-center gap-2.5">
+            <span className="flex h-7 w-7 items-center justify-center rounded-md border border-border bg-muted/50 text-muted-foreground">
+              <Shield className="h-3.5 w-3.5" />
             </span>
-            <h3 className="font-display text-base font-semibold text-foreground">Access authority</h3>
+            <h3 className="font-display text-[15px] font-semibold text-foreground">Access authority</h3>
           </div>
 
-          <div className="mt-5 flex flex-wrap items-center gap-2">
+          <div className="mt-4 flex flex-wrap items-center gap-2">
             <Badge
               variant="outline"
               className="border-border bg-muted/40 font-mono text-[10px] uppercase tracking-wider text-foreground"
@@ -256,44 +256,20 @@ export function ProfileTab() {
             </span>
           </div>
 
-          <dl className="mt-5 space-y-3 border-t border-border pt-5 text-[13px]">
-            <div className="flex items-baseline justify-between gap-3">
+          <dl className="mt-4 space-y-2 border-t border-border/60 pt-3 text-[13px]">
+            <div className="flex items-baseline justify-between gap-2">
               <dt className="text-muted-foreground">Clearance</dt>
               <dd className="text-right font-medium text-foreground">
-                {isAdmin ? "Tier-1 governance" : "Tier-2 employee"}
+                {isAdmin ? "Tier-1" : "Tier-2"}
               </dd>
             </div>
-            <div className="flex items-baseline justify-between gap-3">
+            <div className="flex items-baseline justify-between gap-2">
               <dt className="text-muted-foreground">Scope</dt>
               <dd className="text-right font-medium text-foreground">
-                {isAdmin ? "Full system control" : "Self-service workspace"}
+                {isAdmin ? "Full system" : "Self-service"}
               </dd>
             </div>
           </dl>
-
-          <div className="mt-5 border-t border-border pt-5">
-            <p className="text-[11px] font-medium text-muted-foreground">Authorized capabilities</p>
-            <ul className="mt-2.5 space-y-2">
-              {(isAdmin
-                ? [
-                    "User lifecycle governance (create, lock, promote)",
-                    "OAuth / OIDC application client registration",
-                    "System-wide audit logs & cross-tenant telemetry",
-                    "Global session termination & emergency revoking",
-                  ]
-                : [
-                    "Identity profile inspection & credential review",
-                    "Self active device & browser session management",
-                    "Enterprise Single Sign-On (SSO) authentication",
-                  ]
-              ).map((capability) => (
-                <li key={capability} className="flex gap-2 text-[12px] leading-snug text-foreground">
-                  <span className="mt-1.5 h-px w-2 shrink-0 bg-muted-foreground/50" />
-                  {capability}
-                </li>
-              ))}
-            </ul>
-          </div>
         </section>
 
         {/* Credential policy */}

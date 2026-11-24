@@ -1,9 +1,10 @@
-import { ShieldCheck, LogOut } from "lucide-react";
+import { ShieldCheck, LogOut, Building2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "@/context/AuthContext";
 import { ThemeToggle } from "@/components/ui/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ORGANISATION_NAME } from "@/lib/organisation";
 
 export function TopBar() {
   const { user, logout } = useAuth();
@@ -28,15 +29,13 @@ export function TopBar() {
             </div>
           </Link>
 
-          {/* Brief User Session Detail */}
-          {user && (
-            <div className="hidden sm:flex items-center space-x-2 px-2.5 py-1 rounded-md bg-muted/60 border border-border/80 text-[11px] font-mono text-muted-foreground">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-              <span className="text-foreground font-medium">Session Active</span>
-              <span className="text-muted-foreground/40">•</span>
-              <span>{user.role === "admin" ? "Admin Session" : "User Session"}</span>
-            </div>
-          )}
+          {/* Organisation / tenant placeholder — configurable via VITE_ORGANISATION_NAME */}
+          <div className="hidden items-center gap-2 rounded-md border border-border/80 bg-muted/50 px-2.5 py-1 sm:flex">
+            <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <span className="text-[11px] font-medium text-muted-foreground">
+              {ORGANISATION_NAME}
+            </span>
+          </div>
         </div>
 
         {/* Right Control Hub */}
