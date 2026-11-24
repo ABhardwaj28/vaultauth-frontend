@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, MotionConfig, motion, useScroll, useSpring } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -17,8 +17,6 @@ import { CtaBanner } from "./components/CtaBanner";
 import { Footer } from "./components/Footer";
 
 export default function App() {
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, { stiffness: 120, damping: 28, restDelta: 0.001 });
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -44,12 +42,6 @@ export default function App() {
       <a href="#main" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:bg-[#F07A26] focus:px-4 focus:py-2 focus:text-sm focus:font-semibold focus:text-white">
         Skip to content
       </a>
-
-      <motion.div
-        style={{ scaleX }}
-        className="fixed inset-x-0 top-0 z-[70] h-[2px] origin-left bg-gradient-to-r from-[#c25408] via-[#F07A26] to-[#c25408]"
-        aria-hidden="true"
-      />
 
       <Navbar />
 
