@@ -81,11 +81,6 @@ export function Footer() {
         </div>
 
         <div className="mt-14 border-t border-[#1E2838] pt-7">
-          <div className="flex flex-wrap gap-2">
-            {["OIDC Core 1.0", "RFC 7636 PKCE", "RS256 + JWKS", "Argon2id", "Opaque bearer tokens", "RBAC"].map((label) => (
-              <span key={label} className="rounded border border-[#1E2838] px-2.5 py-1 font-mono text-[10px] text-slate-500">{label}</span>
-            ))}
-          </div>
           <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[12px] text-slate-600">© {new Date().getFullYear()} VaultAuth SSO. Built as an academic identity platform. Privacy and Terms.</p>
             <a href="#top" className="text-[12px] font-medium text-[#F07A26] sm:hidden">Back to top</a>
