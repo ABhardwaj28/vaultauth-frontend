@@ -15,6 +15,21 @@
 [class*="text-[#94A3B8]"] { color: #a8b5c7; }
 [class*="text-slate-500"], [class*="text-slate-600"] { color: #a8b5c7; }
 
+/* Universal square corners — boxy system across the whole landing page */
+.landing-root [class*="rounded-lg"],
+.landing-root [class*="rounded-xl"],
+.landing-root [class*="rounded-2xl"],
+.landing-root [class*="rounded-md"],
+.landing-root [class*="rounded-full"],
+.landing-root [class*="rounded-[10px]"],
+.landing-root [class*="rounded-[36px]"],
+.landing-root [class*="rounded-t-"],
+.landing-root [class*="rounded-b-"],
+.landing-root [class*="rounded-l-"],
+.landing-root [class*="rounded-r-"] {
+  border-radius: 0 !important;
+}
+
 /* Explicit dark ink only on controls that opt in — never inherited by the header */
 .va-amber-ink { color: #1b1206 !important; }
 

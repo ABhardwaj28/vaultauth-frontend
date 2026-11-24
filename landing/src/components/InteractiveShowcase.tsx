@@ -31,11 +31,13 @@ type PointerPoint = { left: string; top: string };
 function DemoPointer({ stage, reduce, points }: { stage: number; reduce: boolean | null; points: PointerPoint[] }) {
   if (reduce || stage < 1) return null;
   const point = points[Math.min(stage - 1, points.length - 1)];
+  const start = points[0];
+  if (!point || !start) return null;
   return (
     <motion.div
       aria-hidden="true"
       className="pointer-events-none absolute z-20 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
-      initial={{ opacity: 0, left: points[0].left, top: points[0].top }}
+      initial={{ opacity: 0, left: start.left, top: start.top }}
       animate={{ opacity: 1, left: point.left, top: point.top }}
       transition={{ type: "spring", stiffness: 300, damping: 26 }}
     >
@@ -103,6 +105,7 @@ export function InteractiveShowcase() {
   const shownDigits = Math.min(6, Math.max(0, stage));
   const seconds = Math.max(25, 30 - stage);
   const verified = stage >= 6;
+  const otpClick = stage >= 6;
 
   const sessionStates = [
     { active: true },
@@ -175,10 +178,10 @@ export function InteractiveShowcase() {
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-mono text-[11px] text-[#F07A26]">PANEL 0{active + 1} / 04</p>
-                      <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em] text-white sm:text-3xl">{chambers[active].title}</h3>
-                      <p className="mt-0.5 text-[13px] text-[#94A3B8]">{chambers[active].subtitle}</p>
+                      <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em] text-white sm:text-3xl">{chambers[active]?.title}</h3>
+                      <p className="mt-0.5 text-[13px] text-[#94A3B8]">{chambers[active]?.subtitle}</p>
                     </div>
-                    <SeeLive href={chambers[active].route}>{chambers[active].link}</SeeLive>
+                    <SeeLive href={chambers[active]?.route || "#"}>{chambers[active]?.link}</SeeLive>
                   </div>
 
                   <div className="rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
@@ -198,8 +201,17 @@ export function InteractiveShowcase() {
                               type="button"
                               animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
                               transition={{ duration: 0.2 }}
-                              className="w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
+                              className="relative w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
                             >
+                              {clickPulse ? (
+                                <motion.span
+                                  aria-hidden="true"
+                                  className="pointer-events-none absolute inset-0 border border-[#F07A26]"
+                                  initial={{ opacity: 0.9, scale: 1 }}
+                                  animate={{ opacity: 0, scale: 1.12 }}
+                                  transition={{ duration: 0.55 }}
+                                />
+                              ) : null}
                               {signedIn ? "Signed in" : "Sign in"}
                             </motion.button>
                           </motion.div>
@@ -271,9 +283,26 @@ export function InteractiveShowcase() {
                               </motion.span>
                             ))}
                           </div>
+                          <motion.button
+                            type="button"
+                            animate={otpClick ? { scale: [1, 0.96, 1] } : { scale: 1 }}
+                            transition={{ duration: 0.2 }}
+                            className="relative mt-5 rounded-lg bg-[#F07A26] px-5 py-2 text-[11px] font-semibold va-amber-ink"
+                          >
+                            {otpClick ? (
+                              <motion.span
+                                aria-hidden="true"
+                                className="pointer-events-none absolute inset-0 border border-[#F07A26]"
+                                initial={{ opacity: 0.9, scale: 1 }}
+                                animate={{ opacity: 0, scale: 1.12 }}
+                                transition={{ duration: 0.55 }}
+                              />
+                            ) : null}
+                            Verify and sign in
+                          </motion.button>
                           <AnimatePresence>
                             {verified ? (
-                              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-5 inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
+                              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mt-3 inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
                             ) : null}
                           </AnimatePresence>
 
@@ -286,7 +315,7 @@ export function InteractiveShowcase() {
                               { left: "52%", top: "56%" },
                               { left: "61%", top: "56%" },
                               { left: "70%", top: "56%" },
-                              { left: "50%", top: "78%" },
+                              { left: "50%", top: "76%" },
                             ]}
                           />
                         </motion.div>
@@ -325,16 +354,22 @@ export function InteractiveShowcase() {
                               key={session.device}
                               layout
                               initial={{ opacity: 0, y: 8 }}
-                              animate={{ opacity: sessionStates[i].active ? 1 : 0.45, y: 0 }}
+                              animate={{ opacity: sessionStates[i]?.active ? 1 : 0.45, y: 0 }}
                               transition={{ duration: 0.3, delay: 0.1 + i * 0.1 }}
-                              className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3.5 ${sessionStates[i].active ? "border-[#1E2838] bg-[#080c14]" : "border-red-500/20 bg-red-500/[0.04]"}`}
+                              className={`flex flex-wrap items-center justify-between gap-3 rounded-lg border p-3.5 ${sessionStates[i]?.active ? "border-[#1E2838] bg-[#080c14]" : "border-red-500/20 bg-red-500/[0.04]"}`}
                             >
                               <div>
                                 <p className="text-[12px] font-semibold text-white">{session.device}</p>
-                                <p className="font-mono text-[10px] text-[#94A3B8]">{session.ip} · {sessionStates[i].active ? "ACTIVE" : "REVOKED"}</p>
+                                <p className="font-mono text-[10px] text-[#94A3B8]">{session.ip} · {sessionStates[i]?.active ? "ACTIVE" : "REVOKED"}</p>
                               </div>
-                              {sessionStates[i].active ? (
-                                <span className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 px-2.5 py-1.5 text-[11px] text-red-300"><Trash2 className="h-3 w-3" /> Revoke</span>
+                              {sessionStates[i]?.active ? (
+                                <motion.span
+                                  animate={stage === i ? { scale: [1, 0.88, 1] } : { scale: 1 }}
+                                  transition={{ duration: 0.2 }}
+                                  className="inline-flex items-center gap-1.5 rounded-md border border-red-500/30 px-2.5 py-1.5 text-[11px] text-red-300"
+                                >
+                                  <Trash2 className="h-3 w-3" /> Revoke
+                                </motion.span>
                               ) : (
                                 <motion.span initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="rounded-md border border-red-500/30 bg-red-500/10 px-2 py-1 font-mono text-[10px] text-red-300">REVOKED</motion.span>
                               )}
@@ -379,18 +414,6 @@ export function InteractiveShowcase() {
                           <motion.button {...enter(0.6)} type="button" className="inline-flex items-center gap-1.5 rounded-lg bg-[#F07A26] px-4 py-2.5 text-[12px] font-semibold va-amber-ink">
                             <Plus className="h-3.5 w-3.5" /> Register application
                           </motion.button>
-                          <DemoPointer
-                            stage={stage}
-                            reduce={reduce}
-                            points={[
-                              { left: "50%", top: "26%" },
-                              { left: "30%", top: "34%" },
-                              { left: "30%", top: "48%" },
-                              { left: "22%", top: "58%" },
-                              { left: "50%", top: "72%" },
-                              { left: "50%", top: "72%" },
-                            ]}
-                          />
                         </div>
                         <div className="space-y-3">
                           <motion.div {...enter(0.2)} className="rounded-xl border border-[#1E2838] bg-[#080c14] p-4 font-mono text-[11px]">
