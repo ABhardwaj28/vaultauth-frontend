@@ -73,7 +73,7 @@ src/
 - **Refinements**: use-case active pill uses end-matched corner radii; the cost amount scales its font size with digit count (₹ stays attached), tabular numerals are used throughout, the yearly label was shortened to "Billed yearly at ₹…", and estimator borders were softened.
 - **Navigation**: top-level nav items and all mega-menu links are internal section anchors on this page; the hero "3 strikes" badge moved into normal flow so it no longer overlaps the workbench.
 - **Marquee**: built from two equal-width padded groups so `translateX(-50%)` lands exactly on the seam; hover-pause removed and GPU hints added for a continuous loop.
-- **Docs CTA**: discovery-document buttons temporarily point to `API_REPO` (`ProPlays2312/vaultauth-backend`) until a public docs site exists; the live endpoint directory remains in the Developers section.
+- **Docs CTA**: documentation buttons temporarily point to `DOCS_LINK` (`http://localhost:3000/403`) until a public docs site exists; the live endpoint directory remains in the Developers section. No repository links are shown in the UI.
 - **Mobile**: horizontal strips keep their row and show a swipe hint; no page overflow from 320px to 1440px.
 
 ## Port note

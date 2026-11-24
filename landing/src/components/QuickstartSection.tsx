@@ -5,7 +5,7 @@ import { frameworks } from "./CodeSnippetDock";
 import { ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
 import { copyText } from "../lib/clipboard";
 import { API_ORIGIN } from "../lib/liveApi";
-import { API_REPO } from "../lib/links";
+import { DOCS_LINK } from "../lib/links";
 
 type CopyKey = "code" | "install" | "discovery" | "failed";
 
@@ -103,7 +103,7 @@ export function QuickstartSection() {
             Examples are illustrative. The discovery document, JWKS, and OAuth endpoints above are live.
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
-            <a href={API_REPO} target="_blank" rel="noreferrer" className={ctaPrimaryInk}>View API repository</a>
+            <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={ctaPrimaryInk}>See documentation</a>
             <a href="/register" className={ctaSecondary}>Create free account</a>
           </div>
         </div>

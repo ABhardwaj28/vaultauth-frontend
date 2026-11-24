@@ -1,2 +1,2 @@
-/** Temporary destination for docs-related CTAs until a public docs site is live. */
-export const API_REPO = "https://github.com/ProPlays2312/vaultauth-backend";
+/** Temporary docs destination — the app's 403 page until public docs are live. */
+export const DOCS_LINK = "http://localhost:3000/403";

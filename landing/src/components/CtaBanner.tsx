@@ -1,6 +1,6 @@
 import { Database, FileCode2, KeyRound } from "lucide-react";
 import { Reveal, ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
-import { API_REPO } from "../lib/links";
+import { DOCS_LINK } from "../lib/links";
 
 const actions = [
   {
@@ -21,10 +21,10 @@ const actions = [
   },
   {
     icon: FileCode2,
-    title: "Read the API source",
-    body: "Browse the backend repository and OpenAPI definitions.",
-    href: API_REPO,
-    label: "View repository",
+    title: "Documentation",
+    body: "Guides and API reference are being prepared.",
+    href: DOCS_LINK,
+    label: "See documentation",
     primary: false,
   },
 ];

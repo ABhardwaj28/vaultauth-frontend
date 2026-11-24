@@ -2,7 +2,7 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Reveal, SectionHeading, ctaSecondary } from "./ui/primitives";
-import { API_REPO } from "../lib/links";
+import { DOCS_LINK } from "../lib/links";
 
 const faqs = [
   {
@@ -51,7 +51,7 @@ export function FaqSection() {
       <div className="va-container grid gap-6 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:gap-12">
         <Reveal>
           <SectionHeading eyebrow="Technical questions" title="Straight answers, no hedging" description="If it isn't implemented, we say so. If it is, we tell you exactly how it works." />
-          <a href={API_REPO} target="_blank" rel="noreferrer" className={`${ctaSecondary} mt-8`}>View API repository</a>
+          <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={`${ctaSecondary} mt-8`}>See documentation</a>
         </Reveal>
 
         <Reveal delay={0.08}>

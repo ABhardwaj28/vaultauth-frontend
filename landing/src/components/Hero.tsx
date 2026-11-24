@@ -3,7 +3,7 @@ import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } fr
 import { Braces, Check, KeyRound, RefreshCw, ShieldCheck } from "lucide-react";
 import { ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
 import { API_ORIGIN as API, getKeyInfo } from "../lib/liveApi";
-import { API_REPO } from "../lib/links";
+import { DOCS_LINK } from "../lib/links";
 type Tab = "token" | "pkce";
 
 const samplePayload = {
@@ -99,7 +99,7 @@ export function Hero() {
 
           <div className="mt-9 flex flex-wrap gap-3">
             <a href="/register" className={ctaPrimaryInk}>Create free account</a>
-            <a href={API_REPO} target="_blank" rel="noreferrer" className={ctaSecondary}>View API repository</a>
+            <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={ctaSecondary}>See documentation</a>
           </div>
 
           <div className="mt-10 flex flex-nowrap items-center gap-x-4 border-t border-[#1E2838] pt-6 text-[11px] text-[#94A3B8] sm:gap-x-8 sm:text-[13px]">

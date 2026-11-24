@@ -1,4 +1,4 @@
-import { Activity, Github } from "lucide-react";
+import { Activity } from "lucide-react";
 import { BrandMark } from "./ui/primitives";
 
 const columns = [
@@ -59,9 +59,6 @@ export function Footer() {
             </p>
             <a href="https://api.vaultauth.proplays2312.eu.org/health" target="_blank" rel="noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-md border border-[#10B981]/25 bg-[#10B981]/[0.06] px-3 py-1.5 text-[12px] text-[#10B981]">
               <Activity className="h-3.5 w-3.5" /> Live API health check
-            </a>
-            <a href="https://github.com/ABhardwaj28/vaultauth-frontend" target="_blank" rel="noreferrer" className="mt-4 inline-flex items-center gap-2 text-[12px] text-[#94A3B8] hover:text-white">
-              <Github className="h-4 w-4" /> Frontend repository
             </a>
           </div>
 

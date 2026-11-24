@@ -1,6 +1,6 @@
 import { Activity, Check, FileCode2, KeyRound, Lock, Server } from "lucide-react";
 import { Reveal, SectionHeading, ctaSecondary } from "./ui/primitives";
-import { API_REPO } from "../lib/links";
+import { DOCS_LINK } from "../lib/links";
 
 const API = "https://api.vaultauth.proplays2312.eu.org";
 
@@ -91,7 +91,7 @@ export function DevelopersSection() {
                   <p key={line} className="flex items-center gap-2 font-mono text-[11px] text-[#10B981]"><Check className="h-3.5 w-3.5" /> {line}</p>
                 ))}
               </div>
-              <a href={API_REPO} target="_blank" rel="noreferrer" className={`${ctaSecondary} mt-6 w-full text-[13px]`}>View API repository</a>
+              <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={`${ctaSecondary} mt-6 w-full text-[13px]`}>See documentation</a>
             </div>
           </Reveal>
         </div>
