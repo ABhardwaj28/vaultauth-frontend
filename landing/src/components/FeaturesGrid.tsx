@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 import { Database, FileCode2, Fingerprint, KeyRound, ShieldCheck, Timer } from "lucide-react";
 import { SpotlightCard } from "./ui/SpotlightCard";
-import { Reveal, SectionHeading, SeeLive } from "./ui/primitives";
+import { Reveal, SectionHeading } from "./ui/primitives";
 
 const pillars: { icon: ReactNode; title: string; body: string; meta: string; href: string; link: string }[] = [
   {
@@ -9,48 +9,48 @@ const pillars: { icon: ReactNode; title: string; body: string; meta: string; hre
     title: "Hosted login & verification",
     body: "Registration validates a 12–128 character password against NIST SP 800-63B rules. Accounts stay PENDING until a six-digit email code is confirmed.",
     meta: "FR-01, FR-02, PENDING to ACTIVE",
-    href: "/register",
-    link: "Open registration",
+    href: "#showcase",
+    link: "See the flow",
   },
   {
     icon: <ShieldCheck className="h-5 w-5" />,
     title: "Argon2id password vault",
     body: "Passwords exist only as memory-hard Argon2id hashes. A database constraint rejects any row whose hash does not begin with the argon2id identifier.",
     meta: "m=65536, t=3, p=4",
-    href: "/dashboard/settings",
-    link: "Open password settings",
+    href: "#architecture",
+    link: "See architecture",
   },
   {
     icon: <KeyRound className="h-5 w-5" />,
     title: "Mandatory second factor",
     body: "A correct password starts a six-digit email OTP challenge delivered by Resend. TOTP authenticator enrollment is optional; three wrong codes invalidate the challenge.",
     meta: "10-minute expiry, 60s resend",
-    href: "/dashboard/settings",
-    link: "Open 2FA settings",
+    href: "#showcase",
+    link: "See the flow",
   },
   {
     icon: <Timer className="h-5 w-5" />,
     title: "Three-strike lockout",
     body: "Three consecutive password failures lock the account for exactly 300 seconds through an atomic SQL counter. Admins can also unlock manually.",
     meta: "300 seconds, auto-unlock",
-    href: "/dashboard/profile",
-    link: "Open lockout policy",
+    href: "#showcase",
+    link: "See the flow",
   },
   {
     icon: <Database className="h-5 w-5" />,
     title: "Instant session kill-switch",
     body: "Users revoke their own devices and admins terminate any session. Revoked tokens fail on the next API call; disabling an account ends all of its live sessions.",
     meta: "30-minute idle, 8-hour absolute",
-    href: "/dashboard/sessions",
-    link: "Open live sessions",
+    href: "#showcase",
+    link: "See the flow",
   },
   {
     icon: <FileCode2 className="h-5 w-5" />,
     title: "Real OIDC surface",
     body: "Discovery, JWKS, authorize, token, userinfo, and revocation endpoints, with RS256 signatures, PKCE, scopes openid / email / profile, and one-time client secrets.",
     meta: "RFC 7636, S256, RS256",
-    href: "/dashboard/admin/apps",
-    link: "Open OAuth clients",
+    href: "#developers",
+    link: "See endpoints",
   },
 ];
 
@@ -62,7 +62,7 @@ export function FeaturesGrid() {
           <SectionHeading
             eyebrow="Six pillars"
             title="The primitives behind every VaultAuth session"
-            description="Every capability below is specified in PRD v2.0 and visible in the identity portal. Each card links to the exact screen where you can inspect it."
+            description="Every capability below is specified in PRD v2.0 and visible in the identity portal. Each card links to the section that shows it in action."
           />
         </Reveal>
 
@@ -78,7 +78,12 @@ export function FeaturesGrid() {
                   <p className="mt-2 flex-1 text-[10px] leading-4 text-[#94A3B8] sm:mt-2.5 sm:text-[13px] sm:leading-6">{pillar.body}</p>
                   <div className="mt-5 border-t border-[#1E2838] pt-4">
                     <p className="font-mono text-[11px] text-[#F07A26]">{pillar.meta}</p>
-                    <div className="mt-3"><SeeLive href={pillar.href}>{pillar.link}</SeeLive></div>
+                    <div className="mt-3">
+                      <a href={pillar.href} className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F07A26] transition-opacity hover:opacity-80">
+                        <span className="h-1 w-1 rounded-full bg-[#F07A26]" />
+                        {pillar.link}
+                      </a>
+                    </div>
                   </div>
                 </div>
               </SpotlightCard>

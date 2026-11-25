@@ -11,6 +11,8 @@ const endpoints = [
   { method: "POST", path: "/oauth/token", note: "Code exchange", icon: Server },
   { method: "GET", path: "/oauth/userinfo", note: "Authenticated claims", icon: FileCode2 },
   { method: "POST", path: "/oauth/revoke", note: "Token revocation", icon: Lock },
+  { method: "GET", path: "/health", note: "Service health", icon: Activity },
+  { method: "GET", path: "/ready", note: "Database readiness", icon: Check },
 ];
 
 const rest = [
@@ -20,6 +22,8 @@ const rest = [
   ["GET", "/api/v1/me/sessions", "Current user's active devices"],
   ["DELETE", "/api/v1/sessions/{id}", "Revoke a single session"],
   ["GET", "/api/v1/admin/audit-logs", "Admin-only event stream"],
+  ["GET", "/api/v1/me", "Current profile"],
+  ["POST", "/api/v1/auth/logout", "Invalidate session"],
 ];
 
 const clientBehavior = [

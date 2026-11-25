@@ -26,7 +26,7 @@ const chambers = [
 
 const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900];
 const REVOKE_STAGE = 4;
-const PANEL_STARTS = [0, 0.24, 0.48, 0.68];
+const PANEL_STARTS = [0, 0.24, 0.48, 0.68] as const;
 
 type PointerProps = {
   stage: number;
@@ -182,7 +182,7 @@ export function InteractiveShowcase() {
 
   const pointerTargets =
     active === 0
-      ? ["login-password", "login-password", "login-submit", "login-submit", "login-done", "login-done", "login-done"]
+      ? ["login-password", "login-password", "login-submit", "login-submit", "pointer-away", "pointer-away", "pointer-away"]
       : active === 1
         ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit"]
         : active === 2
@@ -200,7 +200,7 @@ export function InteractiveShowcase() {
       <div className="h-[380vh]">
         <div className="sticky top-0 flex min-h-screen items-center overflow-hidden py-14">
           <div className="va-grid pointer-events-none absolute inset-0 opacity-[0.08]" />
-          <div className="va-container relative grid gap-8 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <div className="va-container relative grid gap-8 lg:grid-cols-[190px_minmax(0,1fr)]">
             {/* Scroll rail */}
             <div className="hidden lg:block">
               <p className="mb-6 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#F07A26]">Security walkthrough</p>
@@ -217,14 +217,14 @@ export function InteractiveShowcase() {
                     onClick={() => {
                       const top = sectionRef.current?.offsetTop ?? 0;
                       const height = sectionRef.current?.offsetHeight ?? 0;
-                      window.scrollTo({ top: top + (height - window.innerHeight) * (PANEL_STARTS[index] + 0.02), behavior: "smooth" });
+                      window.scrollTo({ top: top + (height - window.innerHeight) * ((PANEL_STARTS[index] ?? 0) + 0.02), behavior: "smooth" });
                     }}
-                    className={`relative mb-8 block w-full text-left transition-opacity ${active === index ? "opacity-100" : "opacity-45 hover:opacity-80"}`}
+                    className={`relative mb-6 block w-full text-left transition-opacity ${active === index ? "opacity-100" : "opacity-50 hover:opacity-80"}`}
                   >
                     <span className={`absolute -left-8 top-1.5 h-[15px] w-[15px] rounded-full border-2 ${active >= index ? "border-[#F07A26] bg-[#F07A26]" : "border-[#334155] bg-[#080C14]"}`} />
                     <span className="block font-mono text-[10px] text-[#F07A26]">0{index + 1}</span>
-                    <span className="mt-1 block text-[13px] font-semibold text-white">{chamber.title}</span>
-                    <span className="mt-0.5 block text-[11px] leading-4 text-[#94A3B8]">{chamber.subtitle}</span>
+                    <span className="mt-1 block text-[12px] font-semibold text-white">{chamber.title}</span>
+                    <span className="mt-0.5 block text-[10px] leading-4 text-[#94A3B8]">{chamber.subtitle}</span>
                   </button>
                 ))}
               </div>
@@ -244,13 +244,14 @@ export function InteractiveShowcase() {
                   <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <p className="font-mono text-[11px] text-[#F07A26]">PANEL 0{active + 1} / 04</p>
-                      <h3 className="mt-1 font-display text-2xl font-bold tracking-[-0.03em] text-white sm:text-3xl">{chambers[active]?.title}</h3>
-                      <p className="mt-0.5 text-[13px] text-[#94A3B8]">{chambers[active]?.subtitle}</p>
+                      <h3 className="mt-1 font-display text-xl font-bold tracking-[-0.03em] text-white sm:text-2xl">{chambers[active]?.title}</h3>
+                      <p className="mt-0.5 text-[12px] text-[#94A3B8]">{chambers[active]?.subtitle}</p>
                     </div>
                     <SeeLive href={chambers[active]?.route || "#"}>{chambers[active]?.link}</SeeLive>
                   </div>
 
-                  <div ref={panelRef} className="relative rounded-2xl border border-[#1E2838] bg-[#0E1420] p-5 shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)] sm:p-7">
+                  <div ref={panelRef} className="relative rounded-2xl border border-[#1E2838] bg-[#0E1420] p-4 shadow-[0_30px_70px_-50px_rgba(0,0,0,0.9)] sm:p-6">
+                    <span data-pointer="pointer-away" aria-hidden="true" className="pointer-events-none absolute right-3 top-3 h-px w-px" />
                     {active === 0 ? (
                       <div className="grid gap-6 md:grid-cols-[0.95fr_1.05fr]">
                         <div className="relative min-h-[240px]">
@@ -285,17 +286,8 @@ export function InteractiveShowcase() {
                                   data-pointer="login-submit"
                                   animate={clickPulse ? { scale: [1, 0.96, 1] } : { scale: 1 }}
                                   transition={{ duration: 0.2 }}
-                                  className="relative w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
+                                  className="w-full rounded-lg bg-[#F07A26] py-2.5 text-[12px] font-semibold va-amber-ink"
                                 >
-                                  {clickPulse ? (
-                                    <motion.span
-                                      aria-hidden="true"
-                                      className="pointer-events-none absolute inset-0 border border-[#F07A26]"
-                                      initial={{ opacity: 0.9, scale: 1 }}
-                                      animate={{ opacity: 0, scale: 1.12 }}
-                                      transition={{ duration: 0.55 }}
-                                    />
-                                  ) : null}
                                   Sign in
                                 </motion.button>
                                 <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E2838] py-2.5 text-[12px] text-[#94A3B8]">
@@ -329,8 +321,8 @@ export function InteractiveShowcase() {
                                     transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
                                   />
                                 </svg>
-                                <p className="font-display text-lg font-semibold text-white">Signed in</p>
-                                <p className="text-[11px] text-[#94A3B8]">Opaque session token issued after Argon2id verification.</p>
+                                <p className="font-display text-lg font-semibold text-white">Credentials confirmed</p>
+                                <p className="text-[11px] text-[#94A3B8]">Moving to one-time passcode verification…</p>
                               </motion.div>
                             )}
                           </AnimatePresence>

@@ -28,7 +28,7 @@ const faqs = [
 ];
 
 export function FaqSection() {
-  const [open, setOpen] = useState<number | null>(0);
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
     <section id="faq" className="scroll-mt-24 border-t border-[#1E2838] bg-white/[0.012] py-24 sm:py-28">

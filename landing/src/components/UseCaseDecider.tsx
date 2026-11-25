@@ -80,13 +80,10 @@ export function UseCaseDecider() {
                 aria-label={c.label}
                 aria-selected={active === index}
                 onClick={() => setActive(index)}
-                className={`relative flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3 text-[11px] font-semibold transition-colors sm:gap-2 sm:px-4 sm:text-sm ${edgeRadius} ${
-                  active === index ? "va-amber-ink" : "text-[#94A3B8] hover:text-white"
+                className={`relative flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3 text-[11px] font-semibold transition-colors duration-200 sm:gap-2 sm:px-4 sm:text-sm ${edgeRadius} ${
+                  active === index ? "bg-[#F07A26] va-amber-ink" : "text-[#94A3B8] hover:bg-white/[0.05] hover:text-white"
                 }`}
               >
-                {active === index ? (
-                  <motion.span layoutId="usecase-pill" className={`absolute inset-0 bg-[#F07A26] ${edgeRadius}`} transition={{ type: "spring", stiffness: 380, damping: 32 }} />
-                ) : null}
                 <Icon className="relative z-10 h-4 w-4" />
                 <span className="relative z-10 whitespace-nowrap sm:hidden">{c.short}</span>
                 <span className="relative z-10 hidden whitespace-nowrap sm:inline">{c.label}</span>

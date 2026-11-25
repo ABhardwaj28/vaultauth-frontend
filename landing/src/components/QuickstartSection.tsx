@@ -46,8 +46,8 @@ export function QuickstartSection() {
               type="button"
               onClick={() => setActive(index)}
               aria-pressed={active === index}
-              className={`flex-1 whitespace-nowrap rounded-md px-4 py-3 text-[13px] font-semibold transition-all ${
-                active === index ? "bg-[#F07A26] va-amber-ink shadow-[0_8px_20px_-10px_rgba(240,122,38,0.9)]" : "text-[#94A3B8] hover:bg-white/[0.05] hover:text-white"
+              className={`flex-1 whitespace-nowrap rounded-md px-4 py-3 text-[13px] font-semibold transition-colors ${
+                active === index ? "bg-[#F07A26] va-amber-ink" : "text-[#94A3B8] hover:bg-white/[0.05] hover:text-white"
               }`}
             >
               {item.label}
@@ -58,7 +58,7 @@ export function QuickstartSection() {
 
         <div className="mx-auto mt-6 max-w-4xl">
           <AnimatePresence mode="wait">
-            <motion.div key={framework.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="overflow-hidden rounded-xl border border-[#1E2838] bg-[#080C14] shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)]">
+            <motion.div key={framework.id} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2 }} className="min-h-[500px] overflow-hidden rounded-xl border border-[#1E2838] bg-[#080C14] shadow-[0_40px_90px_-55px_rgba(0,0,0,0.95)]">
               <div className="flex items-center gap-2 border-b border-[#1E2838] bg-[#0a0f18] px-5 py-3">
                 <Terminal className="h-4 w-4 text-[#F07A26]" />
                 <span className="font-mono text-[11px] text-[#94A3B8]">{framework.file}</span>
@@ -70,7 +70,7 @@ export function QuickstartSection() {
               </div>
               <div className="p-5 font-mono text-[12px] leading-7 sm:p-7 sm:text-[13px]">
                 <p><span className="text-[#F07A26]">$</span> <span className="text-white">{framework.install}</span></p>
-                <pre className="mt-3 max-h-[320px] overflow-auto whitespace-pre-wrap break-words rounded-lg border border-[#1E2838] bg-black/25 p-4 text-[11px] leading-6 text-slate-200 sm:text-[12px]">
+                <pre className="mt-3 h-[320px] overflow-auto whitespace-pre-wrap break-words rounded-lg border border-[#1E2838] bg-black/25 p-4 text-[11px] leading-6 text-slate-200 [scrollbar-width:none] sm:text-[12px] [&::-webkit-scrollbar]:hidden">
                   <code>{framework.code}</code>
                 </pre>
                 <p className="mt-3 text-[#10B981]">✓ OIDC discovery reachable · JWKS published · RS256</p>

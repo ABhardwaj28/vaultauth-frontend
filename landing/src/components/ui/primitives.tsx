@@ -60,7 +60,7 @@ export function SectionHeading({
 }
 
 export const ctaPrimary =
-  "inline-flex items-center justify-center rounded-none bg-[#F07A26] px-5 py-3 text-sm font-semibold text-white transition-all hover:bg-[#e06d1b] hover:shadow-[0_12px_30px_-12px_rgba(240,122,38,0.8)]";
+  "inline-flex items-center justify-center rounded-none bg-[#F07A26] px-5 py-3 text-sm font-semibold text-white transition-colors hover:bg-[#e06d1b]";
 
 /** Primary CTA with dark ink for WCAG contrast outside the header. */
 export const ctaPrimaryInk = `${ctaPrimary} va-amber-ink`;

@@ -202,10 +202,12 @@ export function Navbar() {
           </nav>
 
           <div className="hidden items-center gap-4 lg:flex">
-            <span className="inline-flex items-center gap-2 rounded-md border border-[#1E2838] bg-[#0E1420] px-2.5 py-1.5 text-[11px] text-[#94A3B8]">
-              <span className={`h-1.5 w-1.5 rounded-full ${health === "live" ? "bg-[#10B981]" : "bg-slate-500"}`} />
-              {health === "live" ? "Service healthy" : "API reference"}
-            </span>
+            <a href="/status.html" target="_blank" rel="noreferrer">
+              <span className="inline-flex items-center gap-2 rounded-md border border-[#1E2838] bg-[#0E1420] px-2.5 py-1.5 text-[11px] text-[#94A3B8]">
+                <span className={`h-1.5 w-1.5 rounded-full ${health === "live" ? "bg-[#10B981]" : "bg-slate-500"}`} />
+                {health === "live" ? "Service healthy" : "API reference"}
+              </span>
+            </a>
             <a href="/login" className="text-sm font-medium text-white hover:text-[#F07A26]">Sign in</a>
             <a href="/register" className={ctaPrimary}>Create free account</a>
           </div>

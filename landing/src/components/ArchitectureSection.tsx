@@ -84,7 +84,7 @@ export function ArchitectureSection() {
                   type="button"
                   onClick={() => setActive(index)}
                   aria-pressed={isActive}
-                  className={`relative rounded-xl border p-2.5 text-left transition-all sm:p-5 ${isActive ? "border-[#F07A26]/50 bg-[#121a28] shadow-[0_25px_60px_-40px_rgba(240,122,38,0.8)]" : "border-[#1E2838] bg-[#0E1420] hover:border-[#3a475c]"}`}
+                  className={`relative rounded-xl border p-2.5 text-left transition-colors sm:p-5 ${isActive ? "border-[#F07A26]/50 bg-[#121a28]" : "border-[#1E2838] bg-[#0E1420] hover:border-[#3a475c]"}`}
                 >
                   {index < 3 ? (
                     <span
@@ -115,9 +115,9 @@ export function ArchitectureSection() {
               <p className="flex items-center gap-2 font-mono text-xs text-white"><FileCode2 className="h-4 w-4 text-[#F07A26]" /> Stage {tier.step} specification · {tier.title}</p>
               <span className="rounded border border-[#10B981]/30 bg-[#10B981]/10 px-2 py-1 font-mono text-[10px] text-[#10B981]">VERIFIED IN CODEBASE</span>
             </div>
-            <div className="mt-6 grid grid-cols-2 gap-2 sm:gap-4 lg:grid-cols-4">
+            <div className="mt-6 grid min-h-[240px] grid-cols-2 gap-2 sm:gap-4 lg:min-h-[116px] lg:grid-cols-4">
               {tier.specs.map((spec) => (
-                <div key={spec.k} className="rounded-lg border border-[#1E2838] bg-[#080c14] p-4">
+                <div key={spec.k} className="min-h-[116px] rounded-lg border border-[#1E2838] bg-[#080c14] p-4">
                   <p className="text-[10px] uppercase tracking-wider text-slate-500">{spec.k}</p>
                   <p className="mt-2 font-mono text-[13px] leading-5 text-white">{spec.v}</p>
                 </div>
