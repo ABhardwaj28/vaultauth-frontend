@@ -22,24 +22,8 @@ const faqs = [
     a: "Yes. The published JWKS endpoint exposes the RS256 public key. Your services can verify signatures locally using a cached key set, using the discovery document for issuer and endpoint metadata.",
   },
   {
-    q: "Are SAML, SCIM, or WebAuthn passkeys available?",
-    a: "Not in this build. The PRD explicitly scopes external SAML/OIDC brokering and real FIDO2 credential negotiation out of v2.0. WebAuthn is presented as an architecture concept, not a working login method.",
-  },
-  {
-    q: "Which OIDC flows are supported?",
-    a: "Authorization code with PKCE (S256 or plain), scopes openid, email, and profile, and claims including sub, email, email_verified, role, and name. Tokens are signed with RS256; the token, userinfo, and revocation endpoints are live.",
-  },
-  {
     q: "How do I get started?",
     a: "Create an account on the identity portal, register and verify your email, then sign in with your password and OTP. From the dashboard you can inspect sessions, manage OAuth clients, and review the audit trail.",
-  },
-  {
-    q: "Where does the browser keep my session token?",
-    a: "In memory and sessionStorage, never localStorage. It is cleared when the tab closes, on sign out, and on any 401 response. Passwords go straight to the API over HTTPS and are never logged.",
-  },
-  {
-    q: "What do the error pages actually show?",
-    a: "Dedicated 403, 404, 429, and 500/503 views with technical diagnostics. The 429 page uses the X-RateLimit-Reset header to drive a live countdown, and a root error boundary catches unexpected client failures.",
   },
 ];
 

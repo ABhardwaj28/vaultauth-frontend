@@ -147,7 +147,7 @@ export function Hero() {
               </span>
             </div>
 
-            <div className="h-[430px] overflow-y-auto rounded-b-xl bg-[#060a11] p-4 sm:h-[460px] sm:p-5">
+            <div className="h-[700px] overflow-hidden rounded-b-xl bg-[#060a11] p-4 sm:h-[500px] sm:p-5">
               <AnimatePresence mode="wait">
                 {tab === "token" ? (
                   <motion.div key="token" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
@@ -157,7 +157,7 @@ export function Hero() {
                         {keyInfo.alg} · {keyInfo.kid.slice(0, 22)}
                       </span>
                     </div>
-                    <pre className="mt-4 overflow-x-auto font-mono text-[11px] leading-[1.9] text-slate-300">
+                    <pre className="mt-4 whitespace-pre-wrap break-all font-mono text-[11px] leading-[1.75] text-slate-300">
                       <code>{JSON.stringify(samplePayload, null, 2)}</code>
                     </pre>
                     <div className="mt-4 grid gap-2 sm:grid-cols-3">
