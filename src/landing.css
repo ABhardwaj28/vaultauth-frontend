@@ -28,7 +28,8 @@
 }
 
 /* ── Blend solid panel colors into the ambient canvas ─────────────────── */
-.landing-root [class*="bg-[#0E1420]"]:not([class*="bg-[#0E1420]/"]) { background-color: rgba(14, 20, 32, 0.9); }
+.landing-root [class*="bg-[#0E1420]"]:not([class*="bg-[#0E1420]/"]),
+.landing-root [class*="bg-[#0e1420]"]:not([class*="bg-[#0e1420]/"]) { background-color: rgba(14, 20, 32, 0.9); }
 .landing-root [class*="bg-[#080C14]"]:not([class*="bg-[#080C14]/"]),
 .landing-root [class*="bg-[#080c14]"]:not([class*="bg-[#080c14]/"]) { background-color: rgba(8, 12, 20, 0.82); }
 .landing-root [class*="bg-[#0a0f18]"] { background-color: rgba(10, 15, 24, 0.92); }
@@ -37,7 +38,7 @@
 .landing-root [class*="bg-[#121a28]"] { background-color: rgba(18, 26, 40, 0.94); }
 .landing-root [class*="bg-[#060910]"] { background-color: rgba(6, 9, 16, 0.97); }
 .landing-root [class*="border-[#1E2838]"] { border-color: rgba(148, 163, 184, 0.3); }
-.landing-root [class*="text-[#94A3B8]"] { color: #a8b5c7; }
+.landing-root [class*="text-[#94A3B8]"]:not([class*="placeholder:"]) { color: #a8b5c7; }
 .landing-root [class*="text-slate-500"],
 .landing-root [class*="text-slate-600"] { color: #a8b5c7; }
 

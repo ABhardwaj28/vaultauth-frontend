@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, MotionConfig, motion } from "framer-motion";
+import { AnimatePresence, MotionConfig, motion, useReducedMotion } from "framer-motion";
 import { ArrowUp } from "lucide-react";
 import { Navbar } from "./components/Navbar";
 import { Hero } from "./components/Hero";
@@ -17,6 +17,7 @@ import { CtaBanner } from "./components/CtaBanner";
 import { Footer } from "./components/Footer";
 
 export default function App() {
+  const reduceMotion = useReducedMotion();
   const [showTop, setShowTop] = useState(false);
 
   useEffect(() => {
@@ -70,7 +71,7 @@ export default function App() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.85 }}
             whileHover={{ y: -2 }}
-            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            onClick={() => window.scrollTo({ top: 0, behavior: reduceMotion ? "instant" : "smooth" })}
             aria-label="Back to top"
             className="fixed bottom-6 right-6 z-40 hidden h-10 w-10 items-center justify-center rounded-full border border-[#1E2838] bg-[#0E1420] text-[#94A3B8] shadow-xl transition-colors hover:border-[#F07A26] hover:text-white lg:flex"
           >

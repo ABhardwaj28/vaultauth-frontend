@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 /* ── Blend solid panel colors into the ambient canvas ─────────────────── */
-[class*="bg-[#0E1420]"]:not([class*="bg-[#0E1420]/"]) { background-color: rgba(14, 20, 32, 0.9); }
+[class*="bg-[#0E1420]"]:not([class*="bg-[#0E1420]/"]),
+[class*="bg-[#0e1420]"]:not([class*="bg-[#0e1420]/"]) { background-color: rgba(14, 20, 32, 0.9); }
 [class*="bg-[#080C14]"]:not([class*="bg-[#080C14]/"]),
 [class*="bg-[#080c14]"]:not([class*="bg-[#080c14]/"]) { background-color: rgba(8, 12, 20, 0.82); }
 [class*="bg-[#0a0f18]"] { background-color: rgba(10, 15, 24, 0.92); }
@@ -12,7 +13,7 @@
 [class*="bg-[#121a28]"] { background-color: rgba(18, 26, 40, 0.94); }
 [class*="bg-[#060910]"] { background-color: rgba(6, 9, 16, 0.97); }
 [class*="border-[#1E2838]"] { border-color: rgba(148, 163, 184, 0.3); }
-[class*="text-[#94A3B8]"] { color: #a8b5c7; }
+[class*="text-[#94A3B8]"]:not([class*="placeholder:"]) { color: #a8b5c7; }
 [class*="text-slate-500"], [class*="text-slate-600"] { color: #a8b5c7; }
 
 /* Universal square corners — boxy system across the whole landing page */

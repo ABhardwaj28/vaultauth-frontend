@@ -23,7 +23,7 @@ const chambers = [
   { title: "Client registry", subtitle: "Register an OAuth application", route: "/dashboard/admin/apps", link: "See OAuth clients" },
 ];
 
-const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900];
+const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900, 3400];
 const REVOKE_STAGE = 4;
 const PANEL_STARTS = [0, 0.24, 0.48, 0.68] as const;
 
@@ -99,6 +99,7 @@ export function InteractiveShowcase() {
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, restDelta: 0.001 });
   const railHeight = useTransform(smoothProgress, (value) => `${value * 100}%`);
   const [active, setActive] = useState(0);
+  const [progressPct, setProgressPct] = useState(0);
   const [engaged, setEngaged] = useState(false);
   const [stage, setStage] = useState(0);
   const [copyFeedback, setCopyFeedback] = useState<boolean | null>(null);
@@ -110,6 +111,7 @@ export function InteractiveShowcase() {
   useMotionValueEvent(smoothProgress, "change", (value) => {
     const next = value >= PANEL_STARTS[3] ? 3 : value >= PANEL_STARTS[2] ? 2 : value >= PANEL_STARTS[1] ? 1 : 0;
     setActive((current) => (current === next ? current : next));
+    setProgressPct(Math.round(value * 100));
   });
 
   // Only start a demo once its panel is actually pinned in view.
@@ -125,7 +127,6 @@ export function InteractiveShowcase() {
 
   // Each chamber plays its own sequence once, then holds still.
   useEffect(() => {
-    advancedRef.current = false;
     setTypedPassword("");
     setShowRecovery(false);
     setSeconds(30);
@@ -154,7 +155,7 @@ export function InteractiveShowcase() {
           const height = sectionRef.current?.offsetHeight ?? 0;
           window.scrollTo({
             top: top + (height - window.innerHeight) * ((PANEL_STARTS[1] ?? 0) + 0.02),
-            behavior: "smooth",
+            behavior: reduce ? "instant" : "smooth",
           });
         }, (STEP_TIMES[3] ?? 880) + 1200)
       );
@@ -179,16 +180,16 @@ export function InteractiveShowcase() {
 
   // Real countdown for the OTP panel, independent of the scroll stage.
   useEffect(() => {
-    if (active !== 1 || !engaged || reduce) return;
+    if (active !== 1 || !engaged || reduce || stage >= 7) return;
     const timer = window.setInterval(() => setSeconds((value) => Math.max(0, value - 1)), 1000);
     return () => window.clearInterval(timer);
-  }, [active, engaged, reduce]);
+  }, [active, engaged, reduce, stage]);
 
   useEffect(() => {
-    if (active !== 1 || seconds > 0) return;
+    if (active !== 1 || seconds > 0 || stage >= 7) return;
     setOtpCode(String(Math.floor(100000 + Math.random() * 900000)));
     setSeconds(30);
-  }, [active, seconds]);
+  }, [active, seconds, stage]);
 
   const copy = async (text: string) => {
     const ok = await copyText(text);
@@ -203,15 +204,15 @@ export function InteractiveShowcase() {
 
   const otp = otpCode;
   const shownDigits = Math.min(6, Math.max(0, stage));
-  const verified = stage >= 7;
-  const otpClick = stage >= 7;
+  const verified = stage >= 8;
+  const otpClick = stage >= 7 && stage < 8;
 
   const sessionStates = [
     { active: true },
     { active: stage < REVOKE_STAGE },
   ];
   const auditLines = [
-    ...(stage >= REVOKE_STAGE ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
+    ...(stage >= REVOKE_STAGE + 1 ? ["11:03  SESSION_REVOKED  49.207.44.12"] : []),
     "11:01  AUTH_SUCCESS  103.24.18.9",
   ];
 
@@ -224,7 +225,7 @@ export function InteractiveShowcase() {
     active === 0
       ? ["login-password", "login-password", "login-submit", "login-submit", "pointer-away", "pointer-away", "pointer-away"]
       : active === 1
-        ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit"]
+        ? ["otp-digit-0", "otp-digit-1", "otp-digit-2", "otp-digit-3", "otp-digit-4", "otp-digit-5", "otp-submit", "pointer-away"]
         : active === 2
           ? ["revoke-1", "revoke-1", "revoke-1", "revoke-1", "audit-stream", "audit-stream", "audit-stream"]
           : [];
@@ -245,11 +246,12 @@ export function InteractiveShowcase() {
             <div className="hidden lg:block">
               <p className="mb-6 text-[12px] font-semibold uppercase tracking-[0.14em] text-[#F07A26]">Security walkthrough</p>
               <div className="relative pl-8">
-                <div className="absolute bottom-2 left-[7px] top-2 w-px bg-[#1E2838]" />
-                <motion.div
-                  className="absolute left-[7px] top-2 w-px bg-[#F07A26] shadow-[0_0_10px_rgba(246,122,38,0.8)]"
-                  style={{ height: railHeight }}
-                />
+                <div className="absolute bottom-2 left-[7px] top-2 w-px bg-[#1E2838]">
+                  <motion.div
+                    className="w-px bg-[#F07A26] shadow-[0_0_10px_rgba(246,122,38,0.8)]"
+                    style={{ height: railHeight }}
+                  />
+                </div>
                 {chambers.map((chamber, index) => (
                   <button
                     key={chamber.title}
@@ -257,7 +259,7 @@ export function InteractiveShowcase() {
                     onClick={() => {
                       const top = sectionRef.current?.offsetTop ?? 0;
                       const height = sectionRef.current?.offsetHeight ?? 0;
-                      window.scrollTo({ top: top + (height - window.innerHeight) * ((PANEL_STARTS[index] ?? 0) + 0.02), behavior: "smooth" });
+                      window.scrollTo({ top: top + (height - window.innerHeight) * ((PANEL_STARTS[index] ?? 0) + 0.02), behavior: reduce ? "instant" : "smooth" });
                     }}
                     className="relative mb-6 block w-full text-left"
                   >
@@ -268,7 +270,7 @@ export function InteractiveShowcase() {
                   </button>
                 ))}
               </div>
-              <p className="mt-4 font-mono text-[10px] text-[#94A3B8]">{Math.round(smoothProgress.get() * 100)}% scrolled</p>
+              <p className="mt-4 font-mono text-[10px] text-[#94A3B8]">{progressPct}% scrolled</p>
             </div>
 
             {/* Panel */}
@@ -331,7 +333,7 @@ export function InteractiveShowcase() {
                                   Sign in
                                 </motion.button>
                                 <div className="flex w-full items-center justify-center gap-2 rounded-lg border border-[#1E2838] py-2.5 text-[12px] text-[#94A3B8]">
-                                  <Fingerprint className="h-4 w-4" /> Continue with passkey
+                                  <Fingerprint className="h-4 w-4" /> Passkeys — architecture concept only
                                 </div>
                               </motion.div>
                             ) : (
