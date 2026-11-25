@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Bot, Building2, Check, Fingerprint, ShieldCheck } from "lucide-react";
 import { Reveal, SectionHeading, ctaSecondary } from "./ui/primitives";
@@ -52,6 +52,18 @@ export function UseCaseDecider() {
   const [active, setActive] = useState(0);
   const item = cases[active]!;
 
+  const onTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next = index;
+    if (event.key === "ArrowRight") next = (index + 1) % cases.length;
+    else if (event.key === "ArrowLeft") next = (index - 1 + cases.length) % cases.length;
+    else if (event.key === "Home") next = 0;
+    else if (event.key === "End") next = cases.length - 1;
+    else return;
+    event.preventDefault();
+    setActive(next);
+    document.getElementById(`usecase-tab-${cases[next]!.id}`)?.focus();
+  };
+
   return (
     <section id="solutions" className="scroll-mt-24 py-24 sm:py-28">
       <div className="va-container">
@@ -77,9 +89,13 @@ export function UseCaseDecider() {
                 key={c.id}
                 type="button"
                 role="tab"
+                id={`usecase-tab-${c.id}`}
                 aria-label={c.label}
                 aria-selected={active === index}
+                aria-controls={`usecase-panel-${c.id}`}
+                tabIndex={active === index ? 0 : -1}
                 onClick={() => setActive(index)}
+                onKeyDown={(event) => onTabKeyDown(event, index)}
                 className={`relative flex min-w-0 items-center justify-center gap-1.5 px-1.5 py-3 text-[11px] font-semibold transition-colors duration-200 sm:gap-2 sm:px-4 sm:text-sm ${edgeRadius} ${
                   active === index ? "bg-[#F07A26] va-amber-ink" : "text-[#94A3B8] hover:bg-white/[0.05] hover:text-white"
                 }`}
@@ -94,7 +110,7 @@ export function UseCaseDecider() {
 
         <div className="mt-8 grid gap-5 md:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] sm:gap-8">
           <AnimatePresence mode="wait">
-            <motion.div key={item.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }}>
+            <motion.div key={item.id} id={`usecase-panel-${item.id}`} role="tabpanel" aria-labelledby={`usecase-tab-${item.id}`} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.22 }}>
               <h3 className="font-display text-3xl font-bold tracking-[-0.03em] text-white sm:text-4xl">{item.title}</h3>
               <p className="mt-4 max-w-xl text-[15px] leading-7 text-[#94A3B8]">{item.body}</p>
               <ul className="mt-7 space-y-3">

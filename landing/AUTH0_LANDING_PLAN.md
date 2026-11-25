@@ -16,7 +16,7 @@ Design reference: [auth0.com](https://auth0.com/)
 
 Type: **Plus Jakarta Sans** (display + body), **JetBrains Mono** (code, terminal data only).
 Copy: sentence case, active voice, no trailing arrows, no middle-dot meta strings, solid white headlines.
-No announcement ribbon. Motion: one scroll-progress bar, one entrance language, scroll-linked workbench, 350vh sticky storyboard. The 220vh scroll-scrub manifesto paragraph was removed at the user's request.
+No announcement ribbon. Motion: one scroll-progress bar, one entrance language, scroll-linked workbench, 380vh scroll-pinned security storyboard. The 220vh scroll-scrub manifesto paragraph was removed at the user's request.
 
 ## Claim source map (truth pass)
 
@@ -38,7 +38,7 @@ Every technical claim is cross-checked against the PRD PDF/markdown, the live Op
 | Role-gated admin capabilities, public registration always `user` | Section 5 RBAC matrix, BR-09, BR-10 | Admin nav appears for `shaurya@example.com`; absent for `apoorva@example.com` |
 | OAuth client registry, redirect URIs, scopes, one-time secret with acknowledgement | 9.3.3, FR API `POST /admin/oauth/clients` | `/dashboard/admin/apps` — "Register Application", client table, one-time secret dialog |
 | OIDC discovery, JWKS, RS256, PKCE S256, authorize/token/userinfo/revoke | Live `/.well-known/openid-configuration` + `/.well-known/jwks.json` | `/dashboard/admin/apps` registers relying parties; API endpoints are external |
-| Health and readiness | Live `/health` → `{status: ok}`, `/ready` → `{database: connected}` | Navbar health pill and developers section |
+| Health | Live `/health` → `{status: ok}`; the page checks availability from the browser before claiming it | Status page, navbar badge, and developers section |
 | PostgreSQL roles, Supabase primary + Neon standby, failover revokes sessions, 30-day purge | Section 8.1, 10, BR-07, BR-08, BR-11 | Backend only; documented in architecture and FAQ |
 | CSP, X-Frame-Options DENY, nosniff, referrer policy, error pages with rate-limit countdown | 9.4.2, 9.4.4, 9.4.5 | Developers section and FAQ |
 
@@ -50,23 +50,24 @@ Deliberately excluded as unsupported: sub-millisecond Redis revocation, sub-15 m
 2. `Hero` — editorial copy + 3D workbench: token inspector and real S256 PKCE generator.
 3. `StatsBanner` — ecosystem marquee + truthful benchmarks.
 4. `UseCaseDecider` — B2C / B2B / machine-client switcher with morphing preview.
-5. `InteractiveShowcase` — arched strip of four small buttons that partially encloses the selected detail panel; no scroll pinning. Each panel links to its portal screen.
+5. `InteractiveShowcase` — 380vh scroll-pinned, four-panel security walkthrough driven by a DOM-targeting cursor: password entry, six-digit OTP with timer, session revocation with audit line, and an OAuth client registry. The tick appears only after OTP success; the registry panel has no cursor.
 6. `ArchitectureSection` — SVG circuit with clickable spec HUD.
 7. `FeaturesGrid` — six cursor-spotlight pillars.
 8. `DevelopersSection` — live endpoint list and discovery facts.
 9. `QuickstartSection` — standalone Auth0-style gradient stage with segmented framework switcher, terminal, and copy cards.
 10. `ComparisonSection` — neutral generic comparison.
 11. `PricingSection` — editable cost estimator at the top (users × user-supplied ₹ rate, monthly/annual), then capability tiers. No published or invented prices.
-12. `FaqSection` — honest technical answers.
-13. `CtaBanner` + `Footer` — three conversion paths, standards strip.
+12. `FaqSection` — five honest technical answers, all closed by default.
+13. `CtaBanner` + `Footer` — three conversion paths, standards strip, status page link.
+14. `/status.html` — Atlassian-style live health/JWKS checks; `/403.html` — temporary documentation page.
 
 ## Decisions taken (no answers were supplied, so plan defaults were used)
 
 - Unsupported claims: **removed**, not softened.
 - Pricing: user-driven cost estimator with an editable rate; no invented or published currency values.
 - Comparison: generic alternatives, no named vendors.
-- Scope: rebuilt the original `src/components/*` set; earlier `src/redesign/*` files remain unused.
-- Port: dev server run with `--host 0.0.0.0` on port 3001 so `127.0.0.1:3001` is reachable.
+- Scope: the landing lives only in `landing/`; the original frontend app is untouched and obsolete `src/redesign/*` files are excluded. A few deployment-support files (`src/landing.css`, `public/status.html`, `public/403.html`, `public/robots.txt`) are mirrored at the repo root for the static production build.
+- Port: dev server run with `--host 0.0.0.0` on port 3001 so `127.0.0.1:3001` is reachable; portal CTAs resolve to `localhost:3000` in development and same-origin routes in production.
 
 ## Verification
 

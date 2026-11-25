@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { Braces, Check, KeyRound, RefreshCw, ShieldCheck } from "lucide-react";
 import { ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
-import { API_ORIGIN as API, getKeyInfo } from "../lib/liveApi";
-import { DOCS_LINK } from "../lib/links";
+import { API_ORIGIN as API, getKeyInfo, useLiveHealth } from "../lib/liveApi";
+import { DOCS_LINK, portalHref } from "../lib/links";
 type Tab = "token" | "pkce";
 
 const samplePayload = {
@@ -26,6 +26,7 @@ function base64url(bytes: Uint8Array) {
 
 export function Hero() {
   const reduce = useReducedMotion();
+  const healthy = useLiveHealth();
   const [tab, setTab] = useState<Tab>("token");
   const [keyInfo, setKeyInfo] = useState({ kid: "loading", alg: "RS256" });
   const [verifier, setVerifier] = useState("");
@@ -33,6 +34,7 @@ export function Hero() {
   const [step, setStep] = useState(0);
   const [running, setRunning] = useState(false);
   const sectionRef = useRef<HTMLDivElement>(null);
+  const pkceTimers = useRef<number[]>([]);
 
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
   const rotateX = useTransform(scrollYProgress, [0, 0.8], [10, 0]);
@@ -56,14 +58,26 @@ export function Hero() {
     setVerifier(v);
     const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
     setChallenge(base64url(new Uint8Array(digest)));
-    const timers = [
+    pkceTimers.current.forEach((timer) => window.clearTimeout(timer));
+    pkceTimers.current = [
       window.setTimeout(() => setStep(1), 550),
       window.setTimeout(() => setStep(2), 1200),
       window.setTimeout(() => setStep(3), 1850),
       window.setTimeout(() => setRunning(false), 2100),
     ];
-    return () => timers.forEach(window.clearTimeout);
   };
+
+  useEffect(() => {
+    return () => pkceTimers.current.forEach((timer) => window.clearTimeout(timer));
+  }, []);
+
+  useEffect(() => {
+    if (tab !== "pkce") {
+      pkceTimers.current.forEach((timer) => window.clearTimeout(timer));
+      pkceTimers.current = [];
+      setRunning(false);
+    }
+  }, [tab]);
 
   const pkceSteps = [
     { label: "Client creates verifier", detail: "32 random bytes, Base64URL encoded" },
@@ -98,7 +112,7 @@ export function Hero() {
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">
-            <a href="/register" className={ctaPrimaryInk}>Create free account</a>
+            <a href={portalHref("/register")} className={ctaPrimaryInk}>Create free account</a>
             <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={ctaSecondary}>See documentation</a>
           </div>
 
@@ -143,11 +157,12 @@ export function Hero() {
                 })}
               </div>
               <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#10B981]">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#10B981]" /> LIVE API
+                <span className={`h-1.5 w-1.5 rounded-full ${healthy === false ? "bg-[#F07A26]" : "bg-[#10B981]"}`} />
+                {healthy === false ? "API REFERENCE" : healthy === true ? "LIVE API" : "CHECKING API"}
               </span>
             </div>
 
-            <div className="h-[700px] overflow-hidden rounded-b-xl bg-[#060a11] p-4 sm:h-[500px] sm:p-5">
+            <div className="min-h-[700px] rounded-b-xl bg-[#060a11] p-4 sm:min-h-[500px] sm:p-5">
               <AnimatePresence mode="wait">
                 {tab === "token" ? (
                   <motion.div key="token" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>

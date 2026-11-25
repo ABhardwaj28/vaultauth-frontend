@@ -1,5 +1,7 @@
 import { Activity } from "lucide-react";
 import { BrandMark } from "./ui/primitives";
+import { portalHref } from "../lib/links";
+import { API_ORIGIN } from "../lib/liveApi";
 
 const columns = [
   {
@@ -26,10 +28,10 @@ const columns = [
     title: "Developers",
     links: [
       { label: "Quickstarts", href: "#quickstarts" },
-      { label: "OIDC discovery", href: "https://api.vaultauth.proplays2312.eu.org/.well-known/openid-configuration" },
-      { label: "JWKS endpoint", href: "https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json" },
-      { label: "Health check", href: "https://api.vaultauth.proplays2312.eu.org/health" },
-      { label: "PKCE playground", href: "#developers" },
+      { label: "OIDC discovery", href: `${API_ORIGIN}/.well-known/openid-configuration` },
+      { label: "JWKS endpoint", href: `${API_ORIGIN}/.well-known/jwks.json` },
+      { label: "Health check", href: `${API_ORIGIN}/health` },
+      { label: "PKCE playground", href: "#top" },
     ],
   },
   {
@@ -39,7 +41,7 @@ const columns = [
       { label: "Comparison", href: "#compare" },
       { label: "Plans & capacity", href: "#pricing" },
       { label: "Technical FAQs", href: "#faq" },
-      { label: "Identity portal", href: "/login" },
+      { label: "Identity portal", href: portalHref("/login") },
     ],
   },
 ];

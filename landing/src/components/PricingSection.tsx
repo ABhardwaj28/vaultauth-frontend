@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Check, Gauge, Info } from "lucide-react";
 import { Reveal, SectionHeading, ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
-import { DOCS_LINK } from "../lib/links";
+import { DOCS_LINK, portalHref } from "../lib/links";
 
 const tiers = [
   {
@@ -90,7 +90,7 @@ export function PricingSection() {
                     <label htmlFor="rate" className="text-[13px] font-medium text-white">Assumed ₹ per 1,000 MAU</label>
                     <div className="flex items-center gap-2 rounded-md border border-[#1E2838] bg-[#080C14] px-3 py-1.5 transition-colors focus-within:border-[#F07A26] focus-within:ring-1 focus-within:ring-[#F07A26]/40">
                       <span className="font-mono text-[12px] text-[#F07A26]">₹</span>
-                      <input id="rate" type="number" min="0" max="10000" value={rate} onChange={(e) => setRate(Math.max(0, Number(e.target.value)))} className="w-16 bg-transparent text-right font-mono text-[13px] text-white outline-none" />
+                      <input id="rate" type="number" min="0" max="10000" value={rate} onChange={(e) => setRate(Math.min(10000, Math.max(0, Number(e.target.value))))} className="w-16 bg-transparent text-right font-mono text-[13px] text-white outline-none" />
                     </div>
                   </div>
                   <p className="mt-2 text-[11px] leading-5 text-slate-500">Enter any rate you want to model. This is not a VaultAuth published price.</p>
@@ -163,7 +163,7 @@ export function PricingSection() {
                   ))}
                 </ul>
                 <a
-                  href={deploy === "self" ? DOCS_LINK : tier.name === "Developer" ? "/register" : "#final-cta"}
+                  href={deploy === "self" ? DOCS_LINK : tier.name === "Developer" ? portalHref("/register") : "#final-cta"}
                   target={deploy === "self" ? "_blank" : undefined}
                   rel={deploy === "self" ? "noreferrer" : undefined}
                   className={`${tier.primary ? ctaPrimaryInk : ctaSecondary} mt-5 justify-center text-[10px] sm:mt-7 sm:text-[13px]`}

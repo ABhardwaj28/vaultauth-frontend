@@ -1,4 +1,5 @@
 /** Shared, cached access to the live VaultAuth API without cross-origin console errors. */
+import { useEffect, useState } from "react";
 
 export const API_ORIGIN = "https://api.vaultauth.proplays2312.eu.org";
 
@@ -67,4 +68,19 @@ export function getKeyInfo(): Promise<KeyInfo> {
       });
   }
   return keyInflight;
+}
+
+/** Live health state for UI that should not assert availability without checking. */
+export function useLiveHealth() {
+  const [healthy, setHealthy] = useState<boolean | null>(null);
+  useEffect(() => {
+    let active = true;
+    checkHealth().then((ok) => {
+      if (active) setHealthy(ok);
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+  return healthy;
 }

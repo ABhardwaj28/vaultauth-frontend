@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
+import { portalHref } from "../../lib/links";
 
 export function Reveal({
   children,
@@ -72,7 +73,7 @@ export const ctaSecondary =
 export function SeeLive({ href, children }: { href: string; children: ReactNode }) {
   return (
     <a
-      href={href}
+      href={href.startsWith("/") ? portalHref(href) : href}
       target="_blank"
       rel="noreferrer"
       className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F07A26] transition-opacity hover:opacity-80"

@@ -1,8 +1,7 @@
 import { Activity, Check, FileCode2, KeyRound, Lock, Server } from "lucide-react";
 import { Reveal, SectionHeading, ctaSecondary } from "./ui/primitives";
 import { DOCS_LINK } from "../lib/links";
-
-const API = "https://api.vaultauth.proplays2312.eu.org";
+import { API_ORIGIN, useLiveHealth } from "../lib/liveApi";
 
 const endpoints = [
   { method: "GET", path: "/.well-known/openid-configuration", note: "Discovery document", icon: FileCode2 },
@@ -43,6 +42,7 @@ const facts = [
 ];
 
 export function DevelopersSection() {
+  const healthy = useLiveHealth();
   return (
     <section id="developers" className="scroll-mt-24 border-y border-[#1E2838] bg-white/[0.012] py-24 sm:py-28">
       <div className="va-container">
@@ -59,13 +59,13 @@ export function DevelopersSection() {
             <div className="overflow-hidden rounded-xl border border-[#1E2838] bg-[#0E1420]">
               <div className="flex items-center justify-between border-b border-[#1E2838] px-5 py-3">
                 <p className="text-xs font-semibold text-white">Live endpoints</p>
-                <span className="font-mono text-[10px] text-[#10B981]">{API.replace("https://", "")}</span>
+                <span className="font-mono text-[10px] text-[#10B981]">{API_ORIGIN.replace("https://", "")}</span>
               </div>
               <div className="divide-y divide-[#1E2838]">
                 {endpoints.map((endpoint) => {
                   const Icon = endpoint.icon;
                   return (
-                    <a key={endpoint.path} href={`${API}${endpoint.path}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-white/[0.03]">
+                    <a key={endpoint.path} href={`${API_ORIGIN}${endpoint.path}`} target="_blank" rel="noreferrer" className="flex items-center gap-3 px-5 py-3.5 transition-colors hover:bg-white/[0.03]">
                       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[#1E2838] text-[#F07A26]"><Icon className="h-4 w-4" /></span>
                       <span className="min-w-0 flex-1">
                         <span className="block truncate font-mono text-[11px] text-white">{endpoint.path}</span>
@@ -90,10 +90,17 @@ export function DevelopersSection() {
                   </div>
                 ))}
               </div>
-              <div className="mt-6 space-y-2 rounded-lg border border-[#10B981]/25 bg-[#10B981]/[0.05] p-4">
-                {["GET /health → { status: ok }", "GET /ready → { database: connected }"].map((line) => (
-                  <p key={line} className="flex items-center gap-2 font-mono text-[11px] text-[#10B981]"><Check className="h-3.5 w-3.5" /> {line}</p>
-                ))}
+              <div className="mt-6 space-y-2 rounded-lg border border-[#1E2838] bg-[#080c14] p-4">
+                {healthy === true ? (
+                  <>
+                    <p className="flex items-center gap-2 font-mono text-[11px] text-[#10B981]"><Check className="h-3.5 w-3.5" /> GET /health → {`{ status: ok }`}</p>
+                    <p className="flex items-center gap-2 font-mono text-[11px] text-[#10B981]"><Check className="h-3.5 w-3.5" /> API reachable from this browser</p>
+                  </>
+                ) : healthy === false ? (
+                  <p className="font-mono text-[11px] text-[#F07A26]">API checks unavailable — see the status page</p>
+                ) : (
+                  <p className="font-mono text-[11px] text-[#94A3B8]">Checking API status…</p>
+                )}
               </div>
               <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={`${ctaSecondary} mt-6 w-full text-[13px]`}>See documentation</a>
             </div>

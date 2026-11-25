@@ -4,20 +4,26 @@ import { Check, Copy, Terminal } from "lucide-react";
 import { frameworks } from "./CodeSnippetDock";
 import { ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
 import { copyText } from "../lib/clipboard";
-import { API_ORIGIN } from "../lib/liveApi";
-import { DOCS_LINK } from "../lib/links";
+import { API_ORIGIN, useLiveHealth } from "../lib/liveApi";
+import { DOCS_LINK, portalHref } from "../lib/links";
 
-type CopyKey = "code" | "install" | "discovery" | "failed";
+type CopyKey = "code" | "install" | "discovery";
 
 export function QuickstartSection() {
   const [active, setActive] = useState(0);
-  const [copyState, setCopyState] = useState<CopyKey | null>(null);
+  const healthy = useLiveHealth();
+  const [copiedKey, setCopiedKey] = useState<CopyKey | null>(null);
+  const [failedKey, setFailedKey] = useState<CopyKey | null>(null);
   const framework = frameworks[active]!;
 
   const copy = async (text: string, key: CopyKey) => {
     const copied = await copyText(text);
-    setCopyState(copied ? key : "failed");
-    window.setTimeout(() => setCopyState(null), 1600);
+    setCopiedKey(copied ? key : null);
+    setFailedKey(copied ? null : key);
+    window.setTimeout(() => {
+      setCopiedKey(null);
+      setFailedKey(null);
+    }, 1600);
   };
 
   const commands = [framework.install, `curl ${API_ORIGIN}/.well-known/openid-configuration`];
@@ -64,8 +70,8 @@ export function QuickstartSection() {
                 <span className="font-mono text-[11px] text-[#94A3B8]">{framework.file}</span>
                 <span className="ml-auto rounded border border-[#1E2838] px-2 py-0.5 font-mono text-[10px] text-[#94A3B8]">{framework.label}</span>
                 <button type="button" onClick={() => copy(framework.code, "code")} className="inline-flex items-center gap-1.5 rounded border border-[#1E2838] px-2 py-1 font-mono text-[10px] text-[#94A3B8] hover:text-white">
-                  {copyState === "code" ? <Check className="h-3 w-3 text-[#10B981]" /> : <Copy className="h-3 w-3" />}
-                  {copyState === "code" ? "Copied" : copyState === "failed" ? "Try again" : "Copy code"}
+                  {copiedKey === "code" ? <Check className="h-3 w-3 text-[#10B981]" /> : <Copy className="h-3 w-3" />}
+                  {copiedKey === "code" ? "Copied" : failedKey === "code" ? "Try again" : "Copy code"}
                 </button>
               </div>
               <div className="p-5 font-mono text-[12px] leading-7 sm:p-7 sm:text-[13px]">
@@ -73,7 +79,9 @@ export function QuickstartSection() {
                 <pre className="mt-3 h-[320px] overflow-auto whitespace-pre-wrap break-words rounded-lg border border-[#1E2838] bg-black/25 p-4 text-[11px] leading-6 text-slate-200 [scrollbar-width:none] sm:text-[12px] [&::-webkit-scrollbar]:hidden">
                   <code>{framework.code}</code>
                 </pre>
-                <p className="mt-3 text-[#10B981]">✓ OIDC discovery reachable · JWKS published · RS256</p>
+                <p className={`mt-3 ${healthy === false ? "text-[#F07A26]" : "text-[#10B981]"}`}>
+                  {healthy === false ? "API status unavailable — check the status page" : healthy === true ? "✓ OIDC discovery reachable · JWKS published · RS256" : "Checking API status…"}
+                </p>
               </div>
             </motion.div>
           </AnimatePresence>
@@ -91,8 +99,8 @@ export function QuickstartSection() {
                   <span className="font-mono text-[11px] text-[#94A3B8]">0{index + 1}</span>
                   <span className="min-w-0 flex-1 truncate font-mono text-[11px] text-slate-200">{command}</span>
                   <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-[#94A3B8] group-hover:text-white">
-                    {copyState === key ? <Check className="h-3.5 w-3.5 text-[#10B981]" /> : <Copy className="h-3.5 w-3.5" />}
-                    {copyState === key ? "Copied" : copyState === "failed" ? "Try again" : "Copy"}
+                    {copiedKey === key ? <Check className="h-3.5 w-3.5 text-[#10B981]" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copiedKey === key ? "Copied" : failedKey === key ? "Try again" : "Copy"}
                   </span>
                 </button>
               );
@@ -104,7 +112,7 @@ export function QuickstartSection() {
           </p>
           <div className="mt-5 flex flex-wrap justify-center gap-3">
             <a href={DOCS_LINK} target="_blank" rel="noreferrer" className={ctaPrimaryInk}>See documentation</a>
-            <a href="/register" className={ctaSecondary}>Create free account</a>
+            <a href={portalHref("/register")} className={ctaSecondary}>Create free account</a>
           </div>
         </div>
       </div>

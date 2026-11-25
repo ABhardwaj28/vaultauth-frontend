@@ -44,7 +44,7 @@ export function FaqSection() {
               const isOpen = open === index;
               return (
                 <div key={faq.q}>
-                  <button type="button" onClick={() => setOpen(isOpen ? null : index)} aria-expanded={isOpen} className="flex w-full items-center justify-between gap-6 py-5 text-left">
+                  <button type="button" onClick={() => setOpen(isOpen ? null : index)} aria-expanded={isOpen} aria-controls={`faq-answer-${index}`} className="flex w-full items-center justify-between gap-6 py-5 text-left">
                     <span className={`text-[15px] font-medium transition-colors ${isOpen ? "text-white" : "text-[#94A3B8] hover:text-white"}`}>{faq.q}</span>
                     <span className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-transform ${isOpen ? "rotate-180 border-[#F07A26]/40 bg-[#F07A26]/15 text-[#F07A26]" : "border-[#1E2838] text-slate-500"}`}>
                       <ChevronDown className="h-3.5 w-3.5" />
@@ -52,7 +52,7 @@ export function FaqSection() {
                   </button>
                   <AnimatePresence initial={false}>
                     {isOpen ? (
-                      <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.24 }} className="overflow-hidden">
+                      <motion.div id={`faq-answer-${index}`} initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.24 }} className="overflow-hidden">
                         <p className="max-w-2xl pb-6 pr-8 text-[14px] leading-7 text-[#94A3B8]">{faq.a}</p>
                       </motion.div>
                     ) : null}

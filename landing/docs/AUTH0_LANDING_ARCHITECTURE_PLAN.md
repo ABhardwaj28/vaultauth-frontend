@@ -14,7 +14,7 @@ src/
 │   ├── CodeSnippetDock.tsx       shared framework example data
 │   ├── StatsBanner.tsx           sliding offerings strip + four verified benchmarks
 │   ├── UseCaseDecider.tsx        three-way switcher with animated preview
-│   ├── InteractiveShowcase.tsx   arched ribbon of four buttons enclosing the detail panel
+│   ├── InteractiveShowcase.tsx   380vh scroll-pinned four-panel security walkthrough
 │   ├── ArchitectureSection.tsx   SVG circuit with four clickable specification stages
 │   ├── FeaturesGrid.tsx          six cursor-spotlight pillars, each linked to :3000
 │   ├── DevelopersSection.tsx     live OIDC endpoints, REST surface, client behavior
@@ -67,13 +67,13 @@ src/
 - **Live state**: navbar now shows "Service healthy"; hero shows the real JWKS `kid`.
 - **Clipboard**: `src/lib/clipboard.ts` falls back to `execCommand`, and every copy control reports Copied / Try again.
 - **Quickstarts**: the terminal renders the actual framework `code` string from the shared data, with a copy-code action.
-- **Accessibility**: hero tabs have `aria-label`, arched ribbon buttons expose their title via screen-reader text, contrast was raised on muted text and solid amber surfaces via an explicit `va-amber-ink` utility, and the header CTA/brand stay white. Lighthouse: Accessibility 1.0, Best Practices 1.0, SEO 1.0.
+- **Accessibility**: hero tabs have `aria-label`, walkthrough rail markers stay opaque while labels fade, contrast was raised on muted text and solid amber surfaces via an explicit `va-amber-ink` utility, and the header CTA/brand stay white. Lighthouse: Accessibility 1.0, Best Practices 1.0, SEO 1.0.
 - **SEO**: `public/robots.txt` added.
 - **Navbar**: mega-menu panel background used an invalid Tailwind opacity step (`/98`), so it rendered transparent; changed to a header-matched `bg-[#080C14]/95` with a 420ms balanced ease-in-out height reveal and a slightly stronger resting header (`/60`). The panel now stays mounted while its inner content crossfades (180ms), and the active nav highlight slides between items with a shared-layout spring.
 - **Refinements**: use-case active pill uses end-matched corner radii; the cost amount scales its font size with digit count (₹ stays attached), tabular numerals are used throughout, the yearly label was shortened to "Billed yearly at ₹…", and estimator borders were softened.
 - **Navigation**: top-level nav items and all mega-menu links are internal section anchors on this page; the hero "3 strikes" badge moved into normal flow so it no longer overlaps the workbench.
 - **Marquee**: built from two equal-width padded groups so `translateX(-50%)` lands exactly on the seam; hover-pause removed and GPU hints added for a continuous loop.
-- **Docs CTA**: documentation buttons temporarily point to `DOCS_LINK` (`http://localhost:3000/403`) until a public docs site exists; the live endpoint directory remains in the Developers section. No repository links are shown in the UI.
+- **Docs/status CTAs**: documentation buttons point to `DOCS_LINK` (`/403.html`) until a public docs site exists; `/status.html` runs live health/JWKS checks in an Atlassian-style view. No repository links are shown in the UI.
 - **Mobile**: horizontal strips keep their row and show a swipe hint; no page overflow from 320px to 1440px.
 
 ## Port note

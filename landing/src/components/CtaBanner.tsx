@@ -1,13 +1,13 @@
 import { Database, FileCode2, KeyRound } from "lucide-react";
 import { Reveal, ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
-import { DOCS_LINK } from "../lib/links";
+import { DOCS_LINK, portalHref } from "../lib/links";
 
 const actions = [
   {
     icon: KeyRound,
     title: "Create an account",
     body: "Register, verify your email, and sign in with password plus OTP.",
-    href: "/register",
+    href: portalHref("/register"),
     label: "Open registration",
     primary: true,
   },
@@ -15,7 +15,7 @@ const actions = [
     icon: Database,
     title: "Launch the portal",
     body: "Inspect sessions, OAuth clients, and the audit trail from the dashboard.",
-    href: "/login",
+    href: portalHref("/login"),
     label: "Open sign in",
     primary: false,
   },
@@ -46,7 +46,7 @@ export function CtaBanner() {
                 Real endpoints, real algorithms, real revocation. Start with the identity portal.
               </p>
               <div className="mt-9 flex flex-wrap justify-center gap-3">
-                <a href="/register" className={ctaPrimaryInk}>Create free account</a>
+                <a href={portalHref("/register")} className={ctaPrimaryInk}>Create free account</a>
                 <a href="#developers" className={ctaSecondary}>Explore the protocol</a>
               </div>
             </div>

@@ -16,6 +16,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { BrandMark, ctaPrimary, ctaPrimaryInk } from "./ui/primitives";
+import { portalHref } from "../lib/links";
 import { checkHealth } from "../lib/liveApi";
 
 type Link = { title: string; description: string; href: string; icon: LucideIcon };
@@ -35,7 +36,7 @@ const menus: Menu[] = [
         heading: "Identity flows",
         links: [
           { title: "Customer login", description: "Hosted sign-in with verified email and password", href: "#showcase", icon: Fingerprint },
-          { title: "Mandatory 2FA", description: "Email OTP and TOTP before any session is minted", href: "#features", icon: KeyRound },
+          { title: "Mandatory 2FA", description: "Email OTP before any session is minted", href: "#features", icon: KeyRound },
           { title: "Machine clients", description: "OAuth clients and scoped bearer tokens", href: "#solutions", icon: Blocks },
         ],
       },
@@ -208,8 +209,8 @@ export function Navbar() {
                 {health === "live" ? "Service healthy" : "API reference"}
               </span>
             </a>
-            <a href="/login" className="text-sm font-medium text-white hover:text-[#F07A26]">Sign in</a>
-            <a href="/register" className={ctaPrimary}>Create free account</a>
+            <a href={portalHref("/login")} className="text-sm font-medium text-white hover:text-[#F07A26]">Sign in</a>
+            <a href={portalHref("/register")} className={ctaPrimary}>Create free account</a>
           </div>
 
           <button
@@ -267,7 +268,7 @@ export function Navbar() {
                 <a href={active.feature.href} onClick={() => setOpenMenu(null)} className="rounded-xl border border-[#F07A26]/25 bg-gradient-to-br from-[#F07A26]/10 to-transparent p-5">
                   <p className="font-display text-lg font-semibold text-white">{active.feature.title}</p>
                   <p className="mt-2 text-[13px] leading-6 text-[#94A3B8]">{active.feature.body}</p>
-                  <span className="mt-4 block text-[13px] font-semibold text-[#F07A26]">Explore the architecture</span>
+                  <span className="mt-4 block text-[13px] font-semibold text-[#F07A26]">Explore this topic</span>
                   </a>
                   </motion.div>
                 </AnimatePresence>
@@ -297,8 +298,8 @@ export function Navbar() {
             ))}
             <a href="#pricing" onClick={() => setMobileOpen(false)} className="block py-3.5 text-sm font-medium text-white">Pricing</a>
             <div className="mt-4 grid gap-2">
-              <a href="/login" className="rounded-lg border border-[#1E2838] px-5 py-3 text-center text-sm font-semibold text-white">Sign in</a>
-              <a href="/register" className={`${ctaPrimaryInk} text-center`}>Create free account</a>
+              <a href={portalHref("/login")} className="rounded-lg border border-[#1E2838] px-5 py-3 text-center text-sm font-semibold text-white">Sign in</a>
+              <a href={portalHref("/register")} className={`${ctaPrimaryInk} text-center`}>Create free account</a>
             </div>
           </motion.div>
         ) : null}

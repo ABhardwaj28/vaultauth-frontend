@@ -2,15 +2,16 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { copyText } from "../lib/clipboard";
 import { Check, Copy, Terminal } from "lucide-react";
+import { API_ORIGIN } from "../lib/liveApi";
 
 export const frameworks = [
   {
     id: "react",
     label: "React",
     file: "useVaultAuth.ts",
-    install: "npm i @vaultauth/react",
+    install: "npm i jose",
     code: `// Quickstart example — adapt to your framework
-const AUTH = "https://api.vaultauth.proplays2312.eu.org";
+const AUTH = "${API_ORIGIN}";
 
 export function useVaultAuth() {
   const login = () => {
@@ -38,12 +39,12 @@ export function useVaultAuth() {
 import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const JWKS = createRemoteJWKSet(new URL(
-  "https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json"
+  "${API_ORIGIN}/.well-known/jwks.json"
 ));
 
 export async function requireUser(token: string) {
   const { payload } = await jwtVerify(token, JWKS, {
-    issuer: "https://api.vaultauth.proplays2312.eu.org",
+    issuer: "${API_ORIGIN}",
     algorithms: ["RS256"]
   });
   return payload;
@@ -57,7 +58,7 @@ export async function requireUser(token: string) {
     code: `import { createRemoteJWKSet, jwtVerify } from "jose";
 
 const JWKS = createRemoteJWKSet(new URL(
-  "https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json"
+  "${API_ORIGIN}/.well-known/jwks.json"
 ));
 
 export async function authGuard(req, res, next) {
@@ -77,7 +78,7 @@ export async function authGuard(req, res, next) {
 from jwt import PyJWKClient
 
 JWKS = PyJWKClient(
-    "https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json"
+    "${API_ORIGIN}/.well-known/jwks.json"
 )
 
 def verify(token: str) -> dict:
@@ -116,7 +117,7 @@ func Auth(next http.Handler) http.Handler {
     code: `@Bean
 JwtDecoder jwtDecoder() {
   return NimbusJwtDecoder.withJwkSetUri(
-    "https://api.vaultauth.proplays2312.eu.org/.well-known/jwks.json"
+    "${API_ORIGIN}/.well-known/jwks.json"
   ).jwsAlgorithm(SignatureAlgorithm.RS256).build();
 }
 
@@ -130,17 +131,23 @@ SecurityFilterChain filter(HttpSecurity http) throws Exception {
     label: "iOS / Swift",
     file: "LoginView.swift",
     install: "// Use ASWebAuthenticationSession",
-    code: `let authURL = URL(string:
-  "https://api.vaultauth.proplays2312.eu.org/oauth/authorize?" +
-  "response_type=code&client_id=your_client_id" +
-  "&code_challenge_method=S256&code_challenge=\\(challenge)"
+    code: `var components = URLComponents(string:
+  "${API_ORIGIN}/oauth/authorize"
 )!
+components.queryItems = [
+  URLQueryItem(name: "response_type", value: "code"),
+  URLQueryItem(name: "client_id", value: "your_client_id"),
+  URLQueryItem(name: "code_challenge_method", value: "S256"),
+  URLQueryItem(name: "code_challenge", value: challenge)
+]
 
 let session = ASWebAuthenticationSession(
-  url: authURL,
+  url: components.url!,
   callbackURLScheme: "vaultauth"
 ) { callbackURL, error in
-  guard let code = callbackURL?.queryItems?["code"] else { return }
+  guard let url = callbackURL,
+        let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+          .queryItems?.first(where: { $0.name == "code" })?.value else { return }
   exchangeCodeForToken(code)
 }
 session.start()`,
@@ -151,7 +158,7 @@ session.start()`,
     file: "token.sh",
     install: "# No library required",
     code: `curl -X POST \\
-  https://api.vaultauth.proplays2312.eu.org/oauth/token \\
+  ${API_ORIGIN}/oauth/token \\
   -H "Content-Type: application/json" \\
   -d '{
     "grant_type": "authorization_code",
