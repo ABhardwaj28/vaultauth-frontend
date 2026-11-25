@@ -74,7 +74,7 @@ export function InteractiveShowcase() {
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, restDelta: 0.001 });
-  const railHeight = useTransform(smoothProgress, (value) => `${value * 88}%`);
+  const railHeight = useTransform(smoothProgress, (value) => `${value * 100}%`);
   const [active, setActive] = useState(0);
   const [engaged, setEngaged] = useState(false);
   const [stage, setStage] = useState(0);
@@ -219,12 +219,12 @@ export function InteractiveShowcase() {
                       const height = sectionRef.current?.offsetHeight ?? 0;
                       window.scrollTo({ top: top + (height - window.innerHeight) * ((PANEL_STARTS[index] ?? 0) + 0.02), behavior: "smooth" });
                     }}
-                    className={`relative mb-6 block w-full text-left transition-opacity ${active === index ? "opacity-100" : "opacity-50 hover:opacity-80"}`}
+                    className="relative mb-6 block w-full text-left"
                   >
-                    <span className={`absolute -left-8 top-1.5 h-[15px] w-[15px] rounded-full border-2 ${active >= index ? "border-[#F07A26] bg-[#F07A26]" : "border-[#334155] bg-[#080C14]"}`} />
-                    <span className="block font-mono text-[10px] text-[#F07A26]">0{index + 1}</span>
-                    <span className="mt-1 block text-[12px] font-semibold text-white">{chamber.title}</span>
-                    <span className="mt-0.5 block text-[10px] leading-4 text-[#94A3B8]">{chamber.subtitle}</span>
+                    <span className={`absolute -left-8 top-1.5 z-10 h-[15px] w-[15px] rounded-full border-2 ${active >= index ? "border-[#F07A26] bg-[#F07A26]" : "border-[#334155] bg-[#080C14]"}`} />
+                    <span className={`block font-mono text-[10px] transition-opacity ${active === index ? "text-[#F07A26] opacity-100" : "text-[#F07A26] opacity-50"}`}>0{index + 1}</span>
+                    <span className={`mt-1 block text-[12px] font-semibold text-white transition-opacity ${active === index ? "opacity-100" : "opacity-50"}`}>{chamber.title}</span>
+                    <span className={`mt-0.5 block text-[10px] leading-4 text-[#94A3B8] transition-opacity ${active === index ? "opacity-100" : "opacity-50"}`}>{chamber.subtitle}</span>
                   </button>
                 ))}
               </div>
