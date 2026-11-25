@@ -2,7 +2,6 @@ import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from "re
 import { AnimatePresence, motion, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 import {
   Check,
-  CheckCircle2,
   Copy,
   Eye,
   EyeOff,
@@ -65,6 +64,29 @@ function DemoPointer({ stage, reduce, panelRef, targets }: PointerProps) {
     >
       <MousePointer2 className="h-5 w-5 -rotate-12 fill-white" />
     </motion.div>
+  );
+}
+
+function TickAnimation({ className = "h-14 w-14" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 64 64" className={className}>
+      <motion.circle
+        cx="32" cy="32" r="27"
+        className="stroke-[#10B981]"
+        strokeWidth="3" fill="transparent"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
+      />
+      <motion.path
+        d="M21 33l8 8 15-16"
+        className="stroke-[#10B981]"
+        strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="transparent"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
+      />
+    </svg>
   );
 }
 
@@ -321,26 +343,9 @@ export function InteractiveShowcase() {
                                 className="space-y-3"
                               >
                                 <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-lg border border-[#10B981]/30 bg-[#10B981]/[0.06] p-6 text-center">
-                                  <svg viewBox="0 0 64 64" className="h-14 w-14">
-                                    <motion.circle
-                                      cx="32" cy="32" r="27"
-                                      className="stroke-[#10B981]"
-                                      strokeWidth="3" fill="transparent"
-                                      initial={{ pathLength: 0 }}
-                                      animate={{ pathLength: 1 }}
-                                      transition={{ duration: 0.5, ease: "easeOut" }}
-                                    />
-                                    <motion.path
-                                      d="M21 33l8 8 15-16"
-                                      className="stroke-[#10B981]"
-                                      strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="transparent"
-                                      initial={{ pathLength: 0 }}
-                                      animate={{ pathLength: 1 }}
-                                      transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
-                                    />
-                                  </svg>
-                                  <p className="font-display text-lg font-semibold text-white">Credentials confirmed</p>
-                                  <p className="text-[11px] text-[#94A3B8]">Moving to one-time passcode verification…</p>
+                                  <span className="font-mono text-[10px] tracking-[0.16em] text-[#10B981]">PASSWORD ACCEPTED</span>
+                                  <p className="font-display text-lg font-semibold text-white">Credentials verified</p>
+                                  <p className="text-[11px] text-[#94A3B8]">Continuing to one-time passcode…</p>
                                 </div>
                                 <div className="rounded-lg border border-[#1E2838] bg-[#080c14] p-3 text-[11px] leading-5 text-[#94A3B8]">
                                   <span className="mr-2 font-mono text-[#F07A26]">NEXT</span>
@@ -409,7 +414,10 @@ export function InteractiveShowcase() {
                           </motion.button>
                           <AnimatePresence>
                             {verified ? (
-                              <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="inline-flex items-center gap-1.5 text-[11px] text-[#10B981]"><CheckCircle2 className="h-4 w-4" /> Sign in successful</motion.p>
+                              <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col items-center gap-2">
+                                <TickAnimation className="h-12 w-12" />
+                                <p className="text-[11px] font-semibold text-[#10B981]">Sign in successful</p>
+                              </motion.div>
                             ) : null}
                           </AnimatePresence>
                         </motion.div>

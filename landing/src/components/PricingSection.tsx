@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Check, Gauge, Info } from "lucide-react";
 import { Reveal, SectionHeading, ctaPrimaryInk, ctaSecondary } from "./ui/primitives";
+import { DOCS_LINK } from "../lib/links";
 
 const tiers = [
   {
@@ -161,8 +162,13 @@ export function PricingSection() {
                     </li>
                   ))}
                 </ul>
-                <a href={tier.name === "Developer" ? "/register" : "#final-cta"} className={`${tier.primary ? ctaPrimaryInk : ctaSecondary} mt-5 justify-center text-[10px] sm:mt-7 sm:text-[13px]`}>
-                  {tier.cta}
+                <a
+                  href={deploy === "self" ? DOCS_LINK : tier.name === "Developer" ? "/register" : "#final-cta"}
+                  target={deploy === "self" ? "_blank" : undefined}
+                  rel={deploy === "self" ? "noreferrer" : undefined}
+                  className={`${tier.primary ? ctaPrimaryInk : ctaSecondary} mt-5 justify-center text-[10px] sm:mt-7 sm:text-[13px]`}
+                >
+                  {deploy === "self" ? "See documentation" : tier.cta}
                 </a>
               </div>
             </Reveal>
