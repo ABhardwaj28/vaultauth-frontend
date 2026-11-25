@@ -39,7 +39,7 @@ export function StatsBanner() {
                   {offerings.map((offering, index) => (
                     <span
                       key={`${group}-${offering}-${index}`}
-                      className="font-display text-xl font-bold tracking-[-0.03em] text-slate-600 transition-colors hover:text-white sm:text-2xl"
+                      className="cursor-pointer select-none font-display text-xl font-bold tracking-[-0.03em] text-slate-600 transition-colors hover:text-white sm:text-2xl"
                     >
                       {offering}
                     </span>
