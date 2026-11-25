@@ -71,6 +71,7 @@ function DemoPointer({ stage, reduce, panelRef, targets }: PointerProps) {
 export function InteractiveShowcase() {
   const sectionRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const advancedRef = useRef(false);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
   const smoothProgress = useSpring(scrollYProgress, { stiffness: 110, damping: 26, restDelta: 0.001 });
@@ -102,6 +103,7 @@ export function InteractiveShowcase() {
 
   // Each chamber plays its own sequence once, then holds still.
   useEffect(() => {
+    advancedRef.current = false;
     setTypedPassword("");
     setShowRecovery(false);
     setSeconds(30);
@@ -119,6 +121,22 @@ export function InteractiveShowcase() {
     const timers = STEP_TIMES.map((time, index) =>
       window.setTimeout(() => setStage(index + 1), time)
     );
+
+    // After the credentials tick, fade into the OTP panel.
+    if (active === 0) {
+      timers.push(
+        window.setTimeout(() => {
+          if (advancedRef.current) return;
+          advancedRef.current = true;
+          const top = sectionRef.current?.offsetTop ?? 0;
+          const height = sectionRef.current?.offsetHeight ?? 0;
+          window.scrollTo({
+            top: top + (height - window.innerHeight) * ((PANEL_STARTS[1] ?? 0) + 0.02),
+            behavior: "smooth",
+          });
+        }, (STEP_TIMES[3] ?? 880) + 1200)
+      );
+    }
 
     let typeTimer: number | undefined;
     if (active === 0) {
@@ -297,32 +315,37 @@ export function InteractiveShowcase() {
                             ) : (
                               <motion.div
                                 key="login-done"
-                                data-pointer="login-done"
                                 initial={{ opacity: 0, scale: 0.94 }}
                                 animate={{ opacity: 1, scale: 1 }}
                                 transition={{ duration: 0.3 }}
-                                className="flex min-h-[220px] flex-col items-center justify-center gap-3 rounded-lg border border-[#10B981]/30 bg-[#10B981]/[0.06] p-6 text-center"
+                                className="space-y-3"
                               >
-                                <svg viewBox="0 0 64 64" className="h-14 w-14">
-                                  <motion.circle
-                                    cx="32" cy="32" r="27"
-                                    className="stroke-[#10B981]"
-                                    strokeWidth="3" fill="transparent"
-                                    initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
-                                    transition={{ duration: 0.5, ease: "easeOut" }}
-                                  />
-                                  <motion.path
-                                    d="M21 33l8 8 15-16"
-                                    className="stroke-[#10B981]"
-                                    strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="transparent"
-                                    initial={{ pathLength: 0 }}
-                                    animate={{ pathLength: 1 }}
-                                    transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
-                                  />
-                                </svg>
-                                <p className="font-display text-lg font-semibold text-white">Credentials confirmed</p>
-                                <p className="text-[11px] text-[#94A3B8]">Moving to one-time passcode verification…</p>
+                                <div className="flex min-h-[200px] flex-col items-center justify-center gap-3 rounded-lg border border-[#10B981]/30 bg-[#10B981]/[0.06] p-6 text-center">
+                                  <svg viewBox="0 0 64 64" className="h-14 w-14">
+                                    <motion.circle
+                                      cx="32" cy="32" r="27"
+                                      className="stroke-[#10B981]"
+                                      strokeWidth="3" fill="transparent"
+                                      initial={{ pathLength: 0 }}
+                                      animate={{ pathLength: 1 }}
+                                      transition={{ duration: 0.5, ease: "easeOut" }}
+                                    />
+                                    <motion.path
+                                      d="M21 33l8 8 15-16"
+                                      className="stroke-[#10B981]"
+                                      strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" fill="transparent"
+                                      initial={{ pathLength: 0 }}
+                                      animate={{ pathLength: 1 }}
+                                      transition={{ duration: 0.4, delay: 0.45, ease: "easeOut" }}
+                                    />
+                                  </svg>
+                                  <p className="font-display text-lg font-semibold text-white">Credentials confirmed</p>
+                                  <p className="text-[11px] text-[#94A3B8]">Moving to one-time passcode verification…</p>
+                                </div>
+                                <div className="rounded-lg border border-[#1E2838] bg-[#080c14] p-3 text-[11px] leading-5 text-[#94A3B8]">
+                                  <span className="mr-2 font-mono text-[#F07A26]">NEXT</span>
+                                  Six-digit email OTP · 10-minute validity · 3 attempts
+                                </div>
                               </motion.div>
                             )}
                           </AnimatePresence>
