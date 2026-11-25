@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>VaultAuth SSO — OTP email templates</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: #0F1015;
+      color: #F3F4F6;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+    .wrap { max-width: 900px; margin: 0 auto; padding: 56px 24px 80px; }
+    .brand { display: flex; align-items: center; gap: 10px; padding-bottom: 20px; border-bottom: 1px solid #272A38; }
+    .mark {
+      width: 32px; height: 32px; border-radius: 8px; background: #F07A26;
+      display: inline-flex; align-items: center; justify-content: center;
+      color: #fff; font: 700 18px/1 Arial, sans-serif;
+    }
+    .brand-name { font-family: "Plus Jakarta Sans", Inter, sans-serif; font-size: 15px; font-weight: 700; letter-spacing: -.02em; }
+    .brand-sso { font-family: "JetBrains Mono", monospace; font-size: 10px; font-weight: 600; color: #F07A26; letter-spacing: 1.4px; }
+    .eyebrow {
+      margin: 48px 0 12px; font-family: "JetBrains Mono", monospace;
+      font-size: 10px; font-weight: 600; letter-spacing: 1.6px;
+      text-transform: uppercase; color: #94A3B8;
+    }
+    .eyebrow::before {
+      content: ""; display: inline-block; width: 6px; height: 6px;
+      border-radius: 50%; background: #F07A26; margin-right: 8px; vertical-align: middle;
+    }
+    h1 {
+      margin: 0 0 12px; font-family: "Plus Jakarta Sans", Inter, sans-serif;
+      font-size: 32px; line-height: 1.2; letter-spacing: -.03em; font-weight: 700;
+    }
+    p.lede { margin: 0; max-width: 60ch; font-size: 14px; line-height: 24px; color: #CBD5E1; }
+    .grid { margin-top: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+    a.card {
+      display: block; padding: 24px; border: 1px solid #272A38; border-radius: 8px;
+      background: #171821; color: inherit; text-decoration: none;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    a.card:hover { border-color: #F07A26; transform: translateY(-2px); }
+    .card-tag {
+      display: inline-block; font-family: "JetBrains Mono", monospace; font-size: 10px;
+      letter-spacing: 1px; color: #F07A26; text-transform: uppercase;
+    }
+    .card h2 {
+      margin: 14px 0 8px; font-family: "Plus Jakarta Sans", Inter, sans-serif;
+      font-size: 18px; letter-spacing: -.02em;
+    }
+    .card p { margin: 0; font-size: 13px; line-height: 21px; color: #94A3B8; }
+    .card .arrow { display: block; margin-top: 18px; color: #F07A26; font-size: 13px; font-weight: 600; }
+    .note {
+      margin-top: 32px; padding: 16px 18px; border: 1px solid #272A38;
+      border-radius: 8px; background: #171821; font-size: 12px; line-height: 20px; color: #94A3B8;
+    }
+    .note code { font-family: "JetBrains Mono", monospace; color: #F3F4F6; font-size: 11px; }
+    footer {
+      margin-top: 48px; padding-top: 18px; border-top: 1px solid #272A38;
+      font-size: 11px; line-height: 18px; color: #64748B; text-align: center;
+    }
+    footer span { display: block; margin-top: 6px; font-family: "JetBrains Mono", monospace; font-size: 10px; letter-spacing: 1.2px; color: #475569; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="brand">
+      <span class="mark">&#10003;</span>
+      <span class="brand-name">VaultAuth <span class="brand-sso">SSO</span></span>
+    </div>
+
+    <div class="eyebrow">Transactional email / design review</div>
+    <h1>OTP email templates</h1>
+    <p class="lede">Three out-of-band verification emails, restyled to match the identity portal. Open any card to see the rendered template with sample values.</p>
+
+    <div class="grid">
+      <a class="card" href="otp-sign-in.html">
+        <span class="card-tag">2FA / Sign-in</span>
+        <h2>Check your email</h2>
+        <p>Delivered after password verification when a sign-in requires a second factor.</p>
+        <span class="arrow">Open preview &rarr;</span>
+      </a>
+      <a class="card" href="otp-verify-email.html">
+        <span class="card-tag">Registration</span>
+        <h2>Verify your email</h2>
+        <p>Activates a new account after the six-digit registration code is confirmed.</p>
+        <span class="arrow">Open preview &rarr;</span>
+      </a>
+      <a class="card" href="otp-password-reset.html">
+        <span class="card-tag">Credential recovery</span>
+        <h2>Reset your password</h2>
+        <p>One-time code for choosing a new master password, with a security warning.</p>
+        <span class="arrow">Open preview &rarr;</span>
+      </a>
+    </div>
+
+    <div class="note">
+      These previews are rendered snapshots with sample values. The editable sources are the
+      <code>.html</code> files one folder up. Placeholders use Jinja2 syntax — see <code>README.md</code>
+      for the variable contract and Resend wiring.
+    </div>
+
+    <footer>
+      &copy; 2026 VaultAuth SSO &bull; Enterprise Identity Gateway
+      <span>ZERO-TRUST ARCHITECTURE</span>
+    </footer>
+  </div>
+</body>
+</html>
