@@ -1,5 +1,6 @@
 import { Moon, Sun, Monitor, Check } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
 import { Button } from "./button";
 import {
   DropdownMenu,
@@ -9,7 +10,8 @@ import {
 } from "./dropdown-menu";
 
 export function ThemeToggle() {
-  const { theme, resolvedTheme, setTheme } = useTheme();
+  const { resolvedTheme, isUserControlled, setTheme } = useTheme();
+  const { isAuthenticated } = useAuth();
 
   return (
     <DropdownMenu>
@@ -19,7 +21,7 @@ export function ThemeToggle() {
           size="icon"
           className="h-9 w-9 border-border bg-background hover:bg-muted/60"
           aria-label="Toggle theme"
-          title={`Theme: ${theme}`}
+          title={`Theme: ${isAuthenticated ? resolvedTheme : "system"}`}
         >
           {resolvedTheme === "dark" ? (
             <Moon className="h-4 w-4 text-foreground transition-transform duration-200" />
@@ -38,7 +40,7 @@ export function ThemeToggle() {
             <Sun className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>Light</span>
           </span>
-          {theme === "light" && <Check className="h-3.5 w-3.5 text-primary" />}
+          {isUserControlled && resolvedTheme === "light" && <Check className="h-3.5 w-3.5 text-primary" />}
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -49,19 +51,21 @@ export function ThemeToggle() {
             <Moon className="mr-2 h-4 w-4 text-muted-foreground" />
             <span>Dark</span>
           </span>
-          {theme === "dark" && <Check className="h-3.5 w-3.5 text-primary" />}
+          {isUserControlled && resolvedTheme === "dark" && <Check className="h-3.5 w-3.5 text-primary" />}
         </DropdownMenuItem>
 
-        <DropdownMenuItem
-          onClick={() => setTheme("system")}
-          className="flex items-center justify-between cursor-pointer"
-        >
-          <span className="flex items-center">
-            <Monitor className="mr-2 h-4 w-4 text-muted-foreground" />
-            <span>System</span>
-          </span>
-          {theme === "system" && <Check className="h-3.5 w-3.5 text-primary" />}
-        </DropdownMenuItem>
+        {!isAuthenticated && (
+          <DropdownMenuItem
+            onClick={() => setTheme("system")}
+            className="flex items-center justify-between cursor-pointer"
+          >
+            <span className="flex items-center">
+              <Monitor className="mr-2 h-4 w-4 text-muted-foreground" />
+              <span>System</span>
+            </span>
+            {!isUserControlled && <Check className="h-3.5 w-3.5 text-primary" />}
+          </DropdownMenuItem>
+        )}
       </DropdownMenuContent>
     </DropdownMenu>
   );

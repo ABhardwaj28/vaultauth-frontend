@@ -19,7 +19,7 @@ import { Label } from "@/components/ui/label";
 
 export function SettingsTab() {
   const { user, refreshProfile } = useAuth();
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, isUserControlled, setTheme } = useTheme();
 
   // Revoke other sessions state
   const [revokingAll, setRevokingAll] = useState(false);
@@ -407,23 +407,23 @@ export function SettingsTab() {
                 Appearance
               </h2>
               <p className="text-sm text-muted-foreground">
-                Choose how the interface renders on this device.
+                Choose how the portal renders while you are signed in.
               </p>
             </div>
           </div>
 
-          <div className="mt-5 grid max-w-xl grid-cols-1 gap-2.5 sm:grid-cols-3">
+          <div className="mt-5 grid max-w-xl grid-cols-1 gap-2.5 sm:grid-cols-2">
             <button
               type="button"
               onClick={() => setTheme("light")}
-              aria-pressed={theme === "light"}
+              aria-pressed={resolvedTheme === "light"}
               className={`relative rounded-md border p-2.5 text-left transition-colors ${
-                theme === "light"
+                resolvedTheme === "light"
                   ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
                   : "border-border/70 bg-background/50 hover:border-primary/30"
               }`}
             >
-              {theme === "light" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+              {resolvedTheme === "light" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
               <span className="block overflow-hidden rounded-sm border border-border/70 bg-white">
                 <span className="flex h-3 items-center gap-1 border-b border-slate-200 bg-slate-50 px-1.5">
                   <span className="h-1 w-1 rounded-full bg-slate-300" />
@@ -434,7 +434,7 @@ export function SettingsTab() {
                   <span className="block h-1.5 w-1/2 rounded-full bg-slate-200" />
                 </span>
               </span>
-              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "light" ? "text-primary" : "text-foreground"}`}>
+              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${resolvedTheme === "light" ? "text-primary" : "text-foreground"}`}>
                 Light
               </span>
               <span className="mt-0.5 block text-[11px] text-muted-foreground">Bright canvas</span>
@@ -443,14 +443,14 @@ export function SettingsTab() {
             <button
               type="button"
               onClick={() => setTheme("dark")}
-              aria-pressed={theme === "dark"}
+              aria-pressed={resolvedTheme === "dark"}
               className={`relative rounded-md border p-2.5 text-left transition-colors ${
-                theme === "dark"
+                resolvedTheme === "dark"
                   ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
                   : "border-border/70 bg-background/50 hover:border-primary/30"
               }`}
             >
-              {theme === "dark" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
+              {resolvedTheme === "dark" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
               <span className="block overflow-hidden rounded-sm border border-[#272A38] bg-[#14151C]">
                 <span className="flex h-3 items-center gap-1 border-b border-[#272A38] bg-[#1C1D27] px-1.5">
                   <span className="h-1 w-1 rounded-full bg-[#3A3D4D]" />
@@ -461,50 +461,23 @@ export function SettingsTab() {
                   <span className="block h-1.5 w-1/2 rounded-full bg-[#333545]" />
                 </span>
               </span>
-              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "dark" ? "text-primary" : "text-foreground"}`}>
+              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${resolvedTheme === "dark" ? "text-primary" : "text-foreground"}`}>
                 Dark
               </span>
               <span className="mt-0.5 block text-[11px] text-muted-foreground">Low-light canvas</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setTheme("system")}
-              aria-pressed={theme === "system"}
-              className={`relative rounded-md border p-2.5 text-left transition-colors ${
-                theme === "system"
-                  ? "border-primary bg-primary/[0.04] ring-1 ring-primary/20"
-                  : "border-border/70 bg-background/50 hover:border-primary/30"
-              }`}
-            >
-              {theme === "system" && <span className="absolute right-2.5 top-2.5 h-1.5 w-1.5 rounded-full bg-primary" />}
-              <span className="flex overflow-hidden rounded-sm border border-border/70">
-                <span className="flex w-1/2 flex-col bg-white">
-                  <span className="h-3 border-b border-slate-200 bg-slate-50" />
-                  <span className="space-y-1.5 p-1.5">
-                    <span className="block h-1.5 w-4/5 rounded-full bg-slate-200" />
-                    <span className="block h-1.5 w-1/2 rounded-full bg-slate-200" />
-                  </span>
-                </span>
-                <span className="flex w-1/2 flex-col bg-[#14151C]">
-                  <span className="h-3 border-b border-[#272A38] bg-[#1C1D27]" />
-                  <span className="space-y-1.5 p-1.5">
-                    <span className="block h-1.5 w-4/5 rounded-full bg-[#333545]" />
-                    <span className="block h-1.5 w-1/2 rounded-full bg-[#333545]" />
-                  </span>
-                </span>
-              </span>
-              <span className={`mt-2.5 block font-display text-[13px] font-semibold ${theme === "system" ? "text-primary" : "text-foreground"}`}>
-                System
-              </span>
-              <span className="mt-0.5 block text-[11px] text-muted-foreground">Follow device setting</span>
             </button>
           </div>
 
           <div className="mt-4 flex max-w-xl items-center justify-between border-t border-border/60 pt-3 text-[13px]">
             <span className="text-muted-foreground">Active mode</span>
-            <span className="font-mono text-xs text-primary">{theme}</span>
+            <span className="font-mono text-xs text-primary">
+              {resolvedTheme}
+              {!isUserControlled && <span className="ml-1.5 text-muted-foreground">(detected at sign-in)</span>}
+            </span>
           </div>
+          <p className="mt-2 max-w-xl text-[11px] leading-5 text-muted-foreground">
+            Sign-in pages follow your device setting. Your choice here takes effect once you are signed in and persists for future sessions.
+          </p>
         </section>
       </div>
 

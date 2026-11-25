@@ -12,8 +12,13 @@
     <script>
       (function() {
         try {
-          var theme = localStorage.getItem('vaultauth-theme') || 'system';
-          var isDark = theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          // Auth screens follow the device. A saved choice only applies once signed in.
+          var saved = localStorage.getItem('vaultauth-theme');
+          var signedIn = !!(sessionStorage.getItem('vaultauth_token') || localStorage.getItem('vaultauth_token'));
+          var hasChoice = signedIn && (saved === 'dark' || saved === 'light');
+          var isDark = hasChoice
+            ? saved === 'dark'
+            : window.matchMedia('(prefers-color-scheme: dark)').matches;
           if (isDark) {
             document.documentElement.classList.add('dark');
           } else {
