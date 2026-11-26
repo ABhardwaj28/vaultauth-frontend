@@ -232,7 +232,7 @@ export function Navbar() {
               animate={{ height: "auto", opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
               transition={{ duration: 0.42, ease: [0.4, 0, 0.2, 1] }}
-              className="absolute inset-x-0 top-full hidden overflow-hidden border-b border-[#1E2838] bg-[#080C14]/[0.98] shadow-[0_30px_60px_-35px_rgba(0,0,0,0.95)] backdrop-blur-2xl transition-colors duration-300 lg:block"
+              className="absolute inset-x-0 top-full hidden overflow-hidden border-b border-[#1E2838] bg-[#080C14]/100 shadow-[0_30px_60px_-35px_rgba(0,0,0,0.95)] backdrop-blur-2xl transition-colors duration-300 lg:block"
             >
               <div className="va-container py-8">
                 <AnimatePresence mode="wait" initial={false}>
