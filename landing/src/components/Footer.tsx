@@ -81,13 +81,6 @@ export function Footer() {
             ))}
           </div>
         </div>
-
-        <div className="mt-14 border-t border-[#1E2838] pt-7">
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[12px] text-slate-600">© {new Date().getFullYear()} VaultAuth SSO. Built as an academic identity platform. Privacy and Terms.</p>
-            <a href="#top" className="text-[12px] font-medium text-[#F07A26] sm:hidden">Back to top</a>
-          </div>
-        </div>
       </div>
     </footer>
   );

@@ -19,7 +19,7 @@ src/
 │   ├── FeaturesGrid.tsx          six cursor-spotlight pillars, each linked to :3000
 │   ├── DevelopersSection.tsx     live OIDC endpoints, REST surface, client behavior
 │   ├── ComparisonSection.tsx     neutral generic comparison
-│   ├── PricingSection.tsx        user-driven cost estimator + capability tiers
+│   ├── PricingSection.tsx        capability tiers; estimator moved to /pricing.html
 │   ├── FaqSection.tsx            accordion with PRD-sourced answers
 │   ├── CtaBanner.tsx             three conversion paths
 │   ├── Footer.tsx                link columns + standards strip

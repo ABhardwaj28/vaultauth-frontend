@@ -13,14 +13,13 @@ import {
   Terminal,
   Trash2,
 } from "lucide-react";
-import { SeeLive } from "./ui/primitives";
 import { copyText } from "../lib/clipboard";
 
 const chambers = [
-  { title: "Password shield", subtitle: "Argon2id and the three-strike lockout", route: "/dashboard/profile", link: "See lockout policy" },
-  { title: "Second factor", subtitle: "A six-digit email challenge", route: "/dashboard/settings", link: "See 2FA settings" },
-  { title: "Session kill-switch", subtitle: "Revoke a device on the next request", route: "/dashboard/sessions", link: "See live sessions" },
-  { title: "Client registry", subtitle: "Register an OAuth application", route: "/dashboard/admin/apps", link: "See OAuth clients" },
+  { title: "Password shield", subtitle: "Argon2id and the three-strike lockout" },
+  { title: "Second factor", subtitle: "A six-digit email challenge" },
+  { title: "Session kill-switch", subtitle: "Revoke a device on the next request" },
+  { title: "Client registry", subtitle: "Register an OAuth application" },
 ];
 
 const STEP_TIMES = [350, 700, 1050, 1400, 1900, 2400, 2900, 3400];
@@ -283,13 +282,10 @@ export function InteractiveShowcase() {
                   exit={{ opacity: 0, y: -14 }}
                   transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="font-mono text-[11px] text-[#F07A26]">PANEL 0{active + 1} / 04</p>
-                      <h3 className="mt-1 font-display text-xl font-bold tracking-[-0.03em] text-white sm:text-2xl">{chambers[active]?.title}</h3>
-                      <p className="mt-0.5 text-[12px] text-[#94A3B8]">{chambers[active]?.subtitle}</p>
-                    </div>
-                    <SeeLive href={chambers[active]?.route || "#"}>{chambers[active]?.link}</SeeLive>
+                  <div className="mb-4">
+                    <p className="font-mono text-[11px] text-[#F07A26]">PANEL 0{active + 1} / 04</p>
+                    <h3 className="mt-1 font-display text-xl font-bold tracking-[-0.03em] text-white sm:text-2xl">{chambers[active]?.title}</h3>
+                    <p className="mt-0.5 text-[12px] text-[#94A3B8]">{chambers[active]?.subtitle}</p>
                   </div>
 
                   <div ref={panelRef} className="relative rounded-2xl border border-[#1E2838] bg-[#0E1420] p-4 shadow-[0_30px_70px_-50px_rgba(0,0,0,0.9)] sm:p-6">

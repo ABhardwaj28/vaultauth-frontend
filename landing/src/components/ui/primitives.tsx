@@ -1,6 +1,5 @@
 import type { ReactNode } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { portalHref } from "../../lib/links";
 
 export function Reveal({
   children,
@@ -68,21 +67,6 @@ export const ctaPrimaryInk = `${ctaPrimary} va-amber-ink`;
 
 export const ctaSecondary =
   "inline-flex items-center justify-center rounded-none border border-white/35 bg-white/[0.09] px-5 py-3 text-sm font-semibold text-white shadow-[0_8px_24px_-16px_rgba(0,0,0,0.9)] transition-all hover:border-white/60 hover:bg-white/[0.15]";
-
-/** Small, quiet link that points a claim at the live portal. */
-export function SeeLive({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <a
-      href={href.startsWith("/") ? portalHref(href) : href}
-      target="_blank"
-      rel="noreferrer"
-      className="inline-flex items-center gap-1.5 text-[11px] font-medium text-[#F07A26] transition-opacity hover:opacity-80"
-    >
-      <span className="h-1 w-1 rounded-full bg-[#F07A26]" />
-      {children}
-    </a>
-  );
-}
 
 export function BrandMark({ className = "h-8 w-8" }: { className?: string }) {
   return (

@@ -199,7 +199,7 @@ export function Navbar() {
                 <ChevronDown className={`relative z-10 h-3.5 w-3.5 transition-transform duration-200 ${openMenu === menu.label ? "rotate-180" : ""}`} />
               </a>
             ))}
-            <a href="#pricing" className="rounded-md px-3.5 py-2 text-sm font-medium text-[#94A3B8] hover:text-white">Pricing</a>
+            <a href="/pricing.html" className="rounded-md px-3.5 py-2 text-sm font-medium text-[#94A3B8] hover:text-white">Pricing</a>
           </nav>
 
           <div className="hidden items-center gap-4 lg:flex">
@@ -296,7 +296,7 @@ export function Navbar() {
                 </div>
               </details>
             ))}
-            <a href="#pricing" onClick={() => setMobileOpen(false)} className="block py-3.5 text-sm font-medium text-white">Pricing</a>
+            <a href="/pricing.html" onClick={() => setMobileOpen(false)} className="block py-3.5 text-sm font-medium text-white">Pricing</a>
             <div className="mt-4 grid gap-2">
               <a href={portalHref("/login")} className="rounded-lg border border-[#1E2838] px-5 py-3 text-center text-sm font-semibold text-white">Sign in</a>
               <a href={portalHref("/register")} className={`${ctaPrimaryInk} text-center`}>Create free account</a>

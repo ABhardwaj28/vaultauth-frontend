@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Pricing — VaultAuth SSO</title>
+<meta name="description" content="Model your own VaultAuth assumptions with an illustrative cost estimator. Commercial rates are provided by the team." />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23F07A26' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z'/><path d='m9 12 2 2 4-4'/></svg>" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #080c14;
+    --panel: #0e1420;
+    --recess: #080d15;
+    --border: #1e2838;
+    --text: #ffffff;
+    --muted: #a8b5c7;
+    --faint: #8fa0b5;
+    --accent: #f07a26;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(ellipse 60% 45% at 50% -10%, rgba(240,122,38,0.12), transparent 70%);
+  }
+  .wrap { position: relative; max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+  header {
+    position: relative;
+    border-bottom: 1px solid var(--border);
+    background: rgba(8,12,20,0.9);
+  }
+  .bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 76px; }
+  .brand { display: inline-flex; align-items: center; gap: 10px; color: var(--text); text-decoration: none; font-weight: 700; letter-spacing: -0.03em; }
+  .mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 2px; background: var(--accent); color: #fff; }
+  .crumb { color: var(--muted); font-size: 14px; }
+  .crumb span { color: var(--accent); margin: 0 8px; }
+  .back { color: var(--accent); font-size: 13px; font-weight: 600; text-decoration: none; }
+  .back:hover { color: var(--text); }
+  main { padding: 64px 0 96px; }
+  .eyebrow { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--accent); }
+  h1 { margin: 12px 0 0; font-size: clamp(34px, 5vw, 56px); line-height: 1.1; letter-spacing: -0.04em; }
+  .lede { max-width: 640px; margin: 18px 0 0; color: var(--muted); font-size: 15px; }
+  .card {
+    margin-top: 40px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    background: rgba(14,20,32,0.85);
+    padding: 28px;
+  }
+  .card-head { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 16px; }
+  .card-title { display: flex; align-items: center; gap: 10px; font-size: 19px; font-weight: 700; }
+  .card-title svg { color: var(--accent); }
+  .card-sub { margin: 6px 0 0; color: var(--muted); font-size: 13px; }
+  .pill { border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 2px; color: var(--muted); font-size: 11px; }
+  .grid { display: grid; grid-template-columns: minmax(0,1.1fr) minmax(0,0.9fr); gap: 32px; margin-top: 32px; }
+  .field + .field { margin-top: 28px; }
+  .field-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }
+  label, .field-label { font-size: 13px; font-weight: 600; }
+  .value { font-family: "JetBrains Mono", monospace; font-size: 18px; font-variant-numeric: tabular-nums; }
+  input[type="range"] { width: 100%; margin: 14px 0 0; accent-color: var(--accent); }
+  .scale { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace; font-size: 10px; color: var(--faint); }
+  .rate-box { display: inline-flex; align-items: center; gap: 8px; border: 1px solid var(--border); background: var(--recess); padding: 6px 10px; border-radius: 2px; }
+  .rate-box:focus-within { border-color: var(--accent); }
+  .rate-box span { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--accent); }
+  .rate-box input { width: 64px; border: 0; background: transparent; color: var(--text); font-family: "JetBrains Mono", monospace; font-size: 13px; text-align: right; outline: none; }
+  .hint { margin: 8px 0 0; color: var(--faint); font-size: 11px; }
+  .modes { display: inline-flex; border: 1px solid var(--border); background: var(--recess); padding: 4px; border-radius: 2px; margin-top: 10px; }
+  .modes button { border: 0; background: transparent; color: var(--muted); font: inherit; font-size: 12px; font-weight: 600; padding: 7px 16px; border-radius: 2px; cursor: pointer; }
+  .modes button[aria-pressed="true"] { background: var(--accent); color: #1a1208; }
+  .modes button[aria-pressed="true"] span { color: inherit; }
+  .modes button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .result { border: 1px solid rgba(255,255,255,0.07); background: rgba(0,0,0,0.25); padding: 20px; border-radius: 2px; }
+  .result-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; color: var(--faint); }
+  .amount { display: flex; align-items: baseline; margin: 12px 0 0; font-family: "Plus Jakarta Sans", sans-serif; font-size: 36px; font-weight: 800; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+  .amount .cur { font-size: 0.62em; font-weight: 600; color: var(--muted); margin-right: 2px; }
+  .amount .per { font-size: 0.38em; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .billed { margin: 4px 0 0; color: var(--muted); font-size: 12px; }
+  .lines { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; gap: 12px; font-size: 12px; }
+  .line { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); }
+  .line b { color: var(--text); font-family: "JetBrains Mono", monospace; font-weight: 500; font-variant-numeric: tabular-nums; }
+  .cta { display: block; margin-top: 24px; padding: 12px 16px; text-align: center; border-radius: 2px; background: var(--accent); color: #1a1208; font-size: 13px; font-weight: 700; text-decoration: none; }
+  .cta:hover { background: #d9691d; }
+  .note { margin: 20px 0 0; text-align: center; color: var(--faint); font-size: 12px; }
+  footer { border-top: 1px solid var(--border); }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; padding-top: 24px; padding-bottom: 24px; color: var(--faint); font-size: 12px; }
+  @media (max-width: 760px) {
+    .grid { grid-template-columns: 1fr; gap: 24px; }
+    .card { padding: 20px; }
+    main { padding: 48px 0 72px; }
+    .crumb { display: none; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <div style="display:flex;align-items:center;gap:10px">
+      <a class="brand" href="/"><span class="mark" aria-hidden="true">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+      </span>VaultAuth</a>
+      <span class="crumb">/ <span>Pricing</span></span>
+    </div>
+    <a class="back" href="/">Back to VaultAuth</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="eyebrow">PRICING WORKSPACE</p>
+  <h1>Model your own assumptions.</h1>
+  <p class="lede">VaultAuth does not publish commercial rates. Set your expected users and an assumed rate to see an indicative monthly and annual figure. This is a planning aid, not a quote.</p>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <p class="card-title"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> Cost estimator</p>
+        <p class="card-sub">Every number is supplied by you. Nothing here is a published price.</p>
+      </div>
+      <span class="pill">Illustrative, not a quote</span>
+    </div>
+
+    <div class="grid">
+      <div>
+        <div class="field">
+          <div class="field-head">
+            <label for="mau">Monthly active users</label>
+            <span class="value" id="mau-value">25,000</span>
+          </div>
+          <input id="mau" type="range" min="1000" max="250000" step="1000" value="25000" />
+          <div class="scale"><span>1,000</span><span>250,000</span></div>
+        </div>
+
+        <div class="field">
+          <div class="field-head">
+            <label for="rate">Assumed ₹ per 1,000 MAU</label>
+            <div class="rate-box"><span aria-hidden="true">₹</span><input id="rate" type="number" min="0" max="10000" value="120" inputmode="numeric" aria-label="Assumed rupees per 1000 monthly active users" /></div>
+          </div>
+          <p class="hint">Enter any rate you want to model. This is not a VaultAuth published price.</p>
+        </div>
+
+        <div class="field">
+          <span class="field-label" id="billing-label">Billing assumption</span>
+          <div class="modes" role="group" aria-labelledby="billing-label">
+            <button type="button" data-mode="monthly" aria-pressed="false">Monthly</button>
+            <button type="button" data-mode="annual" aria-pressed="true">Annual <span style="opacity:.8;font-size:10px">20% off</span></button>
+          </div>
+        </div>
+      </div>
+
+      <div class="result" aria-live="polite">
+        <p class="result-label">Estimated cost</p>
+        <p class="amount"><span class="cur">₹</span><span id="amount">2,400</span><span class="per">/mo</span></p>
+        <p class="billed" id="billed">Billed yearly at ₹28,800 per year</p>
+        <div class="lines">
+          <div class="line"><span>Users</span><b id="line-users">25,000 MAU</b></div>
+          <div class="line"><span>Rate assumption</span><b id="line-rate">₹120 / 1k MAU</b></div>
+          <div class="line"><span>Before adjustment</span><b id="line-before">₹3,000 /mo</b></div>
+        </div>
+        <a class="cta" href="/#final-cta">Talk to the team for a real quote</a>
+      </div>
+    </div>
+  </div>
+
+  <p class="note">Need a number you can rely on? The VaultAuth team shares commercial rates after a conversation.</p>
+</main>
+
+<footer>
+  <div class="wrap"><span>VaultAuth SSO · Pricing workspace</span><a class="back" href="/">Return to the landing page</a></div>
+</footer>
+
+<script>
+  (function () {
+    var inr = new Intl.NumberFormat("en-IN", { maximumFractionDigits: 0 });
+    var mau = document.getElementById("mau");
+    var rate = document.getElementById("rate");
+    var annual = true;
+
+    function render() {
+      var users = Number(mau.value) || 0;
+      var perThousand = Math.min(10000, Math.max(0, Number(rate.value) || 0));
+      var monthly = (users / 1000) * perThousand;
+      var effective = annual ? monthly * 0.8 : monthly;
+      document.getElementById("mau-value").textContent = inr.format(users);
+      document.getElementById("amount").textContent = inr.format(effective);
+      document.getElementById("billed").textContent = annual
+        ? "Billed yearly at ₹" + inr.format(effective * 12) + " per year"
+        : "Billed monthly at your assumed rate";
+      document.getElementById("line-users").textContent = inr.format(users) + " MAU";
+      document.getElementById("line-rate").textContent = "₹" + inr.format(perThousand) + " / 1k MAU";
+      document.getElementById("line-before").textContent = "₹" + inr.format(monthly) + " /mo";
+    }
+
+    mau.addEventListener("input", render);
+    rate.addEventListener("input", render);
+    rate.addEventListener("change", function () {
+      var value = Math.min(10000, Math.max(0, Number(rate.value) || 0));
+      rate.value = String(value);
+      render();
+    });
+    document.querySelectorAll(".modes button").forEach(function (button) {
+      button.addEventListener("click", function () {
+        annual = button.getAttribute("data-mode") === "annual";
+        document.querySelectorAll(".modes button").forEach(function (item) {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        render();
+      });
+    });
+    render();
+  })();
+</script>
+</body>
+</html>

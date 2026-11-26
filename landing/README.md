@@ -11,7 +11,7 @@ Modern, high-converting enterprise identity & access landing page inspired by [A
 - **Four-stage pipeline** with gap-only connectors and clickable protocol specifications.
 - **Six-pillar feature grid** linking to the relevant sections on this page.
 - **Developer surface** listing real OIDC/REST endpoints from the live API, plus framework examples with copy buttons.
-- **Illustrative pricing calculator** with a user-supplied rate; no invented prices.
+- **Capability tiers** on the landing page, with an illustrative cost estimator on a separate `/pricing.html` page opened from the top Pricing link; no invented prices.
 - **Five FAQs**, plus a temporary documentation 403 page and an Atlassian-style live API status page.
 
 ## 🛠️ Tech Stack

@@ -56,15 +56,15 @@ Deliberately excluded as unsupported: sub-millisecond Redis revocation, sub-15 m
 8. `DevelopersSection` — live endpoint list and discovery facts.
 9. `QuickstartSection` — standalone Auth0-style gradient stage with segmented framework switcher, terminal, and copy cards.
 10. `ComparisonSection` — neutral generic comparison.
-11. `PricingSection` — editable cost estimator at the top (users × user-supplied ₹ rate, monthly/annual), then capability tiers. No published or invented prices.
+11. `PricingSection` — capability tiers only: Developer is self-hosted-only with a documentation CTA; Team, Scale and Sovereign are managed or self-hosted with a team CTA. The editable cost estimator lives on the standalone `/pricing.html` page opened from the top Pricing link. No published or invented prices.
 12. `FaqSection` — five honest technical answers, all closed by default.
 13. `CtaBanner` + `Footer` — three conversion paths, standards strip, status page link.
-14. `/status.html` — Atlassian-style live health/JWKS checks; `/403.html` — temporary documentation page.
+14. `/status.html` — Atlassian-style live health/JWKS checks; `/403.html` — temporary documentation page; `/pricing.html` — standalone cost estimator.
 
 ## Decisions taken (no answers were supplied, so plan defaults were used)
 
 - Unsupported claims: **removed**, not softened.
-- Pricing: user-driven cost estimator with an editable rate; no invented or published currency values.
+- Pricing: the estimator is a standalone `/pricing.html` page; the landing only lists capability tiers. No invented or published currency values.
 - Comparison: generic alternatives, no named vendors.
 - Scope: the landing lives only in `landing/`; the original frontend app is untouched and obsolete `src/redesign/*` files are excluded. A few deployment-support files (`src/landing.css`, `public/status.html`, `public/403.html`, `public/robots.txt`) are mirrored at the repo root for the static production build.
 - Port: dev server run with `--host 0.0.0.0` on port 3001 so `127.0.0.1:3001` is reachable; portal CTAs resolve to `localhost:3000` in development and same-origin routes in production.
