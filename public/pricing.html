@@ -22,6 +22,20 @@
   }
   * { box-sizing: border-box; }
   html { scroll-behavior: smooth; }
+
+  @keyframes va-enter {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  .enter { animation: va-enter 0.65s cubic-bezier(0.22, 1, 0.36, 1) both; }
+  .enter-1 { animation-delay: 0.04s; }
+  .enter-2 { animation-delay: 0.1s; }
+  .enter-3 { animation-delay: 0.16s; }
+  .enter-4 { animation-delay: 0.22s; }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .enter { animation: none; }
+  }
   body {
     margin: 0;
     min-height: 100vh;
@@ -108,7 +122,7 @@
 </head>
 <body>
 <header>
-  <div class="wrap bar">
+  <div class="wrap bar enter enter-1">
     <div style="display:flex;align-items:center;gap:10px">
       <a class="brand" href="/"><span class="mark" aria-hidden="true">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
@@ -120,11 +134,11 @@
 </header>
 
 <main class="wrap">
-  <p class="eyebrow">PRICING WORKSPACE</p>
-  <h1>Model your own assumptions.</h1>
-  <p class="lede">VaultAuth does not publish commercial rates. Set your expected users and an assumed rate to see an indicative monthly and annual figure. This is a planning aid, not a quote.</p>
+  <p class="eyebrow enter enter-2">PRICING WORKSPACE</p>
+  <h1 class="enter enter-2">Model your own assumptions.</h1>
+  <p class="lede enter enter-2">VaultAuth does not publish commercial rates. Set your expected users and an assumed rate to see an indicative monthly and annual figure. This is a planning aid, not a quote.</p>
 
-  <div class="card">
+  <div class="card enter enter-3">
     <div class="card-head">
       <div>
         <p class="card-title"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg> Cost estimator</p>
@@ -175,7 +189,7 @@
     </div>
   </div>
 
-  <p class="note">Need a number you can rely on? The VaultAuth team shares commercial rates after a conversation.</p>
+  <p class="note enter enter-4">Need a number you can rely on? The VaultAuth team shares commercial rates after a conversation.</p>
 </main>
 
 <footer>
