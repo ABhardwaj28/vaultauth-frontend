@@ -303,7 +303,9 @@ export function ProfileTab() {
           <dl className="mt-4 space-y-3 border-t border-border pt-5 text-[13px]">
             <div className="flex items-baseline justify-between gap-3">
               <dt className="text-muted-foreground">Second factor</dt>
-              <dd className="text-right font-medium text-foreground">Email challenge (OTP)</dd>
+              <dd className="text-right font-medium text-foreground">
+                {effectiveUser?.totp_enabled ? "OTP, Authenticator" : "OTP"}
+              </dd>
             </div>
             <div className="flex items-baseline justify-between gap-3">
               <dt className="text-muted-foreground">Code expiration</dt>

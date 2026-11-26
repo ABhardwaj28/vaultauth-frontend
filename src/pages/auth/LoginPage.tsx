@@ -428,6 +428,30 @@ export function LoginPage() {
     return () => clearInterval(interval);
   }, [rateLimitTimer]);
 
+  const applyAuthError = (err: unknown) => {
+    const apiErr = err as ApiError;
+    const msg = (apiErr.message || "").toLowerCase();
+    const code = (apiErr.code || "").toUpperCase();
+
+    if (code === "ERR_ACCOUNT_LOCKED" || msg.includes("locked")) {
+      setError("Account is temporarily locked due to consecutive failed attempts. Contact your administrator or wait 5 minutes.");
+    } else if (apiErr.status === 429 || code === "ERR_RATE_LIMITED" || msg.includes("rate limit")) {
+      const remainingSecs = apiErr.rateLimitReset
+        ? Math.max(1, Math.floor(apiErr.rateLimitReset - Date.now() / 1000))
+        : 60;
+      setRateLimitTimer(remainingSecs);
+      setError(`Too many login attempts. Please wait ${remainingSecs} seconds before trying again.`);
+    } else if (apiErr.status === 502 || apiErr.status === 503 || apiErr.status === 504 || code === "ERR_SERVICE_UNAVAILABLE") {
+      setError("Authentication service is temporarily unavailable. Please try again shortly.");
+    } else if (apiErr.status === 0 || code === "ERR_NETWORK" || code === "ERR_TIMEOUT") {
+      setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
+    } else if (apiErr.status && apiErr.status >= 500) {
+      setError("An internal authentication server error occurred. Please try again later.");
+    } else {
+      setError("Invalid email or password.");
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -442,27 +466,16 @@ export function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await api.login({ email: cleanEmail, password, factor: "email" });
+      // Primary credentials only — the factor is chosen after this succeeds.
+      const res = await api.login({ email: cleanEmail, password });
 
-      // If 2FA OTP is required
       if (res.state === "OTP_REQUIRED" || res.challenge_id || res.requires_2fa) {
-        const challengeParam = res.challenge_id
-          ? `&challenge_id=${encodeURIComponent(res.challenge_id)}`
-          : "";
-        const redirectParam = redirectUrl && redirectUrl !== "/dashboard"
-          ? `&redirect=${encodeURIComponent(redirectUrl)}`
-          : "";
-        const methodParam = res.method ? `&method=${encodeURIComponent(res.method)}` : "";
-        navigate(`/verify-otp?email=${encodeURIComponent(cleanEmail)}${challengeParam}${redirectParam}${methodParam}`, {
-          state: {
-            email: cleanEmail,
-            challengeId: res.challenge_id,
-            expiresIn: res.expires_in,
-            method: res.method,
-            isRegistration: false,
-            redirectUrl,
-          },
-        });
+        const methods = res.available_methods?.length ? res.available_methods : ["email"];
+        sessionStorage.setItem(
+          "vaultauth_pending_factor",
+          JSON.stringify({ email: cleanEmail, password, methods, redirectUrl })
+        );
+        navigate("/select-factor");
         return;
       }
 
@@ -474,42 +487,7 @@ export function LoginPage() {
         navigate(redirectUrl, { replace: true });
       }
     } catch (err: unknown) {
-      const apiErr = err as ApiError;
-      const msg = (apiErr.message || "").toLowerCase();
-      const code = (apiErr.code || "").toUpperCase();
-
-      if (
-        code === "ERR_ACCOUNT_LOCKED" ||
-        msg.includes("locked")
-      ) {
-        // 3-strike temporary lockout error per PRD BR-03
-        setError("Account is temporarily locked due to consecutive failed attempts. Contact your administrator or wait 5 minutes.");
-      } else if (
-        apiErr.status === 429 ||
-        code === "ERR_RATE_LIMITED" ||
-        msg.includes("rate limit")
-      ) {
-        const remainingSecs = apiErr.rateLimitReset
-          ? Math.max(1, Math.floor(apiErr.rateLimitReset - Date.now() / 1000))
-          : 60;
-        setRateLimitTimer(remainingSecs);
-        setError(`Too many login attempts. Please wait ${remainingSecs} seconds before trying again.`);
-      } else if (
-        apiErr.status === 502 ||
-        apiErr.status === 503 ||
-        apiErr.status === 504 ||
-        code === "ERR_SERVICE_UNAVAILABLE"
-      ) {
-        setError("Authentication service is temporarily unavailable. Please try again shortly.");
-      } else if (apiErr.status === 0 || code === "ERR_NETWORK" || code === "ERR_TIMEOUT") {
-        setError("Unable to reach VaultAuth authentication gateway. Please check your network connection.");
-      } else if (apiErr.status && apiErr.status >= 500) {
-        setError("An internal authentication server error occurred. Please try again later.");
-      } else {
-        // When user is disabled by an admin or credentials are invalid, return identical message
-        // Prevents account enumeration and reflects real-time backend authentication
-        setError("Invalid email or password.");
-      }
+      applyAuthError(err);
     } finally {
       setLoading(false);
     }

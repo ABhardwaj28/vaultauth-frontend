@@ -186,6 +186,24 @@ export interface User2FAResponse {
   message: string;
 }
 
+/** POST /api/v1/me/totp/enroll — starts enrollment with the otpauth URI. */
+export interface TOTPEnrollResponse {
+  otpauth_uri: string;
+  message?: string;
+}
+
+/** POST /api/v1/me/totp/confirm and /recovery-codes/regenerate. */
+export interface RecoveryCodesResponse {
+  recovery_codes: string[];
+  message?: string;
+}
+
+/** POST /api/v1/me/totp/disable — password and/or a current code. */
+export interface TOTPDisablePayload {
+  password?: string | null;
+  code?: string | null;
+}
+
 export interface AdminEnforce2FAResponse {
   status?: string;
   two_factor_enforced: boolean;

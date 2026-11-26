@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation, useSearchParams } from "react-router-do
 import { Loader2, AlertCircle, RefreshCw, ShieldCheck } from "lucide-react";
 import { AuthShell } from "@/components/layout/AuthShell";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { OtpInput } from "@/components/ui/otp-input";
 import { useAuth } from "@/context/AuthContext";
@@ -42,6 +43,7 @@ export function VerifyOtpPage() {
   const isTotp = method === "totp";
 
   const [code, setCode] = useState("");
+  const [useRecovery, setUseRecovery] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [attemptsRemaining, setAttemptsRemaining] = useState(3);
@@ -59,8 +61,12 @@ export function VerifyOtpPage() {
 
   const handleVerify = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (code.length < 6) {
+    if (!useRecovery && code.length < 6) {
       setError("Please input the complete 6-digit numeric passkey.");
+      return;
+    }
+    if (useRecovery && code.trim().length < 6) {
+      setError("Enter a valid recovery code.");
       return;
     }
 
@@ -141,7 +147,14 @@ export function VerifyOtpPage() {
 
       <div className="relative overflow-hidden rounded-xl border border-border/70 bg-white p-7 shadow-[0_12px_40px_-16px_rgba(16,24,40,0.18)] dark:border-white/[0.06] dark:bg-[#11141A] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.5)] sm:p-8">
         <div className="space-y-3 pb-7 text-center">
-          {/* Circular refresh countdown ring — the one signature element */}
+          {isTotp ? (
+            <div className="flex justify-center">
+              <div className="flex h-28 w-28 items-center justify-center rounded-full border border-border bg-muted/30">
+                <ShieldCheck className="h-10 w-10 text-muted-foreground" />
+              </div>
+            </div>
+          ) : (
+          /* Circular refresh countdown ring — the one signature element */
           <div className="flex justify-center">
             <div className="relative h-28 w-28">
               <svg
@@ -180,6 +193,7 @@ export function VerifyOtpPage() {
               </div>
             </div>
           </div>
+          )}
 
           <div className="flex items-center justify-center gap-2 pt-1 text-muted-foreground">
             <ShieldCheck className="h-4 w-4" />
@@ -220,20 +234,49 @@ export function VerifyOtpPage() {
             </Alert>
           )}
 
-          {/* 6-Cell Mono Code Cells */}
-          <div className="py-1 [&_input]:h-14 [&_input]:w-full [&_input]:min-w-0 [&_input]:rounded-lg [&_input]:border-border/80 [&_input]:bg-background/60 [&_input]:text-2xl [&_input]:font-semibold [&_input]:shadow-none [&_input]:dark:bg-white/[0.03]">
-            <OtpInput
+          {/* 6-Cell Mono Code Cells, or a recovery-code field for TOTP */}
+          {isTotp && useRecovery ? (
+            <Input
+              autoFocus
               value={code}
-              onChange={(val) => {
-                setCode(val);
-                if (val.length === 6) {
-                  setError(null);
-                }
+              onChange={(e) => {
+                setCode(e.target.value);
+                setError(null);
               }}
+              placeholder="Enter recovery code"
+              autoComplete="one-time-code"
+              className="h-12 rounded-lg border-border/80 bg-background/60 font-mono text-sm dark:bg-white/[0.03]"
               disabled={loading || attemptsRemaining === 0}
-              error={Boolean(error)}
             />
-          </div>
+          ) : (
+            <div className="py-1 [&_input]:h-14 [&_input]:w-full [&_input]:min-w-0 [&_input]:rounded-lg [&_input]:border-border/80 [&_input]:bg-background/60 [&_input]:text-2xl [&_input]:font-semibold [&_input]:shadow-none [&_input]:dark:bg-white/[0.03]">
+              <OtpInput
+                value={code}
+                onChange={(val) => {
+                  setCode(val);
+                  if (val.length === 6) {
+                    setError(null);
+                  }
+                }}
+                disabled={loading || attemptsRemaining === 0}
+                error={Boolean(error)}
+              />
+            </div>
+          )}
+
+          {isTotp && (
+            <button
+              type="button"
+              onClick={() => {
+                setUseRecovery((prev) => !prev);
+                setCode("");
+                setError(null);
+              }}
+              className="w-full text-center text-[12px] font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            >
+              {useRecovery ? "Use my authenticator code instead" : "Lost your device? Use a recovery code"}
+            </button>
+          )}
 
           {/* Attempt Feedback & Timer */}
           <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -250,23 +293,27 @@ export function VerifyOtpPage() {
               </span>
             </span>
 
-            <span className="font-mono tabular-nums">
-              {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Ready to resend"}
-            </span>
+            {!isTotp && (
+              <span className="font-mono tabular-nums">
+                {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : "Ready to resend"}
+              </span>
+            )}
           </div>
 
           {/* Bottom action row */}
-          <div className="grid grid-cols-2 gap-3 pt-1">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleResend}
-              disabled={resendCooldown > 0}
-              className="h-11 rounded-lg border-border/80 bg-transparent text-sm font-medium"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Resend code
-            </Button>
+          <div className={`grid gap-3 pt-1 ${isTotp ? "grid-cols-1" : "grid-cols-2"}`}>
+            {!isTotp && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleResend}
+                disabled={resendCooldown > 0}
+                className="h-11 rounded-lg border-border/80 bg-transparent text-sm font-medium"
+              >
+                <RefreshCw className="h-4 w-4 mr-2" />
+                Resend code
+              </Button>
+            )}
 
             <Button
               type="submit"

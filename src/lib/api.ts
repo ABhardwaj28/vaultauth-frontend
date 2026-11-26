@@ -25,6 +25,9 @@ import {
   User2FAResponse,
   AdminEnforce2FAResponse,
   AdminActionResponse,
+  TOTPEnrollResponse,
+  RecoveryCodesResponse,
+  TOTPDisablePayload,
 } from "@/types/api";
 
 const DEFAULT_BASE_URL =
@@ -392,6 +395,42 @@ class ApiClient {
       method: "POST",
       body: JSON.stringify({ enabled, password }),
     });
+    return res.data;
+  }
+
+  /** POST /api/v1/me/totp/enroll — { password } -> { otpauth_uri, message }. */
+  async totpEnroll(password: string): Promise<TOTPEnrollResponse> {
+    const res = await this.request<TOTPEnrollResponse>("/api/v1/me/totp/enroll", {
+      method: "POST",
+      body: JSON.stringify({ password }),
+    });
+    return res.data;
+  }
+
+  /** POST /api/v1/me/totp/confirm — { password, code } -> recovery codes. */
+  async totpConfirm(password: string, code: string): Promise<RecoveryCodesResponse> {
+    const res = await this.request<RecoveryCodesResponse>("/api/v1/me/totp/confirm", {
+      method: "POST",
+      body: JSON.stringify({ password, code }),
+    });
+    return res.data;
+  }
+
+  /** POST /api/v1/me/totp/disable — { password?, code? } -> { status, message }. */
+  async totpDisable(payload: TOTPDisablePayload): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/me/totp/disable", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    return res.data;
+  }
+
+  /** POST /api/v1/me/totp/recovery-codes/regenerate — { password } -> fresh codes. */
+  async regenerateRecoveryCodes(password: string): Promise<RecoveryCodesResponse> {
+    const res = await this.request<RecoveryCodesResponse>(
+      "/api/v1/me/totp/recovery-codes/regenerate",
+      { method: "POST", body: JSON.stringify({ password }) }
+    );
     return res.data;
   }
 

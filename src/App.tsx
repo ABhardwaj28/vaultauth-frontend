@@ -12,6 +12,7 @@ import { DashboardShell } from "@/components/layout/DashboardShell";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { VerifyOtpPage } from "@/pages/auth/VerifyOtpPage";
+import { SelectFactorPage } from "@/pages/auth/SelectFactorPage";
 
 // Dashboard Pages
 import { ProfileTab } from "@/pages/dashboard/ProfileTab";
@@ -62,6 +63,7 @@ function AppRoutes() {
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
+          <Route path="/select-factor" element={<SelectFactorPage />} />
         </Route>
 
         {/* Protected Dashboard Routes */}
