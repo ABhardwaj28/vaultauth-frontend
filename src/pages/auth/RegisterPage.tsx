@@ -18,8 +18,6 @@ import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
 import { PasswordResetDialog } from "./LoginPage";
 
-const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length;
-
 /** A small ring that fills with a green dot when a requirement is met. */
 function PolicyDot({ valid }: { valid: boolean }) {
   return (
@@ -50,7 +48,6 @@ export function RegisterPage() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumberOrSymbol = /[\d\W]/.test(password);
-  const bytesValid = password.length > 0 && utf8ByteLength(password) <= 128;
   const passwordsMatch = password && password === confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -105,7 +102,6 @@ export function RegisterPage() {
     { label: "12+ characters", valid: password.length >= 12 },
     { label: "Mixed case", valid: hasUppercase && hasLowercase },
     { label: "Number or symbol", valid: hasNumberOrSymbol },
-    { label: "128-byte cap", valid: bytesValid },
   ];
 
   return (
