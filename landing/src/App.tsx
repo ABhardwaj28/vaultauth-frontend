@@ -46,22 +46,28 @@ export default function App() {
 
       <Navbar />
 
-      <main id="main">
-        <Hero />
-        <StatsBanner />
-        <UseCaseDecider />
-        <InteractiveShowcase />
-        <ArchitectureSection />
-        <FeaturesGrid />
-        <DevelopersSection />
-        <QuickstartSection />
-        <ComparisonSection />
-        <PricingSection />
-        <FaqSection />
-        <CtaBanner />
-      </main>
+      <motion.div
+        initial={reduceMotion ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <main id="main">
+          <Hero />
+          <StatsBanner />
+          <UseCaseDecider />
+          <InteractiveShowcase />
+          <ArchitectureSection />
+          <FeaturesGrid />
+          <DevelopersSection />
+          <QuickstartSection />
+          <ComparisonSection />
+          <PricingSection />
+          <FaqSection />
+          <CtaBanner />
+        </main>
 
-      <Footer />
+        <Footer />
+      </motion.div>
 
       <AnimatePresence>
         {showTop ? (
