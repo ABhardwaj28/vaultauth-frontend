@@ -3,41 +3,43 @@
 @tailwind utilities;
 
 @layer base {
-  /* Enterprise Light Theme — "verification steel".
-     A cool porcelain canvas against crisp white surfaces, legible slate ink,
-     and the signature amber deepened to an ink tone for contrast on white. */
+  /* Enterprise Light Theme — mapped to Cloudflare Dashboard's light tokens.
+     Near-neutral canvas, white controls, hairline borders and a soft orange
+     scale. Hierarchy comes from contrast and rules, not shadows. */
   :root {
-    --background: 213 25% 93%; /* #E9EDF2 — cool steel canvas, distinct from cards */
-    --foreground: 215 32% 13%; /* #16202E — deep slate ink */
+    --background: 210 20% 98%; /* #F9FAFB — cool-neutral canvas (cf gray-50) */
+    --foreground: 0 0% 19%; /* #313131 — cf gray-1 */
 
-    /* Crisp white elevated cards */
-    --card: 0 0% 100%; /* #FFFFFF */
-    --card-foreground: 215 32% 13%;
+    --card: 0 0% 100%; /* #FFFFFF — kumo base/control */
+    --card-foreground: 0 0% 19%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 215 32% 13%;
+    --popover-foreground: 0 0% 19%;
 
-    /* Signature amber, deepened for AA contrast on light surfaces.
-       The dark theme keeps the bright #F07A26 fill. */
-    --primary: 23 84% 40%; /* #BA5410 */
+    /* Cloudflare orange scale: 4 = #8D4406 ink, 5 = #C05D08 fill */
+    --primary: 26 93% 37%; /* #B75708 */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 213 22% 96%; /* #F3F5F8 */
-    --secondary-foreground: 215 32% 13%;
+    --secondary: 210 17% 97%; /* #F6F7F8 — kumo recessed */
+    --secondary-foreground: 0 0% 19%;
 
-    --muted: 213 22% 96%; /* #F3F5F8 */
-    --muted-foreground: 215 16% 42%; /* #5A6675 */
+    --muted: 210 17% 97%;
+    --muted-foreground: 0 0% 46%; /* #767676 — cf newGray-5 */
 
-    --accent: 25 100% 96%; /* #FFF6EE — pale amber wash */
-    --accent-foreground: 22 78% 30%; /* #87400E */
+    --accent: 28 92% 95%; /* #FEF1E6 — cf orange-9 tint */
+    --accent-foreground: 28 92% 29%; /* #8D4406 — cf orange-4 */
 
-    --destructive: 0 74% 45%; /* #D02020 */
+    --destructive: 4 97% 36%; /* #B20F03 — cf red-4 */
     --destructive-foreground: 0 0% 100%;
 
-    /* Definable hairlines that actually separate surface from canvas */
-    --border: 214 22% 85%; /* #D3DBE5 */
-    --input: 214 22% 85%; /* #D3DBE5 */
-    --ring: 23 84% 40%;
+    --success: 152 65% 33%; /* #1D7A4D — cf newGreen-5, darkened for text */
+    --success-foreground: 0 0% 100%;
+    --warning: 34 82% 35%; /* #A46910 — cf gold-5, darkened for text */
+    --warning-foreground: 0 0% 100%;
+
+    --border: 220 13% 91%; /* #E5E7EB — kumo hairline, faint cool cast */
+    --input: 0 0% 46%; /* #767676 — crisp control outline */
+    --ring: 26 93% 37%;
 
     --radius: 0.5rem; /* 8px modern luxury precision radius */
   }
@@ -70,6 +72,11 @@
 
     --destructive: 0 72% 51%; /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
+
+    --success: 145 63% 44%; /* #2AAB62 */
+    --success-foreground: 0 0% 100%;
+    --warning: 38 92% 55%; /* #F0A623 */
+    --warning-foreground: 0 0% 100%;
 
     /* Crisp 1px hairline slate border */
     --border: 228 12% 18%; /* #272A38 */
