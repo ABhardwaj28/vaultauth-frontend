@@ -6,11 +6,41 @@ Inter / Plus Jakarta Sans / JetBrains Mono).
 
 ## Templates
 
-| File | Sent when | Suggested subject |
-| --- | --- | --- |
-| `otp-sign-in.html` | `POST /api/v1/auth/2fa` issues an email challenge | `Your VaultAuth verification code` |
-| `otp-verify-email.html` | `POST /api/v1/auth/register` or `/verify-email/resend` | `Verify your VaultAuth email` |
-| `otp-password-reset.html` | `POST /api/v1/auth/forgot-password` | `Reset your VaultAuth password` |
+| File | Sent when | Suggested subject | Renderer |
+| --- | --- | --- | --- |
+| `otp-sign-in.html` | `POST /api/v1/auth/2fa` issues an email challenge | `Your VaultAuth verification code` | Jinja2 |
+| `otp-verify-email.html` | `POST /api/v1/auth/register` or `/verify-email/resend` | `Verify your VaultAuth email` | Jinja2 |
+| `otp-password-reset.html` | `POST /api/v1/auth/forgot-password` | `Reset your VaultAuth password` | Jinja2 |
+| `otp-2fa.html` | Same 2FA challenge as `otp-sign-in.html` | `Your VaultAuth verification code` | `str.format()` |
+| `password-reset.html` | Same reset flow as `otp-password-reset.html` | `Reset your VaultAuth password` | `str.format()` |
+
+## `str.format()` variants
+
+`otp-2fa.html` and `password-reset.html` are the dark-theme rewrites for a
+`str.format()` renderer. They carry the same metadata as the Jinja2 templates:
+
+```python
+html = template.format(
+    code="948057",
+    formatted_code="9 4 8 0 5 7",
+    email="shaurya@example.com",
+    expiry_minutes=10,
+    attempts_remaining=3,
+    location="Bengaluru, IN",
+    client_ip="103.218.111.98",
+    device="Google Chrome on macOS",
+    year=2026,
+)
+```
+
+`{code}` goes into the hidden inbox preheader and `{formatted_code}` into the
+visible code plate. `{email}`, `{expiry_minutes}`, `{attempts_remaining}`,
+`{location}`, `{client_ip}`, `{device}` and `{year}` populate the delivery and
+request-detail rows. All literal CSS braces are doubled (`{{ }}`) so formatting
+leaves them intact. Rendered examples with sample values live in
+`preview/otp-2fa.html` and `preview/password-reset.html`.
+
+The `otp-*.html` files above still use Jinja2 — don't mix the two syntaxes.
 
 ## Placeholder contract
 
@@ -20,6 +50,7 @@ Inter / Plus Jakarta Sans / JetBrains Mono).
 | `{{ email }}` | Recipient's corporate email | `shaurya@example.com` |
 | `{{ expiry_minutes }}` | Challenge lifetime | `10` |
 | `{{ attempts_remaining }}` | Attempts left before invalidation | `3` |
+| `{{ location }}` | City/country resolved from the request IP | `Bengaluru, IN` |
 | `{{ client_ip }}` | IP that initiated the request | `103.218.111.98` |
 | `{{ device }}` | Browser / device label | `Google Chrome on macOS` |
 | `{{ year }}` | Copyright year | `2026` |
@@ -50,9 +81,10 @@ webmail). Dark is the base so the signature look holds everywhere.
 
 ## Preview
 
-`preview/` holds rendered copies of each template with sample values (sample code
-`948057`, `shaurya@example.com`) so you can open them in a browser to review the
-design. They are snapshots, not sources — edit the templates in the parent folder.
+`preview/` holds rendered copies of all five templates with sample values (sample
+code `948057`, `shaurya@example.com`) plus an `index.html` that links to each one,
+so you can review every design in a browser. They are snapshots, not sources —
+edit the templates in the parent folder.
 
 ## Email-client notes
 

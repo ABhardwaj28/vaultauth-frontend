@@ -75,7 +75,7 @@
 
     <div class="eyebrow">Transactional email / design review</div>
     <h1>OTP email templates</h1>
-    <p class="lede">Three out-of-band verification emails, restyled to match the identity portal. Open any card to see the rendered template with sample values.</p>
+    <p class="lede">Five templates covering every out-of-band verification email, restyled to match the identity portal. Open any card to see the rendered template with sample values.</p>
 
     <div class="grid">
       <a class="card" href="otp-sign-in.html">
@@ -96,12 +96,25 @@
         <p>One-time code for choosing a new master password, with a security warning.</p>
         <span class="arrow">Open preview &rarr;</span>
       </a>
+      <a class="card" href="otp-2fa.html">
+        <span class="card-tag">2FA / str.format()</span>
+        <h2>Check your email</h2>
+        <p>Sign-in challenge variant for a <code>str.format()</code> renderer, with mobile tuning.</p>
+        <span class="arrow">Open preview &rarr;</span>
+      </a>
+      <a class="card" href="password-reset.html">
+        <span class="card-tag">Recovery / str.format()</span>
+        <h2>Reset your password</h2>
+        <p>Password reset variant for a <code>str.format()</code> renderer, with mobile tuning.</p>
+        <span class="arrow">Open preview &rarr;</span>
+      </a>
     </div>
 
     <div class="note">
       These previews are rendered snapshots with sample values. The editable sources are the
-      <code>.html</code> files one folder up. Placeholders use Jinja2 syntax — see <code>README.md</code>
-      for the variable contract and Resend wiring.
+      <code>.html</code> files one folder up. The <code>otp-*.html</code> files use Jinja2;
+      <code>otp-2fa.html</code> and <code>password-reset.html</code> use <code>str.format()</code>.
+      See <code>README.md</code> for the full variable contract and Resend wiring.
     </div>
 
     <footer>

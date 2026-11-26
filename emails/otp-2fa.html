@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="color-scheme" content="dark light">
+  <title>Your VaultAuth verification code</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
+
+    /* Base is the signature dark look. Light overrides for clients that honour
+       prefers-color-scheme (Apple Mail, Outlook macOS, most webmail). */
+    @media (prefers-color-scheme: light) {{
+      .va-body, .va-outer {{ background: #F1F3F6 !important; }}
+      .va-card {{ background: #FFFFFF !important; border-color: #E2E5E9 !important; }}
+      .va-accent {{ background: #F6821F !important; }}
+      .va-plate {{ background: #F8F9FB !important; border-color: #E2E5E9 !important; }}
+      .va-title, .va-code, .va-brand, .va-strong {{ color: #0F172A !important; }}
+      .va-text {{ color: #334155 !important; }}
+      .va-muted {{ color: #64748B !important; }}
+      .va-rule {{ background: #E2E5E9 !important; }}
+      .va-note {{ background: #FFFFFF !important; border-color: #E2E5E9 !important; }}
+      .va-footer {{ border-color: #E2E5E9 !important; }}
+    }}
+
+    /* Narrow-screen tuning for clients that support media queries. */
+    @media only screen and (max-width: 480px) {{
+      .va-wrap {{ padding: 16px 10px !important; }}
+      .va-card-pad {{ padding: 28px 20px !important; }}
+      .va-title {{ font-size: 24px !important; }}
+      .va-code {{ font-size: 30px !important; letter-spacing: 5px !important; }}
+      .va-brand-tag {{ display: none !important; }}
+    }}
+  </style>
+</head>
+<body class="va-body" style="margin:0;padding:0;background:#0F1015;font-family:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+
+  <!-- Preheader: inbox preview only, hidden inside the message -->
+  <span style="display:none;font-size:1px;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;">
+    Your VaultAuth sign-in code is {code}. It expires in {expiry_minutes} minutes and can be used once.
+  </span>
+
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="va-outer" style="background:#0F1015;">
+    <tr>
+      <td align="center" class="va-wrap" style="padding:32px 12px;">
+
+        <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;">
+
+          <!-- ── Brand header ─────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:0 0 20px 0;border-bottom:1px solid #272A38;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                <tr>
+                  <td style="vertical-align:middle;">
+                    <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td style="vertical-align:middle;">
+                          <span style="display:inline-block;width:32px;height:32px;background:#F07A26;border-radius:8px;text-align:center;line-height:32px;color:#FFFFFF;font-size:18px;font-weight:700;font-family:Arial,sans-serif;">&#10003;</span>
+                        </td>
+                        <td style="vertical-align:middle;padding-left:10px;">
+                          <span class="va-brand" style="font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif;font-size:15px;font-weight:700;letter-spacing:-0.02em;color:#F3F4F6;">VaultAuth</span>
+                          <span style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;font-weight:600;color:#F07A26;letter-spacing:1.4px;">SSO</span>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                  <td align="right" class="va-brand-tag" style="vertical-align:middle;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:9px;font-weight:600;letter-spacing:1.4px;color:#64748B;">
+                    SECURE DELIVERY
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Main card ────────────────────────────────────────────── -->
+          <tr>
+            <td style="padding:28px 0;">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="va-card" style="width:100%;background:#171821;border:1px solid #272A38;border-radius:12px;">
+                <tr>
+                  <td class="va-accent" style="height:3px;background:#F07A26;border-radius:12px 12px 0 0;font-size:0;line-height:0;">&nbsp;</td>
+                </tr>
+                <tr>
+                  <td class="va-card-pad" style="padding:40px 32px 32px 32px;">
+
+                    <div style="text-align:center;">
+                      <span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#F07A26;vertical-align:middle;margin-right:8px;"></span>
+                      <span class="va-muted" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:#94A3B8;vertical-align:middle;">Second factor</span>
+                    </div>
+
+                    <h1 class="va-title" style="margin:20px 0 10px 0;font-family:'Plus Jakarta Sans',Inter,Arial,sans-serif;font-size:28px;line-height:1.2;font-weight:700;letter-spacing:-0.03em;color:#F3F4F6;text-align:center;">
+                      Confirm your sign-in
+                    </h1>
+                    <p class="va-text" style="margin:0 auto;max-width:400px;font-size:14px;line-height:24px;color:#CBD5E1;text-align:center;">
+                      Enter the one-time code below to complete your sign-in to VaultAuth SSO.
+                    </p>
+                    <p style="margin:14px 0 0 0;font-size:13px;line-height:20px;color:#94A3B8;text-align:center;">
+                      Sent to <span style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:12px;color:#F3F4F6;">{email}</span>
+                    </p>
+
+                    <!-- Code plate: mirrors the segmented input on /verify-otp -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="va-plate" style="width:100%;margin:28px 0 18px 0;background:#0F1015;border:1px solid #272A38;border-radius:12px;">
+                      <tr>
+                        <td align="center" style="padding:28px 16px 24px 16px;">
+                          <p class="va-muted" style="margin:0;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:#94A3B8;">
+                            Verification code
+                          </p>
+                          <div class="va-code" style="margin-top:14px;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:40px;font-weight:700;line-height:1.1;letter-spacing:9px;color:#F3F4F6;white-space:nowrap;">
+                            {formatted_code}
+                          </div>
+                          <div class="va-accent" style="width:48px;height:2px;margin:20px auto 0;border-radius:2px;background:#F07A26;font-size:0;line-height:0;">&nbsp;</div>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                      <tr>
+                        <td align="center" style="font-size:12px;line-height:18px;color:#94A3B8;">
+                          Expires in <span style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;color:#F07A26;font-weight:600;">{expiry_minutes} min</span>
+                          <span style="padding:0 10px;color:#272A38;">&#9679;</span>
+                          <span class="va-strong" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;color:#F3F4F6;">{attempts_remaining} of 3</span> attempts remaining
+                          <span style="padding:0 10px;color:#272A38;">&#9679;</span>
+                          <span class="va-strong" style="font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;color:#F3F4F6;">Single use</span>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <div class="va-rule" style="height:1px;background:#272A38;margin:28px 0 22px 0;font-size:0;line-height:0;">&nbsp;</div>
+
+                    <!-- Security note -->
+                    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" class="va-note" style="width:100%;background:#1C1D27;border:1px solid #272A38;border-radius:8px;">
+                      <tr>
+                        <td style="padding:14px 16px;">
+                          <p class="va-text" style="margin:0;font-size:12px;line-height:20px;color:#CBD5E1;">
+                            <strong class="va-strong" style="color:#F3F4F6;">Keep this code private.</strong> VaultAuth will never ask you to share it by phone, chat, or email. If you didn&rsquo;t try to sign in, you can ignore this message.
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+
+                    <p class="va-muted" style="margin:14px 0 0 0;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;line-height:18px;color:#64748B;text-align:center;">
+                      Request from {location} ({client_ip}) &middot; {device}
+                    </p>
+
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- ── Footer ───────────────────────────────────────────────── -->
+          <tr>
+            <td class="va-footer" style="padding:18px 0 4px 0;border-top:1px solid #272A38;text-align:center;">
+              <p class="va-muted" style="margin:0;font-size:11px;line-height:18px;color:#64748B;">
+                &copy; {year} VaultAuth SSO &bull; Enterprise Identity Gateway
+              </p>
+              <p style="margin:6px 0 0 0;font-family:'JetBrains Mono',ui-monospace,Menlo,monospace;font-size:10px;letter-spacing:1.2px;color:#475569;">
+                ZERO-TRUST ARCHITECTURE
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
