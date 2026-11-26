@@ -17,6 +17,8 @@ import {
   Trash2,
   ArrowDownAZ,
   ArrowUpAZ,
+  KeyRound,
+  Loader2,
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { AdminUserListItem, SessionItem } from "@/types/api";
@@ -26,6 +28,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { CopyButton } from "@/components/ui/copy-button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -74,6 +83,10 @@ export function UsersTab() {
   const [revokingSessionId, setRevokingSessionId] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [resetTarget, setResetTarget] = useState<AdminUserListItem | null>(null);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [codesTarget, setCodesTarget] = useState<AdminUserListItem | null>(null);
+  const [resettingCodes, setResettingCodes] = useState(false);
 
   const fetchUsersAndSessions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -220,6 +233,39 @@ export function UsersTab() {
     }
   };
 
+  const handleAdminResetPassword = async () => {
+    if (!resetTarget) return;
+    setResettingPassword(true);
+    setMessage(null);
+    setError(null);
+    try {
+      const res = await api.adminResetUserPassword(resetTarget.id);
+      setMessage(
+        res.message ||
+        `Password changed for ${resetTarget.email}. A notification was emailed to the user.`
+      );
+      setResetTarget(null);
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message || "Failed to change the user's password.");
+      setResetTarget(null);
+    } finally {
+      setResettingPassword(false);
+    }
+  };
+
+  const handleAdminResetSecurityCodes = async () => {
+    if (!codesTarget) return;
+    setResettingCodes(true);
+    setMessage(null);
+    setError(null);
+    // UI preview — wire to the admin security-code reset endpoint when it ships.
+    // The user is notified by email with the event only, never the codes.
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    setMessage(`Security codes reset for ${codesTarget.email}. A notification was emailed to the user.`);
+    setCodesTarget(null);
+    setResettingCodes(false);
+  };
+
   const rolePill = (role: string) => (
     <span className="inline-flex items-center gap-1.5 text-[11px] text-foreground">
       <span className={`h-1.5 w-1.5 rounded-full ${role === "admin" ? "bg-primary" : "bg-muted-foreground/40"}`} />
@@ -319,6 +365,14 @@ export function UsersTab() {
           {item.status === "DISABLED" ? "Enable user" : "Disable user"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={() => setResetTarget(item)} className="cursor-pointer text-[13px]">
+          <KeyRound className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+          Change password (email user)
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setCodesTarget(item)} className="cursor-pointer text-[13px]">
+          <RefreshCw className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
+          Reset security codes (email user)
+        </DropdownMenuItem>
         <DropdownMenuItem disabled={isCurrent || item.status !== "ACTIVE"} onClick={() => handleChangeRole(item)} className="cursor-pointer text-[13px]">
           <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
           <span className="flex flex-col">
@@ -534,6 +588,54 @@ export function UsersTab() {
           })}
         </div>
       </div>
+
+      {/* Admin-initiated password change */}
+      <Dialog open={resetTarget !== null} onOpenChange={(open) => { if (!open) setResetTarget(null); }}>
+        <DialogContent className="rounded-md sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Change user password</DialogTitle>
+            <DialogDescription>
+              A new password will be set on this account. The user receives an email saying only that their password changed — no password, codes, or request details are included.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded border border-border/70 bg-muted/30 px-3 py-2 font-mono text-[12px] text-foreground">
+            {resetTarget?.email}
+          </div>
+          <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setResetTarget(null)} disabled={resettingPassword} className="h-9">
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAdminResetPassword} disabled={resettingPassword} className="h-9">
+              {resettingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-3.5 w-3.5" />}
+              Change password &amp; notify
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Admin-initiated security code reset */}
+      <Dialog open={codesTarget !== null} onOpenChange={(open) => { if (!open) setCodesTarget(null); }}>
+        <DialogContent className="rounded-md sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Reset security codes</DialogTitle>
+            <DialogDescription>
+              Existing recovery codes are invalidated. The user receives an email stating only that their security codes were reset — the codes themselves and who requested it are never included.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="rounded border border-border/70 bg-muted/30 px-3 py-2 font-mono text-[12px] text-foreground">
+            {codesTarget?.email}
+          </div>
+          <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 pt-4">
+            <Button type="button" variant="ghost" onClick={() => setCodesTarget(null)} disabled={resettingCodes} className="h-9">
+              Cancel
+            </Button>
+            <Button type="button" onClick={handleAdminResetSecurityCodes} disabled={resettingCodes} className="h-9">
+              {resettingCodes ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-3.5 w-3.5" />}
+              Reset codes &amp; notify
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

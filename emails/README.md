@@ -13,6 +13,16 @@ Inter / Plus Jakarta Sans / JetBrains Mono).
 | `otp-password-reset.html` | `POST /api/v1/auth/forgot-password` | `Reset your VaultAuth password` | Jinja2 |
 | `otp-2fa.html` | Same 2FA challenge as `otp-sign-in.html` | `Your VaultAuth verification code` | `str.format()` |
 | `password-reset.html` | Same reset flow as `otp-password-reset.html` | `Reset your VaultAuth password` | `str.format()` |
+| `password-changed-notice.html` | An administrator changes a user's password | `Your VaultAuth password was changed` | Static (no placeholders) |
+| `security-codes-reset-notice.html` | An administrator resets a user's security codes | `Your VaultAuth security codes were reset` | Static (no placeholders) |
+
+## Administrative change notifications
+
+`password-changed-notice.html` and `security-codes-reset-notice.html` are
+minimal-disclosure notices. They state only that the event occurred and contain
+no password, no codes, no administrator identity, no IP/device, and no timestamp.
+They are static HTML with no placeholders, so nothing can be interpolated into
+them by mistake. The admin UI confirms that these notices have been sent.
 
 ## `str.format()` variants
 

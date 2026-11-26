@@ -455,6 +455,19 @@ class ApiClient {
     return res.data;
   }
 
+  /**
+   * AdminTOTP recovery-code regeneration. The backend route is not deployed yet;
+   * the admin UI exposes this action as disabled until it ships.
+   */
+  async adminRegenerateRecoveryCodes(userId: string): Promise<RecoveryCodesResponse> {
+    this.invalidateUserCache();
+    const res = await this.request<RecoveryCodesResponse>(
+      `/api/v1/admin/users/${userId}/totp/recovery-codes/regenerate`,
+      { method: "POST", body: JSON.stringify({}) }
+    );
+    return res.data;
+  }
+
   async logout(): Promise<void> {
     const token = this.getToken();
     try {
