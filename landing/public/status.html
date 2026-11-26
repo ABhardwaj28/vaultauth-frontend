@@ -276,7 +276,7 @@
       </div>
 
       <p class="footnote" id="footnote">
-        Status reflects the two requests above at the moment they were made. Refresh to re-check; the page also refreshes automatically every 60 seconds.
+        Status reflects the two requests above at the moment they were made. Refresh to re-check; the page refreshes automatically every 10 seconds.
       </p>
     </main>
 
@@ -293,7 +293,7 @@
   // Local dev uses the Vite proxy; production uses same-origin rewrites.
   var API_BASE = (location.port === '3001' || location.port === '3000') ? '/va-api' : '';
   var TIMEOUT_MS = 5000;
-  var REFRESH_MS = 60000;
+  var REFRESH_MS = 10000;
   var PATHS = {
     health: "/health",
     jwks: "/.well-known/jwks.json"
@@ -319,7 +319,7 @@
 
   function formatChecked(date) {
     if (!(date instanceof Date)) return "—";
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
+    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   }
 
   function describeError(result) {
@@ -514,7 +514,7 @@
       if (current !== generation) return;
       el.refresh.disabled = false;
       setText(el.refresh, "Refresh");
-      setText(el.footnote, "Status reflects the two requests above at the moment they were made. Refresh to re-check; the page also refreshes automatically every 60 seconds.");
+      setText(el.footnote, "Status reflects the two requests above at the moment they were made. Refresh to re-check; the page refreshes automatically every 10 seconds.");
     });
   }
 

@@ -9,7 +9,6 @@ import {
   AlertCircle,
   Clock,
   ShieldCheck,
-  Check,
   CheckCircle2,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -555,8 +554,8 @@ export function LoginPage() {
             <ul className="mt-7 space-y-3">
               {["Argon2id protected", "Opaque sessions", "Instant revocation"].map((item) => (
                 <li key={item} className="flex items-center gap-2.5 text-[13px] text-white/85">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-none bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                    <Check className="h-3 w-3 text-emerald-400" strokeWidth={3} />
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
                   </span>
                   {item}
                 </li>
@@ -659,18 +658,6 @@ export function LoginPage() {
                   Try again in <span className="font-mono font-medium tabular-nums">{rateLimitTimer}s</span>.
                 </div>
               )}
-
-              <div className="flex items-center justify-between gap-3 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
-                <span className={password.length >= 12 ? "text-emerald-500" : ""}>
-                  {password.length >= 12 ? "✓" : "○"} 12+ characters
-                </span>
-                <span className={/[A-Z]/.test(password) && /[a-z]/.test(password) ? "text-emerald-500" : ""}>
-                  {/[A-Z]/.test(password) && /[a-z]/.test(password) ? "✓" : "○"} Mixed case
-                </span>
-                <span className={/\d/.test(password) ? "text-emerald-500" : ""}>
-                  {/\d/.test(password) ? "✓" : "○"} Number
-                </span>
-              </div>
 
               <Button
                 type="submit"

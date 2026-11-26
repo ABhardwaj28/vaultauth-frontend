@@ -9,7 +9,6 @@ import {
   AlertCircle,
   CheckCircle2,
   ShieldCheck,
-  Check,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +17,21 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
 import { PasswordResetDialog } from "./LoginPage";
+
+const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length;
+
+/** A small ring that fills with a green dot when a requirement is met. */
+function PolicyDot({ valid }: { valid: boolean }) {
+  return (
+    <span
+      className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+        valid ? "border-emerald-400/60 bg-emerald-500/15" : "border-border"
+      }`}
+    >
+      <span className={`h-1.5 w-1.5 rounded-full ${valid ? "bg-emerald-400" : "bg-transparent"}`} />
+    </span>
+  );
+}
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -36,6 +50,7 @@ export function RegisterPage() {
   const hasUppercase = /[A-Z]/.test(password);
   const hasLowercase = /[a-z]/.test(password);
   const hasNumberOrSymbol = /[\d\W]/.test(password);
+  const bytesValid = password.length > 0 && utf8ByteLength(password) <= 128;
   const passwordsMatch = password && password === confirmPassword;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,113 +101,83 @@ export function RegisterPage() {
     }
   };
 
-  return (
-    <div className="flex min-h-screen bg-[#F1F2F5] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
-      {/* Always-dark brand panel — hidden on small screens */}
-      <aside className="relative hidden lg:flex lg:w-[48%] xl:w-[46%] shrink-0 flex-col overflow-hidden bg-[#111318] text-white">
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-          <div className="absolute -left-56 -bottom-72 h-[680px] w-[680px] rounded-full border border-white/[0.05]" />
-          <div className="absolute -left-40 -bottom-56 h-[560px] w-[560px] rounded-full border border-white/[0.04]" />
-          <div className="absolute -left-24 -bottom-40 h-[440px] w-[440px] rounded-full border border-white/[0.03]" />
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage:
-                "radial-gradient(circle at 22% 82%, rgba(255,255,255,0.045), transparent 55%)",
-            }}
-          />
-        </div>
+  const checks = [
+    { label: "12+ characters", valid: password.length >= 12 },
+    { label: "Mixed case", valid: hasUppercase && hasLowercase },
+    { label: "Number or symbol", valid: hasNumberOrSymbol },
+    { label: "128-byte cap", valid: bytesValid },
+  ];
 
-        <div className="relative z-10 flex h-full flex-col px-10 py-10 xl:px-16 xl:py-14">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/15 bg-white/[0.06]">
-              <ShieldCheck className="h-5 w-5 text-white/80" />
-            </div>
-            <div className="flex items-baseline gap-2">
-              <span className="font-display text-sm font-semibold tracking-tight">VaultAuth</span>
-              <span className="font-mono text-[10px] font-medium tracking-[0.18em] text-white/45">
-                SSO
-              </span>
-            </div>
+  return (
+    <div className="relative flex min-h-screen items-center justify-center bg-[#F1F2F5] px-4 py-8 text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_50%_45%_at_50%_35%,hsl(var(--primary)/0.06),transparent_70%)]"
+      />
+
+      <div className="relative z-10 w-full max-w-[720px] overflow-hidden rounded-none border border-border/70 bg-white shadow-[0_30px_80px_-40px_rgba(16,24,40,0.45)] dark:border-white/[0.07] dark:bg-[#11141A] dark:shadow-[0_30px_80px_-40px_rgba(0,0,0,0.9)] md:grid md:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)]">
+        {/* Compact always-dark brand panel */}
+        <aside className="relative hidden flex-col justify-between overflow-hidden bg-[#111318] p-7 text-white md:flex">
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0">
+            <div className="absolute -bottom-32 -left-24 h-[380px] w-[380px] rounded-none border border-white/[0.06]" />
+            <div className="absolute -bottom-20 -left-12 h-[300px] w-[300px] rounded-full border border-white/[0.05]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_90%,rgba(240,122,38,0.16),transparent_60%)]" />
           </div>
 
-          <div className="my-auto max-w-md py-10">
-            <h2 className="font-display text-4xl font-semibold leading-[1.1] tracking-[-0.03em] xl:text-[3.25rem]">
+          <div className="relative flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-none bg-[#F07A26] text-white">
+              <ShieldCheck className="h-4 w-4" />
+            </span>
+            <span className="flex items-baseline gap-1.5">
+              <span className="font-display text-sm font-bold tracking-tight">VaultAuth</span>
+              <span className="font-mono text-[10px] font-semibold tracking-[0.16em] text-white/45">SSO</span>
+            </span>
+          </div>
+
+          <div className="relative py-8">
+            <h2 className="font-display text-[30px] font-bold leading-[1.12] tracking-[-0.035em]">
               Start secure.
               <br />
               Stay in control.
             </h2>
-            <p className="mt-6 max-w-sm text-sm leading-relaxed text-slate-400">
+            <p className="mt-3 text-[13px] leading-relaxed text-white/55">
               Zero-trust single sign-on with hardware-backed credential protection.
             </p>
 
-            <ul className="mt-10 space-y-4">
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Argon2id-protected credentials
-              </li>
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Scoped, short-lived sessions
-              </li>
-              <li className="flex items-center gap-3 text-sm text-slate-200">
-                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
-                  <Check className="h-3.5 w-3.5 text-emerald-400" strokeWidth={3} />
-                </span>
-                Continuous access verification
-              </li>
+            <ul className="mt-7 space-y-3">
+              {["Argon2id-protected credentials", "Mandatory email OTP", "Opaque sessions"].map((item) => (
+                <li key={item} className="flex items-center gap-2.5 text-[13px] text-white/85">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-emerald-500/15 ring-1 ring-emerald-400/25">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  </span>
+                  {item}
+                </li>
+              ))}
             </ul>
           </div>
 
-          <p className="text-[11px] text-slate-500">
-            © 2026 VaultAuth. Zero-trust identity gateway.
-          </p>
-        </div>
-      </aside>
+          <p className="relative font-mono text-[10px] text-white/35">zero-trust identity gateway</p>
+        </aside>
 
-      {/* Themed form panel */}
-      <section className="relative flex min-h-screen flex-1 flex-col overflow-hidden bg-[#F1F2F5] text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
-        <div className="absolute right-5 top-5 z-20">
-        </div>
+        {/* Themed form panel */}
+        <div className="relative flex flex-col">
+          <div className="flex flex-1 flex-col justify-center px-6 py-8 sm:px-8">
+            <div className="mb-6 md:hidden">
+              <span className="flex h-8 w-8 items-center justify-center rounded-none bg-[#F07A26] text-white">
+                <ShieldCheck className="h-4 w-4" />
+              </span>
+            </div>
 
-        {/* Brand mark sits above the form on mobile */}
-        <div className="relative z-10 flex items-center gap-2.5 px-6 pt-8 lg:hidden">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-foreground/15 bg-foreground/[0.04]">
-            <ShieldCheck className="h-4 w-4 text-foreground/75" />
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-display text-sm font-semibold tracking-tight text-foreground">
-              VaultAuth
-            </span>
-            <span className="font-mono text-[10px] font-medium tracking-[0.16em] text-muted-foreground">
-              SSO
-            </span>
-          </div>
-        </div>
+            <h1 className="font-display text-[26px] font-bold tracking-[-0.03em] text-foreground">
+              Create your account
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">Set up a secure identity on the VaultAuth SSO realm.</p>
 
-        <main className="relative z-10 flex flex-1 items-center justify-center px-4 py-10 sm:px-10 sm:py-16">
-          <div className="w-full max-w-[400px] rounded-xl border border-border/70 bg-white p-7 shadow-[0_12px_40px_-16px_rgba(16,24,40,0.18)] dark:border-white/[0.06] dark:bg-[#11141A] dark:shadow-[0_12px_40px_-16px_rgba(0,0,0,0.5)] sm:p-8">
-            <header className="mb-8">
-              <h1 className="font-display text-3xl font-semibold leading-tight tracking-[-0.02em] text-foreground">
-                Create your account
-              </h1>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-                Set up a secure identity on the VaultAuth SSO realm.
-              </p>
-            </header>
-
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {/* Success Banner */}
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4">
               {successMessage && (
-                <Alert variant="default" className="rounded-lg border-border/70 bg-muted/40 text-sm text-foreground/80">
+                <Alert variant="default" className="rounded-none border-border/70 bg-muted/40 text-sm text-foreground/80">
                   <CheckCircle2 className="h-4 w-4 text-muted-foreground" />
-                  <AlertTitle className="text-sm font-semibold text-foreground">
-                    Registration initiated
-                  </AlertTitle>
+                  <AlertTitle className="text-sm font-semibold text-foreground">Registration initiated</AlertTitle>
                   <AlertDescription className="mt-1 text-sm leading-relaxed">
                     {successMessage}{" "}
                     <Link to="/login" className="font-medium text-foreground underline decoration-border underline-offset-4">
@@ -202,134 +187,93 @@ export function RegisterPage() {
                 </Alert>
               )}
 
-              {/* Error Banner */}
               {error && (
-                <Alert variant="destructive" className="rounded-lg border-destructive/25 bg-destructive/[0.06] text-sm text-destructive">
+                <Alert variant="destructive" className="rounded-none border border-destructive/25 bg-destructive/[0.06] text-sm text-destructive">
                   <AlertCircle className="h-4 w-4" />
                   <AlertTitle className="text-sm font-semibold">Registration error</AlertTitle>
                   <AlertDescription className="mt-1 text-sm leading-relaxed">{error}</AlertDescription>
                 </Alert>
               )}
 
-              {/* Email Field */}
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                  User email
-                </Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="email" className="text-[13px] font-semibold text-foreground">User email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="email"
-                    type="email"
-                    required
-                    autoFocus
-                    autoComplete="email"
-                    placeholder="name@example.com"
-                    value={email}
+                    id="email" type="email" required autoFocus autoComplete="email"
+                    placeholder="name@example.com" value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
+                    className="h-10 rounded-none border-border/80 bg-background/60 pl-9 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                 </div>
               </div>
 
-              {/* Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                  Master password
-                </Label>
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="password" className="text-[13px] font-semibold text-foreground">Master password</Label>
+                  <button
+                    type="button" onClick={() => setResetOpen(true)}
+                    className="text-xs font-medium text-[#C96B1E] underline-offset-4 hover:underline dark:text-[#E5A068]"
+                  >
+                    Forgot password?
+                  </button>
+                </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    autoComplete="new-password"
-                    placeholder="••••••••••••"
-                    value={password}
+                    id="password" type={showPassword ? "text" : "password"} required autoComplete="new-password"
+                    placeholder="••••••••••••" value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 pr-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
+                    className="h-10 rounded-none border-border/80 bg-background/60 pl-9 pr-9 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
-                    tabIndex={-1}
+                    type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-3 text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
+                    tabIndex={-1} aria-label={showPassword ? "Hide password" : "Show password"}
                   >
                     {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
 
-                {/* Real-time Policy Checklist */}
-                {password && (
-                  <div className="mt-1 space-y-2 rounded-lg border border-border/70 bg-muted/30 p-3 text-xs">
-                    <div className="flex items-center gap-2">
-                      <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isLengthValid ? "bg-foreground/70" : "bg-border"}`} />
-                      <span className={isLengthValid ? "font-medium text-foreground/80" : "text-muted-foreground"}>
-                        At least 12 characters ({password.length}/12)
-                      </span>
-                    </div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1.5 text-muted-foreground">
-                      <span className={`flex items-center gap-2 ${hasUppercase ? "text-foreground/80" : ""}`}>
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasUppercase ? "bg-foreground/70" : "bg-border"}`} />
-                        Uppercase
-                      </span>
-                      <span className={`flex items-center gap-2 ${hasLowercase ? "text-foreground/80" : ""}`}>
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasLowercase ? "bg-foreground/70" : "bg-border"}`} />
-                        Lowercase
-                      </span>
-                      <span className={`flex items-center gap-2 ${hasNumberOrSymbol ? "text-foreground/80" : ""}`}>
-                        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${hasNumberOrSymbol ? "bg-foreground/70" : "bg-border"}`} />
-                        Number or symbol
-                      </span>
-                      <span className="flex items-center gap-2">
-                        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-border" />
-                        Max 128 bytes
-                      </span>
-                    </div>
-                  </div>
-                )}
-                <p className="text-xs text-muted-foreground">Use at least 12 characters.</p>
+                {/* Real-time policy indicators — the small circles fill with a green dot */}
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-border/60 pt-3 text-[11px] text-muted-foreground">
+                  {checks.map((check) => (
+                    <span key={check.label} className={`inline-flex items-center gap-1.5 ${check.valid ? "text-emerald-500" : ""}`}>
+                      <PolicyDot valid={check.valid} />
+                      {check.label}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              {/* Confirm Password Field */}
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-                  Confirm password
-                </Label>
+              <div className="space-y-1.5">
+                <Label htmlFor="confirmPassword" className="text-[13px] font-semibold text-foreground">Confirm password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="confirmPassword"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    autoComplete="new-password"
-                    placeholder="••••••••••••"
-                    value={confirmPassword}
+                    id="confirmPassword" type={showPassword ? "text" : "password"} required autoComplete="new-password"
+                    placeholder="••••••••••••" value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
+                    className="h-10 rounded-none border-border/80 bg-background/60 pl-9 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
                     disabled={loading}
                   />
                 </div>
                 {confirmPassword && (
-                  <p className={`text-xs ${passwordsMatch ? "text-muted-foreground" : "text-destructive"}`}>
+                  <p className={`text-xs ${passwordsMatch ? "text-emerald-500" : "text-destructive"}`}>
                     {passwordsMatch ? "Passwords match." : "Passwords do not match."}
                   </p>
                 )}
               </div>
 
-              {/* Submit Button */}
               <Button
                 type="submit"
                 disabled={loading || !isLengthValid || !passwordsMatch}
-                className="h-11 w-full rounded-lg bg-[#F07A26] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#DB6A16]"
+                className="h-10 w-full rounded-none bg-[#F07A26] text-sm font-semibold text-white transition-colors hover:bg-[#DB6A16]"
               >
                 {loading ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Creating your account…
-                  </span>
+                  <span className="flex items-center gap-2"><Loader2 className="h-4 w-4 animate-spin" /> Creating your account…</span>
                 ) : (
                   "Create account"
                 )}
@@ -345,34 +289,21 @@ export function RegisterPage() {
                 OIDC federation is configured by your administrator.
               </p>
 
-              <div className="pt-1 text-center text-sm text-muted-foreground">
+              <p className="pt-1 text-center text-sm text-muted-foreground">
                 Already have an account?{" "}
-                <Link
-                  to="/login"
-                  className="font-medium text-foreground underline decoration-border underline-offset-4 transition-colors hover:decoration-foreground"
-                >
+                <Link to="/login" className="font-semibold text-foreground underline decoration-border underline-offset-4 hover:decoration-foreground">
                   Sign in
                 </Link>
-              </div>
-
-              <div className="pt-1 text-center text-xs">
-                <button
-                  type="button"
-                  onClick={() => setResetOpen(true)}
-                  className="font-medium text-[#B25F12] underline decoration-transparent underline-offset-4 transition-colors hover:text-[#8A4A0E] hover:decoration-current dark:text-[#E5A068] dark:hover:text-[#F7B878]"
-                >
-                  Forgot password?
-                </button>
-              </div>
+              </p>
             </form>
           </div>
-        </main>
 
-        <footer className="relative z-10 flex flex-wrap items-center justify-between gap-2 px-6 py-5 text-xs text-muted-foreground sm:px-10">
-          <span>Protected by VaultAuth SSO</span>
-          <span className="font-mono text-[11px]">req_4b9d70e2</span>
-        </footer>
-      </section>
+          <div className="flex items-center justify-between border-t border-border/60 px-6 py-3 text-[11px] text-muted-foreground sm:px-8">
+            <span>Protected by VaultAuth SSO</span>
+            <span className="font-mono">req_4b9d70e2</span>
+          </div>
+        </div>
+      </div>
 
       <PasswordResetDialog
         open={resetOpen}
