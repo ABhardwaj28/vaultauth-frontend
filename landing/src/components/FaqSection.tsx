@@ -31,7 +31,7 @@ export function FaqSection() {
   const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section id="faq" className="scroll-mt-24 border-t border-[#1E2838] bg-white/[0.012] py-24 sm:py-28">
+    <section id="faq" className="scroll-mt-24 border-t border-[#1E2838] bg-white/[0.012] py-14 sm:py-16">
       <div className="va-container grid gap-6 md:grid-cols-[minmax(0,0.8fr)_minmax(0,1.2fr)] sm:gap-12">
         <Reveal>
           <SectionHeading eyebrow="Technical questions" title="Straight answers, no hedging" description="If it isn't implemented, we say so. If it is, we tell you exactly how it works." />

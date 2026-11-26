@@ -25,7 +25,7 @@ const benchmarks = [
 export function StatsBanner() {
   return (
     <>
-      <section className="border-y border-[#1E2838] bg-white/[0.015] py-12">
+      <section className="border-y border-[#1E2838] bg-white/[0.015] py-10">
         <div className="va-container">
           <p className="text-center text-[13px] text-[#94A3B8]">What VaultAuth ships in every session</p>
           <div className="va-mask-x mt-8 overflow-hidden">
@@ -51,7 +51,7 @@ export function StatsBanner() {
         </div>
       </section>
 
-      <section className="va-container py-20 sm:py-24">
+      <section className="va-container py-14 sm:py-16">
         <Reveal>
           <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-4 sm:gap-x-8 sm:gap-y-0">
             {benchmarks.map((item, index) => (

@@ -44,7 +44,7 @@ const facts = [
 export function DevelopersSection() {
   const healthy = useLiveHealth();
   return (
-    <section id="developers" className="scroll-mt-24 border-y border-[#1E2838] bg-white/[0.012] py-24 sm:py-28">
+    <section id="developers" className="scroll-mt-24 border-y border-[#1E2838] bg-white/[0.012] py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -54,7 +54,7 @@ export function DevelopersSection() {
           />
         </Reveal>
 
-        <div className="mt-14 grid gap-5 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] sm:gap-6">
+        <div className="mt-9 grid gap-5 md:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] sm:gap-6">
           <Reveal>
             <div className="overflow-hidden rounded-xl border border-[#1E2838] bg-[#0E1420]">
               <div className="flex items-center justify-between border-b border-[#1E2838] px-5 py-3">

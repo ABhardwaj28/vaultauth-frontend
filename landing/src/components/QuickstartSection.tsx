@@ -29,7 +29,7 @@ export function QuickstartSection() {
   const commands = [framework.install, `curl ${API_ORIGIN}/.well-known/openid-configuration`];
 
   return (
-    <section id="quickstarts" className="relative scroll-mt-24 overflow-hidden border-y border-[#1E2838] py-24 sm:py-28">
+    <section id="quickstarts" className="relative scroll-mt-24 overflow-hidden border-y border-[#1E2838] py-14 sm:py-16">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_50%_0%,rgba(240,122,38,0.14),transparent_60%)]" />
       <div className="va-grid pointer-events-none absolute inset-0 opacity-[0.1]" />
 
@@ -45,7 +45,7 @@ export function QuickstartSection() {
         </div>
 
         {/* Segmented framework switcher */}
-        <div className="mx-auto mt-12 flex max-w-4xl gap-1 overflow-x-auto rounded-lg border border-[#1E2838] bg-[#0E1420] p-1.5 pb-2 [scrollbar-width:thin]">
+        <div className="mx-auto mt-9 flex max-w-4xl gap-1 overflow-x-auto rounded-lg border border-[#1E2838] bg-[#0E1420] p-1.5 pb-2 [scrollbar-width:thin]">
           {frameworks.map((item, index) => (
             <button
               key={item.id}

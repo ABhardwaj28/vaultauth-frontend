@@ -43,7 +43,7 @@ const tiers = [
 
 export function PricingSection() {
   return (
-    <section id="pricing" className="scroll-mt-24 py-24 sm:py-28">
+    <section id="pricing" className="scroll-mt-24 py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -54,7 +54,7 @@ export function PricingSection() {
           />
         </Reveal>
 
-        <div className="mt-12 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
+        <div className="mt-9 grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
           {tiers.map((tier, index) => (
             <Reveal key={tier.name} delay={index * 0.05}>
               <div className={`flex h-full flex-col rounded-xl border p-3 sm:p-6 ${tier.primary ? "border-[#F07A26]/50 bg-gradient-to-b from-[#F07A26]/[0.08] to-[#0E1420]" : "border-[#1E2838] bg-[#0E1420]"}`}>

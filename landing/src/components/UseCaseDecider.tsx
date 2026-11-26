@@ -65,7 +65,7 @@ export function UseCaseDecider() {
   };
 
   return (
-    <section id="solutions" className="scroll-mt-24 py-24 sm:py-28">
+    <section id="solutions" className="scroll-mt-24 py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -75,7 +75,7 @@ export function UseCaseDecider() {
           />
         </Reveal>
 
-        <div className="mt-12 grid grid-cols-3 gap-1 rounded-xl border border-[#1E2838] bg-[#0E1420] p-1.5 sm:gap-2" role="tablist" aria-label="Use cases">
+        <div className="mt-9 grid grid-cols-3 gap-1 rounded-xl border border-[#1E2838] bg-[#0E1420] p-1.5 sm:gap-2" role="tablist" aria-label="Use cases">
           {cases.map((c, index) => {
             const Icon = c.icon;
             const edgeRadius =

@@ -63,7 +63,7 @@ export function ArchitectureSection() {
   const tier = tiers[active]!;
 
   return (
-    <section id="architecture" className="scroll-mt-24 border-y border-[#1E2838] py-24 sm:py-28">
+    <section id="architecture" className="scroll-mt-24 border-y border-[#1E2838] py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -73,7 +73,7 @@ export function ArchitectureSection() {
           />
         </Reveal>
 
-        <div className="relative mt-14">
+        <div className="relative mt-9">
           <div className="relative grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-4">
             {tiers.map((item, index) => {
               const Icon = item.icon;

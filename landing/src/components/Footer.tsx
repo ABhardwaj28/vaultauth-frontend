@@ -49,7 +49,7 @@ const columns = [
 export function Footer() {
   return (
     <footer className="border-t border-[#1E2838] bg-[#060910]">
-      <div className="va-container py-16">
+      <div className="va-container py-12">
         <div className="grid gap-8 md:grid-cols-[minmax(0,1.4fr)_minmax(0,2.6fr)] sm:gap-12">
           <div>
             <a href="#top" className="flex items-center gap-2.5">

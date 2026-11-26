@@ -87,7 +87,7 @@ export function Hero() {
   ];
 
   return (
-    <section id="top" ref={sectionRef} className="relative overflow-hidden pb-20 pt-28 lg:pb-28 lg:pt-32">
+    <section id="top" ref={sectionRef} className="relative overflow-hidden pb-14 pt-28 lg:pb-16 lg:pt-32">
       <div className="pointer-events-none absolute left-1/2 top-[-380px] h-[760px] w-[1100px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_center,rgba(240,122,38,0.16),transparent_70%)]" />
       <div className="va-grid pointer-events-none absolute inset-0 opacity-25 [mask-image:linear-gradient(to_bottom,black,transparent_75%)]" />
 

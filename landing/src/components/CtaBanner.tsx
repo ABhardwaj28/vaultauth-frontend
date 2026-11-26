@@ -32,10 +32,10 @@ const actions = [
 
 export function CtaBanner() {
   return (
-    <section id="final-cta" className="scroll-mt-24 py-24 sm:py-28">
+    <section id="final-cta" className="scroll-mt-24 py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
-          <div className="relative overflow-hidden rounded-2xl border border-[#F07A26]/20 bg-gradient-to-br from-[#1a120c] via-[#0E1420] to-[#080C14] px-6 py-16 text-center sm:px-12">
+          <div className="relative overflow-hidden rounded-2xl border border-[#F07A26]/20 bg-gradient-to-br from-[#1a120c] via-[#0E1420] to-[#080C14] px-6 py-12 text-center sm:px-12">
             <div className="pointer-events-none absolute left-1/2 top-0 h-80 w-[760px] -translate-x-1/2 rounded-full bg-[radial-gradient(ellipse_at_top,rgba(240,122,38,0.2),transparent_70%)]" />
             <div className="va-grid pointer-events-none absolute inset-0 opacity-[0.15]" />
             <div className="relative">

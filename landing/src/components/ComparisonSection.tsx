@@ -20,7 +20,7 @@ function Cell({ value }: { value: string | boolean }) {
 
 export function ComparisonSection() {
   return (
-    <section id="compare" className="scroll-mt-24 border-y border-[#1E2838] bg-white/[0.012] py-24 sm:py-28">
+    <section id="compare" className="scroll-mt-24 border-y border-[#1E2838] bg-white/[0.012] py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -32,7 +32,7 @@ export function ComparisonSection() {
         </Reveal>
 
         <Reveal delay={0.08}>
-          <div className="mt-14 rounded-xl border border-[#1E2838] bg-[#0E1420]">
+          <div className="mt-9 rounded-xl border border-[#1E2838] bg-[#0E1420]">
             <table className="w-full table-fixed border-collapse text-left">
               <colgroup>
                 <col className="w-[34%]" />

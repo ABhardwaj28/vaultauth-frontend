@@ -56,7 +56,7 @@ const pillars: { icon: ReactNode; title: string; body: string; meta: string; hre
 
 export function FeaturesGrid() {
   return (
-    <section id="features" className="scroll-mt-24 py-24 sm:py-28">
+    <section id="features" className="scroll-mt-24 py-14 sm:py-16">
       <div className="va-container">
         <Reveal>
           <SectionHeading
@@ -66,7 +66,7 @@ export function FeaturesGrid() {
           />
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4">
+        <div className="mt-9 grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4">
           {pillars.map((pillar, index) => (
             <Reveal key={pillar.title} delay={index * 0.05}>
               <SpotlightCard className="h-full rounded-xl border border-[#1E2838] bg-[#0E1420]">
