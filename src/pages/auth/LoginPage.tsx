@@ -25,8 +25,6 @@ import { useAuth } from "@/context/AuthContext";
 import { api } from "@/lib/api";
 import { ApiError } from "@/types/api";
 
-const utf8ByteLength = (value: string) => new TextEncoder().encode(value).length;
-
 function resetErrorMessage(err: unknown, fallback: string): string {
   const apiErr = err as Partial<ApiError> | undefined;
   const message = apiErr?.message?.trim();
@@ -51,8 +49,8 @@ interface PasswordResetDialogProps {
 }
 
 /**
- * Two-step, API-backed password reset. Shared by the login and register screens;
- * it is intentionally self-contained so neither screen's existing auth logic changes.
+ * Link-based password reset request. The email carries a reset link, so no OTP
+ * input is collected here. Shared by the login and register screens.
  */
 export function PasswordResetDialog({
   open,
@@ -60,31 +58,20 @@ export function PasswordResetDialog({
   initialEmail = "",
   onSuccess,
 }: PasswordResetDialogProps) {
-  const [step, setStep] = useState<1 | 2 | "done">(1);
+  const [step, setStep] = useState<1 | "done">(1);
   const [email, setEmail] = useState(initialEmail);
-  const [code, setCode] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [busy, setBusy] = useState<"request" | "verify" | "reset" | null>(null);
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
   const [resultMessage, setResultMessage] = useState<string | null>(null);
 
-  const loading = busy !== null;
-  const passwordBytes = utf8ByteLength(newPassword);
-  const isPasswordValid = newPassword.length >= 12 && passwordBytes <= 128;
-  const isCodeValid = /^\d{6}$/.test(code);
+  const loading = busy;
 
   const handleOpenChange = (next: boolean) => {
     if (next) {
       setStep(1);
       setEmail(initialEmail);
-      setCode("");
-      setNewPassword("");
-      setShowNewPassword(false);
-      setBusy(null);
+      setBusy(false);
       setError(null);
-      setNotice(null);
       setResultMessage(null);
     }
     onOpenChange(next);
@@ -98,50 +85,23 @@ export function PasswordResetDialog({
       return;
     }
     setError(null);
-    setNotice(null);
-    setBusy("request");
+    setBusy(true);
     try {
       const res = await api.requestPasswordReset(cleanEmail);
       setEmail(cleanEmail);
-      setNotice(
-        responseMessage(res, "If an account exists for this email, a reset code has been sent.")
-      );
-      setStep(2);
-    } catch (err: unknown) {
-      setError(
-        resetErrorMessage(err, "Could not send a reset code. Please try again.")
-      );
-    } finally {
-      setBusy(null);
-    }
-  };
-
-  const handleCompleteReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isCodeValid) {
-      setError("Enter the 6-digit code sent to your email address.");
-      return;
-    }
-    if (!isPasswordValid) {
-      setError("New password must be at least 12 characters and at most 128 bytes.");
-      return;
-    }
-    setError(null);
-    try {
-      setBusy("verify");
-      await api.verifyResetCode(email, code);
-      setBusy("reset");
-      const res = await api.resetPassword(email, code, newPassword);
       setResultMessage(
-        responseMessage(res, "Your password has been reset. You can now sign in.")
+        responseMessage(
+          res,
+          "If an account exists for this email, a password reset link has been sent. Check your inbox."
+        )
       );
       setStep("done");
     } catch (err: unknown) {
       setError(
-        resetErrorMessage(err, "Could not reset your password. Please try again.")
+        resetErrorMessage(err, "Could not send a reset link. Please try again.")
       );
     } finally {
-      setBusy(null);
+      setBusy(false);
     }
   };
 
@@ -168,21 +128,15 @@ export function PasswordResetDialog({
       >
         <DialogHeader className="text-left">
           <span className="font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-[#B25F12] dark:text-[#E5A068]">
-            {step === "done" ? "Complete" : `Step ${step} of 2`}
+            {step === "done" ? "Check your inbox" : "Account recovery"}
           </span>
           <DialogTitle className="font-display text-2xl font-semibold tracking-[-0.02em] text-foreground">
-            {step === 1
-              ? "Reset your password"
-              : step === 2
-                ? "Verify and reset"
-                : "You’re all set"}
+            {step === 1 ? "Reset your password" : "Check your email"}
           </DialogTitle>
           <DialogDescription className="text-sm leading-relaxed text-muted-foreground">
             {step === 1
-              ? "Enter your account email and we’ll send you a one-time reset code."
-              : step === 2
-                ? "Enter the code we sent you and choose a new password."
-                : "You can now sign in with your new password."}
+              ? "Enter your account email and we’ll send you a secure reset link."
+              : "Follow the link in the email to choose a new password."}
           </DialogDescription>
         </DialogHeader>
 
@@ -227,133 +181,13 @@ export function PasswordResetDialog({
                 disabled={loading || !email.trim()}
                 className="h-11 flex-[2] rounded-lg bg-[#F07A26] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#DB6A16]"
               >
-                {busy === "request" ? (
+                {busy ? (
                   <span className="flex items-center gap-2">
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    Sending code…
+                    Sending link…
                   </span>
                 ) : (
-                  "Send reset code"
-                )}
-              </Button>
-            </div>
-          </form>
-        )}
-
-        {step === 2 && (
-          <form onSubmit={handleCompleteReset} className="space-y-4">
-            {notice && (
-              <div className="flex items-start gap-2.5 rounded-lg border border-border/70 bg-muted/40 p-3 text-sm text-foreground/80">
-                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-[#B25F12] dark:text-[#E5A068]" />
-                <span className="leading-relaxed">{notice}</span>
-              </div>
-            )}
-            {errorBanner}
-            <button
-              type="button"
-              onClick={() => {
-                setStep(1);
-                setError(null);
-              }}
-              className="flex flex-wrap items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-            >
-              <Mail className="h-3.5 w-3.5 shrink-0" />
-              Code sent to <span className="font-medium text-foreground">{email}</span>
-              <span className="ml-1 underline decoration-border underline-offset-4">Change</span>
-            </button>
-
-            <div className="space-y-2">
-              <Label htmlFor="reset-code" className="text-sm font-medium text-foreground">
-                Reset code
-              </Label>
-              <Input
-                id="reset-code"
-                type="text"
-                required
-                inputMode="numeric"
-                autoComplete="one-time-code"
-                maxLength={6}
-                pattern="[0-9]{6}"
-                placeholder="000000"
-                value={code}
-                onChange={(e) => {
-                  setCode(e.target.value.replace(/\D/g, "").slice(0, 6));
-                  if (error) setError(null);
-                }}
-                className="h-11 rounded-lg border-border/80 bg-background/60 text-center font-mono text-base tracking-[0.4em] focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
-                disabled={loading}
-              />
-              <p className="text-xs text-muted-foreground">Enter the 6-digit code from your email.</p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="reset-password" className="text-sm font-medium text-foreground">
-                New password
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3.5 top-3.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  id="reset-password"
-                  type={showNewPassword ? "text" : "password"}
-                  required
-                  autoComplete="new-password"
-                  placeholder="••••••••••••"
-                  value={newPassword}
-                  onChange={(e) => {
-                    setNewPassword(e.target.value);
-                    if (error) setError(null);
-                  }}
-                  className="h-11 rounded-lg border-border/80 bg-background/60 pl-10 pr-10 text-sm focus-visible:border-foreground/25 focus-visible:ring-foreground/10 dark:bg-white/[0.03]"
-                  disabled={loading}
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowNewPassword(!showNewPassword)}
-                  className="absolute right-3.5 top-3.5 text-muted-foreground transition-colors hover:text-foreground focus:outline-none"
-                  tabIndex={-1}
-                  aria-label={showNewPassword ? "Hide password" : "Show password"}
-                >
-                  {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                </button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Use at least 12 characters and at most 128 bytes.{" "}
-                <span className={newPassword && !isPasswordValid ? "text-destructive" : ""}>
-                  {newPassword.length}/12 characters · {passwordBytes}/128 bytes
-                </span>
-              </p>
-            </div>
-
-            <div className="flex gap-2 pt-1">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => {
-                  setStep(1);
-                  setError(null);
-                }}
-                disabled={loading}
-                className="h-11 flex-1 rounded-lg text-sm"
-              >
-                Back
-              </Button>
-              <Button
-                type="submit"
-                disabled={loading || !isCodeValid || !isPasswordValid}
-                className="h-11 flex-[2] rounded-lg bg-[#F07A26] text-sm font-semibold text-white shadow-none transition-colors hover:bg-[#DB6A16]"
-              >
-                {busy === "verify" ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Verifying code…
-                  </span>
-                ) : busy === "reset" ? (
-                  <span className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Resetting password…
-                  </span>
-                ) : (
-                  "Reset password"
+                  "Email reset link"
                 )}
               </Button>
             </div>
@@ -367,7 +201,7 @@ export function PasswordResetDialog({
                 <CheckCircle2 className="h-4 w-4 text-emerald-400" />
               </span>
               <div className="space-y-1">
-                <p className="text-sm font-semibold text-foreground">Password reset complete</p>
+                <p className="text-sm font-semibold text-foreground">Reset link sent</p>
                 <p className="text-sm leading-relaxed text-muted-foreground">{resultMessage}</p>
               </div>
             </div>
@@ -469,8 +303,8 @@ export function LoginPage() {
       // Primary credentials only — the factor is chosen after this succeeds.
       const res = await api.login({ email: cleanEmail, password });
 
-      if (res.state === "OTP_REQUIRED" || res.challenge_id || res.requires_2fa) {
-        const methods = res.available_methods?.length ? res.available_methods : ["email"];
+      if (res.mfa_required === true || res.challenge_id) {
+        const methods = res.available_methods ?? [];
         sessionStorage.setItem(
           "vaultauth_pending_factor",
           JSON.stringify({ email: cleanEmail, password, methods, redirectUrl })

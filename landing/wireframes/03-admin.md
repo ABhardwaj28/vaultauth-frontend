@@ -186,7 +186,7 @@ On mount (200ms debounce): `api.getAdminUsers` + `api.getGlobalSessions`.
 | | ID: usr_admin… [copy] |       |          |                 |        |           |    |
 | |----------------------+-------+----------+-----------------+--------+-----------+----| |
 | | jane@corp.com        | USER  | LOCKED   | (pulse) 2 Ses. v| 3 / 3  | Nov 20…   |[…] |
-| | ID: usr_2fa… [copy]   |       |          |  -> dropdown    |        |           |    |
+| | ID: usr_mfa… [copy]   |       |          |  -> dropdown    |        |           |    |
 | |----------------------+-------+----------+-----------------+--------+-----------+----| |
 | | sam@corp.com         | USER  | DISABLED | No active ses.  | 0 / 3  | Nov 18…   |[…] |
 | +----------------------------------------------------------------------------+ |
@@ -217,7 +217,7 @@ On mount: `api.getAuditLogs` + `api.getAdminUsers` (for ID→email resolution).
 2. **Error banner** (conditional).
 3. **Filter toolbar** — two selects:
    - "Event Type:" with options: `All`, `LOGIN_SUCCESS`, `LOGIN_FAILED`, `LOGOUT`,
-     `2FA_CHALLENGE_ISSUED`, `2FA_VERIFIED`, `SESSION_REVOKED`,
+     `MFA_CHALLENGE_ISSUED`, `MFA_VERIFIED`, `SESSION_REVOKED`,
      `OAUTH_CLIENT_CREATED`, `OAUTH_CLIENT_REVOKED`, `OAUTH_TOKEN_ISSUED`,
      `USER_UNLOCKED`, `USER_STATUS_CHANGED`, `ROLE_CHANGED`.
    - "Fetch Limit:" `25 Entries` / `50 Entries` (default) / `100 Entries`.
@@ -253,7 +253,7 @@ On mount: `api.getAuditLogs` + `api.getAdminUsers` (for ID→email resolution).
 | |   | TIMESTAMP           | EVENT ACTION      | PRINCIPAL USER    | CLIENT IP | |
 | |---+---------------------+-------------------+-------------------+-----------| |
 | | > | Nov 23, 10:42:00    | LOGIN_SUCCESS     | jane@corp.com     | 10.0.0.5  | |
-| |   |                     | (success)         | ID: usr_2fa…      |           | |
+| |   |                     | (success)         | ID: usr_mfa…      |           | |
 | | > | Nov 23, 10:40:12    | LOGIN_FAILED      | unknown@corp.com  | 10.0.0.9  | |
 | |   |                     | (destructive)     |                   |           | |
 | | > | Nov 23, 09:15:33    | ROLE_CHANGED      | admin@corp.com    | 10.0.0.2  | |
@@ -329,7 +329,7 @@ and bulk revocation. On mount: `api.getGlobalSessions(100)` + `api.getAdminUsers
 | [search] Search by User ID, email, IP, or browser…    [3 Users] [7 Live Sessions]|
 +--------------------------------------------------------------------------------+
 | v [user] jane@corp.com [copy] [2 Sessions]   globe 10.0.0.5 • 2m ago  [Terminate All (2)]|
-|   ID: usr_2fa…                                                                  |
+|   ID: usr_mfa…                                                                  |
 |   +--------------------------------------------------------------------------+ |
 |   | BROWSER         | IP ADDRESS | LAST ACTIVE | SIGNED IN   | EXPIRES    |ACTION| |
 |   |-----------------+------------+-------------+-------------+------------+------| |

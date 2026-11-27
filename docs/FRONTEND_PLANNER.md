@@ -66,7 +66,7 @@ gantt
 ### Phase 2: Core Authentication & Token Lifecycle
 - [x] **Registration Form:** Implements `POST /api/v1/auth/register` with dynamic NIST SP 800-63B password validation (minimum 12 chars, uppercase, lowercase, numbers/symbols).
 - [x] **Login Form:** Implements `POST /api/v1/auth/login` with Zero-Trust browser integrity attestation.
-- [x] **2FA OTP Challenge Modal:** Implements split 6-digit numeric input with auto-advance, backspace reversing, paste handling, and 10-minute countdown timer (`POST /api/v1/auth/2fa/verify`).
+- [x] **MFA OTP Challenge Modal:** Implements split 6-digit numeric input with auto-advance, backspace reversing, paste handling, and 10-minute countdown timer (`POST /api/v1/auth/mfa/verify`).
 - [x] **Email Verification:** Implements `POST /api/v1/auth/verify-email` and resend throttle (`POST /api/v1/auth/verify-email/resend`).
 - [x] **Ephemeral Token Storage:** Stores session token in memory / `sessionStorage` (zero plaintext disk exposure).
 - [x] **Uniform Error Handling:** Graceful UI alerts for `ERR_INVALID_CREDENTIALS` (anti-enumeration privacy).

@@ -14,9 +14,9 @@ export interface ApiError {
 // --- User Profile & Governance ---
 /**
  * Mirrors the internal `UserProfile` / `AdminUserItem` schemas.
- * `two_factor_enabled`, `two_factor_enforced` and `must_change_password` are the
- * canonical flags; `totp_enabled`, `updated_at`, `failed_attempts` and
- * `locked_until` are retained as optional compatibility fields.
+ * `otp_enabled`, `mfa_enforced` and `must_change_password` are the canonical
+ * flags; `totp_enabled`, `updated_at`, `failed_attempts` and `locked_until` are
+ * retained as optional compatibility fields.
  */
 export interface UserProfile {
   id: string;
@@ -24,8 +24,8 @@ export interface UserProfile {
   role: UserRole;
   status: UserStatus;
   totp_enabled?: boolean;
-  two_factor_enabled?: boolean;
-  two_factor_enforced?: boolean;
+  otp_enabled?: boolean;
+  mfa_enforced?: boolean;
   must_change_password?: boolean;
   created_at: string;
   // Optional legacy / admin-only aliases used by existing components.
@@ -131,8 +131,8 @@ export interface AuditLogItem {
 export interface LoginPayload {
   email: string;
   password: string;
-  /** Request an email OTP or TOTP code explicitly (internal spec: email | totp). */
-  factor?: "email" | "totp";
+  /** Explicitly requested second factor. Only enrolled methods are accepted. */
+  factor?: "otp" | "totp";
 }
 
 /** Mirrors the internal `LoginResponse` schema. */
@@ -142,15 +142,16 @@ export interface LoginResponse {
   email?: string | null;
   role?: UserRole | null;
   must_change_password?: boolean;
-  two_factor_required?: boolean;
-  method?: string | null;
-  available_methods?: string[];
+  mfa_required?: boolean;
+  method?: "otp" | "totp" | string | null;
+  /** Only enrolled factors: "otp", "totp", or both, with equal weight. */
+  available_methods?: Array<"otp" | "totp" | string>;
   challenge_id?: string | null;
   message?: string | null;
   // Optional legacy aliases kept for existing components; the API client
-  // derives these from `two_factor_required` / `challenge_id`.
+  // derives these from `mfa_required` / `challenge_id`.
   state?: "OTP_REQUIRED" | "AUTHENTICATED";
-  requires_2fa?: boolean;
+  requires_mfa?: boolean;
   expires_in?: number;
 }
 
@@ -159,30 +160,39 @@ export interface RegisterPayload {
   password: string;
 }
 
-export interface TwoFactorVerifyPayload {
-  email?: string;
+export interface MfaVerifyPayload {
   code: string;
   challenge_id?: string;
 }
 
-/** `/api/v1/auth/2fa/verify` returns the same envelope as login. */
-export type TwoFactorVerifyResponse = LoginResponse;
+/** `/api/v1/auth/mfa/verify` returns the same envelope as login. */
+export type MfaVerifyResponse = LoginResponse;
+
+export interface ResetPasswordValidateResponse {
+  valid: boolean;
+}
+
+export interface ResetPasswordPayload {
+  token: string;
+  new_password: string;
+  confirm_password: string;
+}
 
 export interface ChangePasswordResponse {
   status?: string;
   message: string;
 }
 
-/** Response for forgot-password / verify-reset-code / reset-password. */
+/** Response for forgot-password / reset-password-link / reset-password. */
 export interface AuthActionResponse {
   status?: string;
   message: string;
 }
 
-export interface User2FAResponse {
+export interface UserOtpResponse {
   status?: string;
-  two_factor_enabled: boolean;
-  two_factor_enforced: boolean;
+  otp_enabled: boolean;
+  mfa_enforced: boolean;
   message: string;
 }
 
@@ -204,10 +214,10 @@ export interface TOTPDisablePayload {
   code?: string | null;
 }
 
-export interface AdminEnforce2FAResponse {
+export interface AdminEnforceMfaResponse {
   status?: string;
-  two_factor_enforced: boolean;
-  two_factor_enabled: boolean;
+  mfa_enforced: boolean;
+  otp_enabled: boolean;
   message: string;
 }
 

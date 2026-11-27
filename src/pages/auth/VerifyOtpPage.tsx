@@ -39,7 +39,7 @@ export function VerifyOtpPage() {
   const challengeId = searchParams.get("challenge_id") || locationState?.challengeId || undefined;
   const isRegistration = locationState?.isRegistration || searchParams.get("type") === "register";
   const redirectUrl = locationState?.redirectUrl || searchParams.get("redirect") || "/dashboard";
-  const method = searchParams.get("method") || locationState?.method || "email";
+  const method = searchParams.get("method") || locationState?.method || "otp";
   const isTotp = method === "totp";
 
   const [code, setCode] = useState("");
@@ -84,9 +84,8 @@ export function VerifyOtpPage() {
           },
         });
       } else {
-        // Verify 2FA challenge
-        const res = await api.verify2FA({
-          email,
+        // Verify MFA challenge (the challenge already encodes the chosen factor)
+        const res = await api.verifyMfa({
           code,
           challenge_id: challengeId,
         });
@@ -124,7 +123,7 @@ export function VerifyOtpPage() {
     }
 
     try {
-      const res = await api.resend2FA(challengeId as string);
+      const res = await api.resendOtp(challengeId as string);
       setResendMessage(
         res.message || "A new 6-digit verification code has been dispatched."
       );

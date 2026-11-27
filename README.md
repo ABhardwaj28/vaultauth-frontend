@@ -1,6 +1,6 @@
 # VaultAuth SSO — Frontend Web Client
 
-> **Enterprise Single Sign-On (SSO) Portal with Two-Factor Verification (2FA), Active Session Telemetry, and Instant 1-Click Revocation.**
+> **Enterprise Single Sign-On (SSO) Portal with Multi-Factor Authentication (MFA), Active Session Telemetry, and Instant 1-Click Revocation.**
 
 [![Project Status](https://img.shields.io/badge/Project%20Status-Active%20Development-blue.svg)](https://github.com/ABhardwaj28/vaultauth-frontend)
 [![PRD Version](https://img.shields.io/badge/PRD-v2.0%20(Optimized)-success.svg)](docs/PRD_v2.0.md)
@@ -14,7 +14,7 @@
 ## 1. Executive Summary
 
 **VaultAuth SSO** is a zero-trust single sign-on (SSO) and identity access management (IAM) client application engineered for modern enterprise workforces. Built to interface with the [vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend) service, this client provides:
-- **Out-of-Band 2FA Verification:** Authenticates primary credentials and enforces secondary 6-digit email OTP (via Resend) or TOTP verification before issuing session tokens.
+- **Out-of-Band MFA Verification:** Authenticates primary credentials and enforces secondary 6-digit email OTP (via Resend) or TOTP verification before issuing session tokens.
 - **Active Session Telemetry & 1-Click Revocation:** Enables employees to inspect their active sessions and administrators to revoke compromised devices globally in under 30 seconds.
 - **Client Security & Zero-Knowledge Transmission:** Plaintext secrets are sent over TLS directly to the server's Argon2id hashing engine; tokens are kept strictly in ephemeral memory/`sessionStorage` and dropped on any 401 error.
 - **Anti-Enumeration Privacy:** Standardized generic error responses prevent account existence probing and credential enumeration.
@@ -139,7 +139,7 @@ The frontend communicates with [vaultauth-backend](https://github.com/ProPlays23
 | **Email Verification** | `/api/v1/auth/verify-email` | `POST` | `{ "email": "...", "code": "123456" }` |
 | **Resend Code** | `/api/v1/auth/verify-email/resend` | `POST` | `{ "email": "..." }` (capped at 3) |
 | **Primary Login** | `/api/v1/auth/login` | `POST` | `{ "email": "...", "password": "..." }` |
-| **Verify 2FA Code** | `/api/v1/auth/2fa/verify` | `POST` | `{ "challenge_id": "...", "code": "123456" }` |
+| **Verify MFA Code** | `/api/v1/auth/mfa/verify` | `POST` | `{ "challenge_id": "...", "code": "123456" }` |
 | **Sign Out** | `/api/v1/auth/logout` | `POST` | `Authorization: Bearer <token>` |
 | **User Active Sessions** | `/api/v1/me/sessions` | `GET` | `Authorization: Bearer <token>` |
 | **Revoke Session** | `/api/v1/sessions/{id}` | `DELETE` | `Authorization: Bearer <token>` |

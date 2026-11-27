@@ -8,10 +8,10 @@ Inter / Plus Jakarta Sans / JetBrains Mono).
 
 | File | Sent when | Suggested subject | Renderer |
 | --- | --- | --- | --- |
-| `otp-sign-in.html` | `POST /api/v1/auth/2fa` issues an email challenge | `Your VaultAuth verification code` | Jinja2 |
+| `otp-sign-in.html` | `POST /api/v1/auth/mfa` issues an email challenge | `Your VaultAuth verification code` | Jinja2 |
 | `otp-verify-email.html` | `POST /api/v1/auth/register` or `/verify-email/resend` | `Verify your VaultAuth email` | Jinja2 |
 | `otp-password-reset.html` | `POST /api/v1/auth/forgot-password` | `Reset your VaultAuth password` | Jinja2 |
-| `otp-2fa.html` | Same 2FA challenge as `otp-sign-in.html` | `Your VaultAuth verification code` | `str.format()` |
+| `otp-mfa.html` | Same MFA challenge as `otp-sign-in.html` | `Your VaultAuth verification code` | `str.format()` |
 | `password-reset.html` | Same reset flow as `otp-password-reset.html` | `Reset your VaultAuth password` | `str.format()` |
 | `password-changed-notice.html` | An administrator changes a user's password | `Your VaultAuth password was changed` | Static (no placeholders) |
 | `security-codes-reset-notice.html` | An administrator resets a user's security codes | `Your VaultAuth security codes were reset` | Static (no placeholders) |
@@ -26,7 +26,7 @@ them by mistake. The admin UI confirms that these notices have been sent.
 
 ## `str.format()` variants
 
-`otp-2fa.html` and `password-reset.html` are the dark-theme rewrites for a
+`otp-mfa.html` and `password-reset.html` are the dark-theme rewrites for a
 `str.format()` renderer. They carry the same metadata as the Jinja2 templates:
 
 ```python
@@ -48,7 +48,7 @@ visible code plate. `{email}`, `{expiry_minutes}`, `{attempts_remaining}`,
 `{location}`, `{client_ip}`, `{device}` and `{year}` populate the delivery and
 request-detail rows. All literal CSS braces are doubled (`{{ }}`) so formatting
 leaves them intact. Rendered examples with sample values live in
-`preview/otp-2fa.html` and `preview/password-reset.html`.
+`preview/otp-mfa.html` and `preview/password-reset.html`.
 
 The `otp-*.html` files above still use Jinja2 — don't mix the two syntaxes.
 

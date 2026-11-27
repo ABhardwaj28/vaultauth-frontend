@@ -64,7 +64,7 @@ single horizontal tab row with brand underline for active; page max-width 1200px
 ## 1. `/dashboard` (index) & `/dashboard/profile` — Profile & Identity
 
 **Source:** `src/pages/dashboard/ProfileTab.tsx`
-**Purpose:** inspect identity claims, RBAC authority and enforced 2FA policy.
+**Purpose:** inspect identity claims, RBAC authority and enforced MFA policy.
 On mount: `api.getMe()` (button also refreshes).
 
 ### Section inventory (in order)
@@ -72,7 +72,7 @@ On mount: `api.getMe()` (button also refreshes).
 1. **Page header** — `pb-4 border-b`, flex column on mobile / row on desktop:
    - H1 **"Profile & Identity"**.
    - Subtitle: "Identity claims, role-based authorization governance, and
-     two-factor security credentials."
+     multi-factor security credentials."
    - Right: outline **"Refresh Identity"** button (RefreshCw, spins while loading).
 2. **Error banner** (if `error`): destructive tinted; default "Failed to load live
    profile telemetry."
@@ -103,11 +103,11 @@ for admin, secondary for user)
     - User: "Identity profile inspection & credential review", "Self active device
       & browser session management", "Enterprise Single Sign-On (SSO) authentication".
 
-**Card 3 — 2FA & Credentials** (icon `Key`, badge `warning` "Enforced")
-- Overline "2FA & Credentials"
-- Title "Two-Factor Authentication (2FA)"
+**Card 3 — MFA & Credentials** (icon `Key`, badge `warning` "Enforced")
+- Overline "MFA & Credentials"
+- Title "Multi-Factor Authentication (MFA)"
 - Detail rows:
-  - "Second Factor (2FA)" → "Email Challenge (OTP)"
+  - "Second Factor (MFA)" → "Email Challenge (OTP)"
   - "Code Expiration" → clock + "10 Minutes"
   - "Idle Session Timeout" → "30 Minutes"
   - "Absolute Session Cap" → "8 Hours"
@@ -118,16 +118,16 @@ for admin, secondary for user)
 ```
 + DashboardShell ----------------------------------------------------------------+
 | Profile & Identity                                    [Refresh Identity]        |  <- header
-| Identity claims, role-based authorization governance, and two-factor security.  |
+| Identity claims, role-based authorization governance, and multi-factor security.  |
 +--------------------------------------------------------------------------------+
 | {red: (!) Failed to load live profile telemetry.}                               |  <- conditional
 +--------------------------------------------------------------------------------+
 | +---------------------------+ +---------------------------+ +----------------+ |
 | | [user]         ( Active)  | | [shield]        ( ADMIN ) | | [key]  (ENFORCED)| |
 | |                           | |                           | |                | |
-| | PRINCIPAL IDENTITY        | | RBAC AUTHORITY            | | 2FA & CREDENTIALS| |
-| | name@company.com          | | Enterprise Administrator  | | Two-Factor Auth | |
-| | ------------------------- | | ------------------------- | | (2FA)          | |
+| | PRINCIPAL IDENTITY        | | RBAC AUTHORITY            | | MFA & CREDENTIALS| |
+| | name@company.com          | | Enterprise Administrator  | | Multi-Factor Auth | |
+| | ------------------------- | | ------------------------- | | (MFA)          | |
 | | Unique User ID            | | Clearance Level           | | -------------- | |
 | | [usr_xxxxxxxxxxxx] [copy]  | | Tier-1 Governance         | | 2nd Factor:    | |
 | | Directory Realm           | | Access Scope              | | Email OTP      | |
@@ -221,13 +221,13 @@ kept but with a confirmation step for consistency with admin screens (proposal).
 ## 3. `/dashboard/settings` — Account & Security Settings
 
 **Source:** `src/pages/dashboard/SettingsTab.tsx`
-**Purpose:** change password, review enforced 2FA, choose UI theme, revoke all
+**Purpose:** change password, review enforced MFA, choose UI theme, revoke all
 other workstations.
 
 ### Section inventory (in order)
 
 1. **Page header** — H1 **"Account & Security Settings"**; subtitle "Manage your
-   authentication credentials, two-factor security, and interface preferences."
+   authentication credentials, multi-factor security, and interface preferences."
 2. **Global notifications** (conditional): success message from revoke-all; error.
 3. **2×2 card grid** (`grid-cols-1 lg:grid-cols-2 gap-5 items-stretch`).
 
@@ -244,15 +244,15 @@ other workstations.
 - Validation (client): missing current; new <12 or >128 chars; mismatch; new
   identical to current. Backend: `api.changePassword` (with fallback endpoints).
 
-**Card 2 (top-right) — Two-Factor Authentication (2FA)** (icon `ShieldCheck`,
+**Card 2 (top-right) — Multi-Factor Authentication (MFA)** (icon `ShieldCheck`,
 badge success "Enforced")
-- Overline "Secondary Verification"; title "Two-Factor Authentication (2FA)";
+- Overline "Secondary Verification"; title "Multi-Factor Authentication (MFA)";
   description "Out-of-band verification required for all corporate logins."
 - Detail rows (`border-t`): "Challenge Mode" (Lock icon) → "Email Challenge (OTP)";
   "Delivery Channel" → user email (mono, truncated); "Code Validity" (Clock icon)
   → "10 Minutes"; "Policy Status" → green check + "Mandatory Policy".
 - **Security callout** at bottom: `bg-primary/5 border-primary/20`, Radio icon,
-  text: "Two-factor authentication is enforced across your corporate organization
+  text: "Multi-factor authentication is enforced across your corporate organization
   to protect against credential stuffing and session takeovers. Single-use OTP
   codes are dispatched automatically upon email and password verification."
 
@@ -282,14 +282,14 @@ badge destructive "Danger Zone", card border `border-destructive/30`)
 ```
 + DashboardShell ----------------------------------------------------------------+
 | Account & Security Settings                                                     |
-| Manage your authentication credentials, two-factor security, and interface …    |
+| Manage your authentication credentials, multi-factor security, and interface …    |
 +--------------------------------------------------------------------------------+
 | {green: ✓ Successfully terminated 2 other active session(s).}                   |  <- conditional
 +--------------------------------------------------------------------------------+
 | +------------------------------------+ +------------------------------------+ |
 | | [key]              ( Credentials ) | | [shield]             ( Enforced )   | |
 | | AUTHENTICATION SECRET              | | SECONDARY VERIFICATION             | |
-| | Change Password                    | | Two-Factor Authentication (2FA)    | |
+| | Change Password                    | | Multi-Factor Authentication (MFA)    | |
 | | Update your corporate access …     | | Out-of-band verification required… | |
 | | ---------------------------------- | | ---------------------------------- | |
 | | Current Password                   | | Challenge Mode    Email OTP         | |
@@ -297,7 +297,7 @@ badge destructive "Danger Zone", card border `border-destructive/30`)
 | | New Password                       | | Code Validity     10 Minutes       | |
 | | [ Minimum 12 characters    (eye) ] | | Policy Status     ✓ Mandatory Policy| |
 | | Confirm New Password               | |                                    | |
-| | [ Repeat new password      (eye) ] | | (radio) Two-factor authentication is| |
+| | [ Repeat new password      (eye) ] | | (radio) Multi-factor authentication is| |
 | | [>>>>> Update Password <<<<<<<<]   | | enforced across your corporate org…| |
 | +------------------------------------+ +------------------------------------+ |
 | +------------------------------------+ +------------------------------------+ |

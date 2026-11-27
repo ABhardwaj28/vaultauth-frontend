@@ -85,8 +85,8 @@ export function UsersTab() {
   const [error, setError] = useState<string | null>(null);
   const [resetTarget, setResetTarget] = useState<AdminUserListItem | null>(null);
   const [resettingPassword, setResettingPassword] = useState(false);
-  const [codesTarget, setCodesTarget] = useState<AdminUserListItem | null>(null);
-  const [resettingCodes, setResettingCodes] = useState(false);
+  const [mfaTarget, setMfaTarget] = useState<AdminUserListItem | null>(null);
+  const [resettingMfa, setResettingMfa] = useState(false);
 
   const fetchUsersAndSessions = useCallback(async (forceRefresh = false) => {
     setLoading(true);
@@ -253,17 +253,25 @@ export function UsersTab() {
     }
   };
 
-  const handleAdminResetSecurityCodes = async () => {
-    if (!codesTarget) return;
-    setResettingCodes(true);
+  const handleAdminResetMfa = async () => {
+    if (!mfaTarget) return;
+    setResettingMfa(true);
     setMessage(null);
     setError(null);
-    // UI preview — wire to the admin security-code reset endpoint when it ships.
-    // The user is notified by email with the event only, never the codes.
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setMessage(`Security codes reset for ${codesTarget.email}. A notification was emailed to the user.`);
-    setCodesTarget(null);
-    setResettingCodes(false);
+    try {
+      const res = await api.adminResetMfa(mfaTarget.id);
+      setMessage(
+        res.message ||
+        `MFA factors cleared for ${mfaTarget.email}. A notification was emailed to the user.`
+      );
+      setMfaTarget(null);
+      await fetchUsersAndSessions(true);
+    } catch (err: unknown) {
+      setError((err as { message?: string })?.message || "Failed to reset the user's MFA factors.");
+      setMfaTarget(null);
+    } finally {
+      setResettingMfa(false);
+    }
   };
 
   const rolePill = (role: string) => (
@@ -272,6 +280,30 @@ export function UsersTab() {
       {role === "admin" ? "Admin" : "User"}
     </span>
   );
+
+  const mfaPill = (item: AdminUserListItem) => {
+    const factors: string[] = [];
+    if (item.otp_enabled) factors.push("OTP");
+    if (item.totp_enabled) factors.push("TOTP");
+    return (
+      <span className="inline-flex flex-wrap items-center gap-1 font-mono text-[10px] text-foreground">
+        {factors.length === 0 ? (
+          <span className="italic text-muted-foreground/60">None</span>
+        ) : (
+          factors.map((factor) => (
+            <span key={factor} className="rounded border border-border/70 bg-muted/30 px-1 py-0.5">
+              {factor}
+            </span>
+          ))
+        )}
+        {item.mfa_enforced && (
+          <span className="rounded border border-primary/40 bg-primary/[0.06] px-1 py-0.5 text-primary">
+            Enforced
+          </span>
+        )}
+      </span>
+    );
+  };
 
   const statusPill = (status: string) => (
     <span className="inline-flex items-center gap-1.5 font-mono text-[11px] text-foreground">
@@ -367,11 +399,11 @@ export function UsersTab() {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => setResetTarget(item)} className="cursor-pointer text-[13px]">
           <KeyRound className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-          Change password (email user)
+          Email password reset link
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setCodesTarget(item)} className="cursor-pointer text-[13px]">
+        <DropdownMenuItem onClick={() => setMfaTarget(item)} className="cursor-pointer text-[13px]">
           <RefreshCw className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
-          Reset security codes (email user)
+          Reset MFA (clears all factors)
         </DropdownMenuItem>
         <DropdownMenuItem disabled={isCurrent || item.status !== "ACTIVE"} onClick={() => handleChangeRole(item)} className="cursor-pointer text-[13px]">
           <Shield className="mr-2 h-3.5 w-3.5 text-muted-foreground" />
@@ -497,6 +529,7 @@ export function UsersTab() {
                 <TableHead className="w-[260px] py-3 font-sans normal-case tracking-normal">Corporate email</TableHead>
                 <TableHead className="py-3 font-sans normal-case tracking-normal">Role</TableHead>
                 <TableHead className="py-3 font-sans normal-case tracking-normal">Status</TableHead>
+                <TableHead className="py-3 font-sans normal-case tracking-normal">MFA</TableHead>
                 <TableHead className="py-3 font-sans normal-case tracking-normal">Sessions</TableHead>
                 <TableHead className="py-3 font-sans normal-case tracking-normal">Strikes</TableHead>
                 <TableHead className="py-3 font-sans normal-case tracking-normal">Registered</TableHead>
@@ -505,7 +538,7 @@ export function UsersTab() {
             </TableHeader>
             <TableBody>
               {sortedUsers.length === 0 ? (
-                <TableRow><TableCell colSpan={7} className="h-24 text-center text-[13px] text-muted-foreground">
+                <TableRow><TableCell colSpan={8} className="h-24 text-center text-[13px] text-muted-foreground">
                   {loading ? "Reading the directory" : "No accounts match the current filters."}
                 </TableCell></TableRow>
               ) : sortedUsers.map((item) => {
@@ -533,6 +566,7 @@ export function UsersTab() {
                     </TableCell>
                     <TableCell>{rolePill(item.role || "user")}</TableCell>
                     <TableCell>{statusPill(item.status)}</TableCell>
+                    <TableCell>{mfaPill(item)}</TableCell>
                     <TableCell>{sessionControl(item, userSessions, userSessions.length > 1)}</TableCell>
                     <TableCell>{strikes(item, isLocked)}</TableCell>
                     <TableCell className="whitespace-nowrap font-mono text-[10px] text-muted-foreground">
@@ -574,9 +608,10 @@ export function UsersTab() {
                   </div>
                   {manageControl(item, isCurrent, isLocked)}
                 </div>
-                <div className="mt-2.5 grid grid-cols-3 gap-2 border-t border-border pt-2.5">
+                <div className="mt-2.5 grid grid-cols-2 gap-2 border-t border-border pt-2.5 sm:grid-cols-4">
                   <div className="min-w-0"><p className="text-[9px] uppercase tracking-wider text-muted-foreground">Role</p><div className="mt-1">{rolePill(item.role || "user")}</div></div>
                   <div className="min-w-0"><p className="text-[9px] uppercase tracking-wider text-muted-foreground">Status</p><div className="mt-1">{statusPill(item.status)}</div></div>
+                  <div className="min-w-0"><p className="text-[9px] uppercase tracking-wider text-muted-foreground">MFA</p><div className="mt-1">{mfaPill(item)}</div></div>
                   <div className="min-w-0"><p className="text-[9px] uppercase tracking-wider text-muted-foreground">Strikes</p><div className="mt-1">{strikes(item, isLocked)}</div></div>
                 </div>
                 <div className="mt-2.5 flex items-center justify-between gap-2 border-t border-border pt-2.5">
@@ -589,13 +624,13 @@ export function UsersTab() {
         </div>
       </div>
 
-      {/* Admin-initiated password change */}
+      {/* Admin-initiated password reset link */}
       <Dialog open={resetTarget !== null} onOpenChange={(open) => { if (!open) setResetTarget(null); }}>
         <DialogContent className="rounded-md sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Change user password</DialogTitle>
+            <DialogTitle>Email password reset link</DialogTitle>
             <DialogDescription>
-              A new password will be set on this account. The user receives an email saying only that their password changed — no password, codes, or request details are included.
+              A secure reset link will be sent to this user. No password is set or shared by an administrator.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded border border-border/70 bg-muted/30 px-3 py-2 font-mono text-[12px] text-foreground">
@@ -607,31 +642,31 @@ export function UsersTab() {
             </Button>
             <Button type="button" onClick={handleAdminResetPassword} disabled={resettingPassword} className="h-9">
               {resettingPassword ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <KeyRound className="mr-2 h-3.5 w-3.5" />}
-              Change password &amp; notify
+              Send reset link
             </Button>
           </div>
         </DialogContent>
       </Dialog>
 
-      {/* Admin-initiated security code reset */}
-      <Dialog open={codesTarget !== null} onOpenChange={(open) => { if (!open) setCodesTarget(null); }}>
+      {/* Admin-initiated MFA reset */}
+      <Dialog open={mfaTarget !== null} onOpenChange={(open) => { if (!open) setMfaTarget(null); }}>
         <DialogContent className="rounded-md sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Reset security codes</DialogTitle>
+            <DialogTitle>Reset MFA</DialogTitle>
             <DialogDescription>
-              Existing recovery codes are invalidated. The user receives an email stating only that their security codes were reset — the codes themselves and who requested it are never included.
+              Every enrolled factor (email OTP and authenticator) will be cleared and the user will be asked to enroll again at next sign-in. The notification email states only that MFA was reset — no codes, factors, or request details.
             </DialogDescription>
           </DialogHeader>
           <div className="rounded border border-border/70 bg-muted/30 px-3 py-2 font-mono text-[12px] text-foreground">
-            {codesTarget?.email}
+            {mfaTarget?.email}
           </div>
           <div className="flex flex-wrap justify-end gap-2 border-t border-border/60 pt-4">
-            <Button type="button" variant="ghost" onClick={() => setCodesTarget(null)} disabled={resettingCodes} className="h-9">
+            <Button type="button" variant="ghost" onClick={() => setMfaTarget(null)} disabled={resettingMfa} className="h-9">
               Cancel
             </Button>
-            <Button type="button" onClick={handleAdminResetSecurityCodes} disabled={resettingCodes} className="h-9">
-              {resettingCodes ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-3.5 w-3.5" />}
-              Reset codes &amp; notify
+            <Button type="button" onClick={handleAdminResetMfa} disabled={resettingMfa} className="h-9">
+              {resettingMfa ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RefreshCw className="mr-2 h-3.5 w-3.5" />}
+              Reset MFA &amp; notify
             </Button>
           </div>
         </DialogContent>

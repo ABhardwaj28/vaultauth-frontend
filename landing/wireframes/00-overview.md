@@ -20,15 +20,15 @@
                                          └─ authenticated  → /dashboard
 
 PUBLIC-ONLY (PublicOnly guard — redirects logged-in users to /dashboard)
-├── /login                 LoginPage          — email + password sign-in, 2FA hand-off
+├── /login                 LoginPage          — email + password sign-in, MFA hand-off
 ├── /register              RegisterPage       — self-service account provisioning
-└── /verify-otp            VerifyOtpPage      — 6-digit email OTP / 2FA challenge
+└── /verify-otp            VerifyOtpPage      — 6-digit email OTP / MFA challenge
 
 PROTECTED (RequireAuth → DashboardShell)
 /dashboard                 ProfileTab (index = /dashboard/profile)
-├── /dashboard/profile     ProfileTab         — identity / RBAC / 2FA cards
+├── /dashboard/profile     ProfileTab         — identity / RBAC / MFA cards
 ├── /dashboard/sessions    SessionsTab       — own active sessions table
-├── /dashboard/settings    SettingsTab       — password / 2FA / theme / revoke-all
+├── /dashboard/settings    SettingsTab       — password / MFA / theme / revoke-all
 └── /dashboard/admin/*     (RequireAdmin — non-admins → /403)
     ├── /dashboard/admin/apps        AppsTab            — OAuth/OIDC client directory
     ├── /dashboard/admin/users       UsersTab           — user governance directory
@@ -59,12 +59,12 @@ ROUTE GUARDS (src/components/layout/RouteGuards.tsx)
 | # | Route | Page purpose | Guard | Shell |
 |---|-------|--------------|-------|-------|
 | 1 | `/` | Route based on session state | `RootRedirect` | none (spinner) |
-| 2 | `/login` | Enterprise email + password sign-in; routes to OTP if 2FA required | PublicOnly | AuthShell |
+| 2 | `/login` | Enterprise email + password sign-in; routes to OTP if MFA required | PublicOnly | AuthShell |
 | 3 | `/register` | Create corporate identity with password-policy checklist | PublicOnly | AuthShell |
-| 4 | `/verify-otp` | 6-digit OTP verification (2FA or registration email) | PublicOnly | AuthShell |
-| 5 | `/dashboard` / `/dashboard/profile` | View own identity claims, RBAC authority, 2FA policy | RequireAuth | DashboardShell |
+| 4 | `/verify-otp` | 6-digit OTP verification (MFA or registration email) | PublicOnly | AuthShell |
+| 5 | `/dashboard` / `/dashboard/profile` | View own identity claims, RBAC authority, MFA policy | RequireAuth | DashboardShell |
 | 6 | `/dashboard/sessions` | View + revoke own active sessions | RequireAuth | DashboardShell |
-| 7 | `/dashboard/settings` | Change password, review 2FA, pick theme, revoke other devices | RequireAuth | DashboardShell |
+| 7 | `/dashboard/settings` | Change password, review MFA, pick theme, revoke other devices | RequireAuth | DashboardShell |
 | 8 | `/dashboard/admin/apps` | Register/revoke OAuth 2.0 / OIDC clients | RequireAdmin | DashboardShell |
 | 9 | `/dashboard/admin/users` | Enable/disable, unlock, promote/demote users; inspect sessions | RequireAdmin | DashboardShell |
 | 10 | `/dashboard/admin/audit-logs` | Filterable, expandable security audit trail | RequireAdmin | DashboardShell |

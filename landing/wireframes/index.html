@@ -230,11 +230,11 @@
           <div>
             <div class="topbar"><div class="pill">● Session active · Admin</div><div class="row"><div class="pill">shaurya@example.com  ADMIN</div><div class="pill">◐</div><div class="pill">Sign out</div></div></div>
             <div class="content stack">
-              <div class="between"><div><div class="title">Profile &amp; identity</div><div class="sub">Identity claims, authorization, and two-factor credentials.</div></div><button class="btn">↻ Refresh identity</button></div>
+              <div class="between"><div><div class="title">Profile &amp; identity</div><div class="sub">Identity claims, authorization, and multi-factor credentials.</div></div><button class="btn">↻ Refresh identity</button></div>
               <div class="grid2">
                 <div class="box solid stack"><div class="between"><b>Principal identity</b><span class="pill">Active</span></div><div class="field">shaurya@example.com</div><div class="between"><span class="sub">User ID</span><span class="sub">5acdc56e… ⧉</span></div><div class="between"><span class="sub">Directory realm</span><span class="sub">corporate-sso</span></div><div class="between"><span class="sub">Verified</span><span class="sub">Email verified</span></div></div>
                 <div class="box solid stack"><div class="between"><b>RBAC authority</b><span class="pill">Admin</span></div><div class="field">Enterprise Administrator</div><div class="between"><span class="sub">Clearance</span><span class="sub">Tier-1 governance</span></div><div class="sub">Authorized capabilities</div><div class="sub">• User lifecycle governance<br />• OAuth client registration<br />• Audit logs &amp; telemetry<br />• Global session revocation</div></div>
-                <div class="box solid stack"><div class="between"><b>Two-factor credentials</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Second factor</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Code expiration</span><span class="sub">10 minutes</span></div><div class="between"><span class="sub">Idle timeout</span><span class="sub">30 minutes</span></div><div class="between"><span class="sub">Absolute cap</span><span class="sub">8 hours</span></div></div>
+                <div class="box solid stack"><div class="between"><b>Multi-factor credentials</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Second factor</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Code expiration</span><span class="sub">10 minutes</span></div><div class="between"><span class="sub">Idle timeout</span><span class="sub">30 minutes</span></div><div class="between"><span class="sub">Absolute cap</span><span class="sub">8 hours</span></div></div>
                 <div class="box stack"><b>Security posture</b><div class="sub">A calm summary replaces repeated policy values: MFA enforced, session policy active, no outstanding risks.</div><div class="pill">● No action required</div></div>
               </div>
             </div>
@@ -270,7 +270,7 @@
           <div class="title">Account &amp; security settings</div>
           <div class="grid2" style="margin-top:16px">
             <div class="box solid stack"><b>Change password</b><div class="field">Current password</div><div class="field">New password</div><div class="field">Confirm new password</div><button class="btn primary">Update password</button></div>
-            <div class="box solid stack"><div class="between"><b>Two-factor authentication</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Challenge mode</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Delivery channel</span><span class="sub">shaurya@example.com</span></div><div class="sub">Mandatory for all corporate logins.</div></div>
+            <div class="box solid stack"><div class="between"><b>Multi-factor authentication</b><span class="pill">Enforced</span></div><div class="between"><span class="sub">Challenge mode</span><span class="sub">Email OTP</span></div><div class="between"><span class="sub">Delivery channel</span><span class="sub">shaurya@example.com</span></div><div class="sub">Mandatory for all corporate logins.</div></div>
             <div class="box solid stack"><b>Theme preference</b><div class="row"><div class="box" style="flex:1">☀ Light</div><div class="box" style="flex:1">◐ Dark</div><div class="box accent" style="flex:1">System</div></div><div class="sub">Active mode: System</div></div>
             <div class="box stack" style="border-color:#e2a3a3;background:#fff7f7"><b style="color:#a33">Revoke other workstations</b><div class="sub">Ends all sessions except this one. Immediate and irreversible.</div><div class="sub">Scope: all other devices</div><button class="btn danger">Sign out other devices</button></div>
           </div>
@@ -317,8 +317,8 @@
           <div class="between"><div class="title">Security audit trail</div><div class="row"><div class="pill">Event: all</div><div class="pill">Limit: 25</div><button class="btn">↻ Refresh</button></div></div>
           <div class="box solid" style="padding:0;overflow:hidden;margin-top:16px"><table class="wf"><thead><tr><th></th><th>Timestamp</th><th>Event action</th><th>Principal user</th><th>Client IP</th><th>Result</th></tr></thead>
           <tbody><tr><td>▸</td><td>Nov 23, 09:41:02</td><td>LOGIN_SUCCESS</td><td>shaurya@example.com</td><td>103.24.…</td><td><span class="pill">Success</span></td></tr>
-          <tr><td>▾</td><td>Nov 23, 09:38:57</td><td>2FA_VERIFIED</td><td>shaurya@example.com</td><td>103.24.…</td><td><span class="pill">Success</span></td></tr>
-          <tr><td colspan="6"><div class="box" style="font-family:ui-monospace,monospace">{ "event": "2FA_VERIFIED", "channel": "EMAIL_OTP", "userId": "5acdc56e…" }</div></td></tr></tbody></table></div>
+          <tr><td>▾</td><td>Nov 23, 09:38:57</td><td>MFA_VERIFIED</td><td>shaurya@example.com</td><td>103.24.…</td><td><span class="pill">Success</span></td></tr>
+          <tr><td colspan="6"><div class="box" style="font-family:ui-monospace,monospace">{ "event": "MFA_VERIFIED", "channel": "EMAIL_OTP", "userId": "5acdc56e…" }</div></td></tr></tbody></table></div>
         </div>
       </div>
     </section>

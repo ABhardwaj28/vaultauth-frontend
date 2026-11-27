@@ -49,7 +49,7 @@ export function SelectFactorPage() {
     }
   }, [navigate]);
 
-  const handleSelect = async (factor: "email" | "totp") => {
+  const handleSelect = async (factor: "otp" | "totp") => {
     if (!pending) return;
     setLoading(true);
     setError(null);
@@ -62,7 +62,7 @@ export function SelectFactorPage() {
       });
       sessionStorage.removeItem(STORAGE_KEY);
 
-      if (res.state === "OTP_REQUIRED" || res.challenge_id || res.requires_2fa) {
+      if (res.mfa_required === true || res.challenge_id) {
         const challengeParam = res.challenge_id
           ? `&challenge_id=${encodeURIComponent(res.challenge_id)}`
           : "";
@@ -109,7 +109,7 @@ export function SelectFactorPage() {
     navigate("/login", { replace: true });
   };
 
-  const methods = pending?.methods?.length ? pending.methods : ["email"];
+  const methods = pending?.methods ?? [];
 
   return (
     <div className="relative flex min-h-screen items-center justify-center bg-[#F1F2F5] px-4 py-8 text-foreground transition-colors duration-150 dark:bg-[#0B0D11]">
@@ -192,11 +192,17 @@ export function SelectFactorPage() {
               </div>
             )}
 
+            {methods.length === 0 && (
+              <div className="mt-5 rounded-none border border-border/70 bg-muted/40 p-3 text-sm text-muted-foreground">
+                No second factor is enrolled for this account. Contact your administrator.
+              </div>
+            )}
+
             <div className="mt-6 space-y-3">
-              {methods.includes("email") && (
+              {methods.includes("otp") && (
                 <button
                   type="button"
-                  onClick={() => handleSelect("email")}
+                  onClick={() => handleSelect("otp")}
                   disabled={loading || !pending}
                   className="group flex w-full items-center gap-3 rounded-none border border-primary/40 bg-primary/[0.05] p-4 text-left transition-colors hover:bg-primary/[0.09] disabled:opacity-60"
                 >

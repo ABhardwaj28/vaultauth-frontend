@@ -108,7 +108,7 @@ export function Hero() {
           </h1>
 
           <p className="mt-6 max-w-xl text-[16px] leading-8 text-[#94A3B8]">
-            VaultAuth combines memory-hard password vaulting, mandatory email 2FA, opaque session tokens, and one-click revocation with a real RS256 OIDC surface. Inspect the protocol, then ship sign-in.
+            VaultAuth combines memory-hard password vaulting, mandatory MFA, opaque session tokens, and one-click revocation with a real RS256 OIDC surface. Inspect the protocol, then ship sign-in.
           </p>
 
           <div className="mt-9 flex flex-wrap gap-3">

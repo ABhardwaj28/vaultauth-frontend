@@ -99,7 +99,7 @@ backend returns an OTP challenge; receives a session-expired notice from AuthCon
 - Network/timeout: "Unable to reach VaultAuth authentication gateway. Please check
   your network connection."
 - 401/invalid: uniform anti-enumeration message "Invalid email or password."
-- 2FA required (`state === "OTP_REQUIRED"` or `challenge_id` or `requires_2fa`):
+- MFA required (`state === "OTP_REQUIRED"` or `challenge_id` or `requires_mfa`):
   `navigate(/verify-otp?email=…)` with state `{email, challengeId, expiresIn,
   isRegistration:false, redirectUrl}`.
 - Success: `api.setToken`, `api.getMe`, `setAuthSession`, navigate to `redirect`
@@ -238,10 +238,10 @@ standard inline validation message (icon + text).
 
 ---
 
-## 3. `/verify-otp` — Two-Factor Verification
+## 3. `/verify-otp` — Multi-Factor Verification
 
 **Source:** `src/pages/auth/VerifyOtpPage.tsx`
-**Purpose:** verify a 6-digit email OTP — either a 2FA login challenge
+**Purpose:** verify a 6-digit email OTP — either a MFA login challenge
 (`isRegistration=false`) or registration email verification (`type=register`).
 **Guard:** PublicOnly. Params: `?email=…&challenge_id=…&type=register` or router
 state `{email, challengeId, isRegistration, redirectUrl}`.
@@ -250,7 +250,7 @@ state `{email, challengeId, isRegistration, redirectUrl}`.
 
 1. **Card header** — centered, `pb-6`:
    - 40×40 amber tile with `KeyRound`.
-   - H1: **"Two-Factor Verification"**.
+   - H1: **"Multi-Factor Verification"**.
    - Subtitle: "Enter the 6-digit security code dispatched to **{email}**" — the
      email rendered in mono with `text-foreground`; falls back to "your corporate email".
 2. **`<form>`** (`space-y-5`):
@@ -275,10 +275,10 @@ state `{email, challengeId, isRegistration, redirectUrl}`.
   input and submit are disabled.
 - Registration mode: `api.verifyEmail(email, code)` → `/login` with state
   `successMessage` (default "Email verified successfully! You may now sign in.").
-- 2FA mode: `api.verify2FA({email, code, challenge_id})` → token → `getMe` →
+- MFA mode: `api.verifyMfa({email, code, challenge_id})` → token → `getMe` →
   `setAuthSession` → navigate `redirectUrl` (default `/dashboard`).
 - Resend: registration mode calls `api.resendVerifyEmail(email)`; both modes set
-  success message, reset cooldown to 60s and attempts to 3. (Note: 2FA resend does
+  success message, reset cooldown to 60s and attempts to 3. (Note: MFA resend does
   not call a backend endpoint in the source — it only shows the notice.)
 
 ### ASCII wireframe
@@ -288,7 +288,7 @@ state `{email, challengeId, isRegistration, redirectUrl}`.
 |                                                                                 |
 |                  +------------------------------------------+                   |
 |                  |             [key tile]                  |                   |
-|                  |      Two-Factor Verification            |                   |
+|                  |      Multi-Factor Verification            |                   |
 |                  |  Enter the 6-digit security code        |                   |
 |                  |  dispatched to {email}                  |                   |
 |                  |                                          |                   |

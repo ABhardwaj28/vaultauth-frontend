@@ -17,7 +17,7 @@ const endpoints = [
 const rest = [
   ["POST", "/api/v1/auth/register", "Uniform 'check your email' response"],
   ["POST", "/api/v1/auth/login", "Same 401 on every failure mode"],
-  ["POST", "/api/v1/auth/2fa/verify", "Mints the opaque session token"],
+  ["POST", "/api/v1/auth/mfa/verify", "Mints the opaque session token"],
   ["GET", "/api/v1/me/sessions", "Current user's active devices"],
   ["DELETE", "/api/v1/sessions/{id}", "Revoke a single session"],
   ["GET", "/api/v1/admin/audit-logs", "Admin-only event stream"],

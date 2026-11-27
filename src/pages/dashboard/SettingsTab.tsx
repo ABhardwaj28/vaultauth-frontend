@@ -14,7 +14,7 @@ import { api } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { TwoFactorSection } from "@/components/dashboard/TwoFactorSection";
+import { MfaSection } from "@/components/dashboard/MfaSection";
 
 export function SettingsTab() {
   const { refreshProfile } = useAuth();
@@ -270,7 +270,7 @@ export function SettingsTab() {
           </form>
         </section>
 
-        <TwoFactorSection />
+        <MfaSection />
 
         {/* Appearance */}
         <section className="border-t border-border px-5 py-5 sm:px-6 sm:py-6">

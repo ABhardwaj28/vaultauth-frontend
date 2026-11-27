@@ -54,7 +54,7 @@ src/
 
 - Registration: NIST SP 800-63B 12–128 char policy, PENDING → ACTIVE after email code.
 - Login: uniform `ERR_INVALID_CREDENTIALS`, no enumeration.
-- 2FA: 6-digit email OTP via Resend, 10-minute expiry, 3 attempts, 60-second resend; optional TOTP.
+- MFA: 6-digit email OTP via Resend, 10-minute expiry, 3 attempts, 60-second resend; optional TOTP.
 - Sessions: 256-bit opaque token, SHA-256 hash only, 30-minute idle / 8-hour absolute, next-request revocation.
 - Lockout: 3 failures → 300 seconds, atomic counter, admin unlock.
 - Audit: immutable events, event filters, JSON drawer, XSS sanitization, 30-day purge.

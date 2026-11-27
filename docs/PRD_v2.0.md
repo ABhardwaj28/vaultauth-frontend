@@ -43,14 +43,14 @@ v1.0 was a client-only demo (`localStorage`, SHA-256 in the browser). That desig
 
 - **Industry:** Cybersecurity
 - **Theme:** Identity & Access Management (Zero-Trust Architecture)
-- **One-Line Pitch:** *"For enterprise teams seeking secure single sign-on without complex OAuth infrastructure, VaultAuth SSO provides argon2id-hashed credentials, email-verified 2FA, and active session revocation that takes effect on the next request."*
+- **One-Line Pitch:** *"For enterprise teams seeking secure single sign-on without complex OAuth infrastructure, VaultAuth SSO provides argon2id-hashed credentials, email-verified MFA, and active session revocation that takes effect on the next request."*
 - **Optional Extensions:** 2-screen React Native (Expo Go) Corporate Digital ID Card companion app; reading-only WebAuthn/FIDO2 architectural concept card.
 
 ---
 
 ## 4. Problem Statement & Root Cause Analysis
 
-Organizations frequently store credentials weakly, omit two-factor authentication (2FA) checks, and lack immediate kill-switches to sever compromised employee sessions.
+Organizations frequently store credentials weakly, omit multi-factor authentication (MFA) checks, and lack immediate kill-switches to sever compromised employee sessions.
 
 ### Concrete Pain Points
 1. **Password Exposure:** Inadequate password hashing algorithms (e.g. cleartext, MD5, or unsalted SHA-256) expose corporate credentials to instant offline rainbow table and dictionary attacks.
@@ -71,7 +71,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 | Capability | End User (Employee) | Enterprise Admin | Enforced By |
 | :--- | :---: | :---: | :--- |
 | **Register Account & Verify Email** | Yes | Yes (Admins seeded/promoted via CLI) | API + Database constraints |
-| **Log in with Email + 2FA** | Yes | Yes | API (`/auth/login` + `/auth/2fa/verify`) |
+| **Log in with Email + MFA** | Yes | Yes | API (`/auth/login` + `/auth/mfa/verify`) |
 | **Enroll TOTP Authenticator (Optional)** | Yes | Yes | API (`/me/totp/*`) |
 | **View Own Sessions & Digital ID Card** | Yes | Yes | API (`/me/sessions`) |
 | **Revoke Own Session / Log Out** | Yes | Yes | API (`DELETE /sessions/{id}`) |
@@ -88,7 +88,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 * **Registration with Email Verification:** Email + password registration; account status set to `PENDING`; 6-digit email verification code with 10-minute expiry; 3 wrong guesses invalidate code.
 * **Server-Side Argon2id Password Hashing:** OWASP-compliant memory-hard hashing on the FastAPI backend.
 * **Primary Login with Generic Error Defense:** Verifies credentials; returns uniform 401 response on any failure (preventing timing and user-enumeration leaks).
-* **Two-Factor Authentication (Email OTP):** Out-of-band 6-digit challenge code sent via Resend; 3 wrong attempts invalidate challenge and mandate re-login.
+* **Multi-Factor Authentication (Email OTP):** Out-of-band 6-digit challenge code sent via Resend; 3 wrong attempts invalidate challenge and mandate re-login.
 * **Opaque Session Tokens:** 256-bit high-entropy random Bearer tokens (only SHA-256 hash stored in PostgreSQL); 30-minute idle timeout and 8-hour absolute lifespan.
 * **Session Revocation:** 1-click revocation by user (own sessions) and admin (any session); takes effect on immediate next request.
 * **Account Lockout:** 3 consecutive password failures set account to `LOCKED` for 5 minutes with atomic counter updates; auto-unlocks after 5 minutes or upon admin unlock.
@@ -98,7 +98,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 
 ### 6.2 Prioritized Cut List (First to Cut → Last to Cut)
 1. **Expo Go Corporate Digital ID Card (Cut #1):** Lowest impact on core authentication and security objectives.
-2. **TOTP Authenticator App Enrollment (Cut #2):** Email OTP already satisfies all 2FA requirements.
+2. **TOTP Authenticator App Enrollment (Cut #2):** Email OTP already satisfies all MFA requirements.
 3. **Neon Fallback Sync Job (Cut #3):** Kept as long as possible for disaster recovery redundancy; cut only if CI runtime exceeds limits.
 
 ### 6.3 Out of Scope
@@ -115,7 +115,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 | **FR-01** | **User Registration** | Must | Accepts email + password. Server hashes password with `argon2id`. Account initialized as `PENDING`. Returns uniform 200 message (*"Check your email"*). |
 | **FR-02** | **Email Verification** | Must | 6-digit code, hashed at rest, 10-minute expiry. 3 wrong tries invalidate code. Resend capped at 3 times before 15-minute cooldown. Valid entry sets account to `ACTIVE`. |
 | **FR-03** | **Primary Login Authentication** | Must | Verifies email + password. All failures (unknown email, bad password, locked, disabled) return identical 401 `ERR_INVALID_CREDENTIALS`. Correct password on `PENDING` account returns `VERIFY_EMAIL_REQUIRED`. |
-| **FR-04** | **Two-Factor Authentication (2FA)** | Must | Valid password generates challenge and emails 6-digit OTP (or prompts for TOTP). Valid code issues 256-bit opaque Bearer token. 3 incorrect attempts invalidate challenge. |
+| **FR-04** | **Multi-Factor Authentication (MFA)** | Must | Valid password generates challenge and emails 6-digit OTP (or prompts for TOTP). Valid code issues 256-bit opaque Bearer token. 3 incorrect attempts invalidate challenge. |
 | **FR-05** | **Session Lifecycle Management** | Must | Opaque token hash stored in DB. Enforces 30-minute idle expiry and 8-hour absolute expiry. Revocation marks session status `REVOKED` immediately. |
 | **FR-06** | **Account Lockout** | Must | 3 consecutive password failures trigger `LOCKED` status for 300 seconds (5 minutes). Counter serialized via atomic DB update. Auto-unlocks after 5 minutes or via admin unlock. |
 | **FR-07** | **Active Session Revocation** | Must | Users can list and revoke their own active sessions. Admins can view and revoke any user's session. Revoked token fails on immediate next API call with 401. |
@@ -161,7 +161,7 @@ flowchart LR
     CI -->|"restore as vault_migrator"| FALLBACK
 ```
 
-### 8.2 Sequence Diagram: Authentication & 2FA Flow
+### 8.2 Sequence Diagram: Authentication & MFA Flow
 
 ```mermaid
 sequenceDiagram
@@ -182,7 +182,7 @@ sequenceDiagram
         API->>DB: Invalidate prior challenges & insert new hashed OTP
         API->>Mail: Send 6-digit OTP code to user's verified email
         API-->>User: 200 {state: "OTP_REQUIRED", challenge_id: "uuid"}
-        User->>API: POST /api/v1/auth/2fa/verify {challenge_id, code}
+        User->>API: POST /api/v1/auth/mfa/verify {challenge_id, code}
         API->>DB: Increment attempts, verify code hash, consume challenge
         alt Code Invalid (3 attempts reached)
             API-->>User: 401 ERR_INVALID_OTP (Challenge Invalidated)
@@ -209,7 +209,7 @@ stateDiagram-v2
     DISABLED --> ACTIVE: Admin Enables Account
 
     state "Session Lifecycle" as SessionState {
-        [*] --> S_ACTIVE: 2FA Verification Success
+        [*] --> S_ACTIVE: MFA Verification Success
         S_ACTIVE --> S_REVOKED: User Logout OR Admin 1-Click Revocation
         S_ACTIVE --> S_EXPIRED: Idle 30 min OR Absolute 8 h
     }
@@ -494,7 +494,7 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 | `POST /auth/verify-email` | Open (rate-limited) | Verify registration | `{ "email": "...", "code": "123456" }` | `200 { "message": "Email verified. You may now log in." }` |
 | `POST /auth/verify-email/resend` | Open (capped at 3) | Resend verify code | `{ "email": "..." }` | `200 { "message": "Verification code resent." }` |
 | `POST /auth/login` | Open (rate-limited) | Primary password check | `{ "email": "...", "password": "..." }` | `200 { "state": "OTP_REQUIRED", "challenge_id": "..." }` |
-| `POST /auth/2fa/verify` | Open (with challenge) | Validate OTP code | `{ "challenge_id": "...", "code": "123456" }`| `200 { "token": "256bit_hex_token", "user": { ... } }` |
+| `POST /auth/mfa/verify` | Open (with challenge) | Validate OTP code | `{ "challenge_id": "...", "code": "123456" }`| `200 { "token": "256bit_hex_token", "user": { ... } }` |
 | `POST /auth/logout` | Authenticated | Invalidate current session| Header `Authorization: Bearer <token>` | `200 { "message": "Logged out successfully" }` |
 | `GET /me` | Authenticated | Own profile data | Header `Authorization: Bearer <token>` | `200 { "id": "...", "email": "...", "role": "user" }` |
 | `GET /me/sessions` | Authenticated | List own active sessions | Header `Authorization: Bearer <token>` | `200 [ { "id": "...", "device": "...", "ip": "...", "created_at": "..." } ]` |
@@ -514,7 +514,7 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 ## 12. Business Rules & Operational Policies
 
 * **BR-01 (Zero Cleartext Password Storage):** Passwords are never stored, logged, or returned. Only `argon2id` hashes exist in the database. Logs never contain tokens, OTPs, or hashes.
-* **BR-02 (Mandatory 2FA Gate):** A correct password never directly creates an active session. Only a verified second factor (email OTP or TOTP) mints an active token.
+* **BR-02 (Mandatory MFA Gate):** A correct password never directly creates an active session. Only a verified second factor (email OTP or TOTP) mints an active token.
 * **BR-03 (3-Strike Account Lockout):** 3 consecutive invalid passwords trigger a `LOCKED` status for exactly 300 seconds (5 minutes). Counter updates are serialized via atomic SQL statements. Auto-unlocks after 5 minutes.
 * **BR-04 (Session Revocation Boundary):** End Users can only revoke their own active sessions. Enterprise Admins can revoke any user's session.
 * **BR-05 (Generic Error Privacy):** No client-visible error message may reveal whether an email exists, is locked, or how many login attempts remain.

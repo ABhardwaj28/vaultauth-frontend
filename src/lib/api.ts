@@ -7,8 +7,8 @@ import {
   LoginPayload,
   LoginResponse,
   RegisterPayload,
-  TwoFactorVerifyPayload,
-  TwoFactorVerifyResponse,
+  MfaVerifyPayload,
+  MfaVerifyResponse,
   UserProfile,
   SessionItem,
   AdminSessionItem,
@@ -22,9 +22,11 @@ import {
   HealthCheckResponse,
   ChangePasswordResponse,
   AuthActionResponse,
-  User2FAResponse,
-  AdminEnforce2FAResponse,
+  UserOtpResponse,
+  AdminEnforceMfaResponse,
   AdminActionResponse,
+  ResetPasswordValidateResponse,
+  ResetPasswordPayload,
   TOTPEnrollResponse,
   RecoveryCodesResponse,
   TOTPDisablePayload,
@@ -42,11 +44,14 @@ const PUBLIC_AUTH_ENDPOINTS = new Set([
   "/api/v1/auth/login",
   "/api/v1/auth/logout",
   "/api/v1/auth/register",
-  "/api/v1/auth/2fa/resend",
-  "/api/v1/auth/2fa/verify",
+  "/api/v1/auth/otp/resend",
+  "/api/v1/auth/mfa/verify",
   "/api/v1/auth/forgot-password",
-  "/api/v1/auth/verify-reset-code",
+  "/api/v1/auth/reset-password/validate",
   "/api/v1/auth/reset-password",
+  // Password-confirmation calls: a 401 means the supplied password was wrong.
+  "/api/v1/auth/change-password",
+  "/api/v1/me/change-password",
 ]);
 
 /** Descriptive, non-network error for endpoints absent from the internal spec. */
@@ -77,19 +82,19 @@ class ApiClient {
   }
 
   /**
-   * The internal API reports 2FA via `two_factor_required` / `challenge_id`.
-   * Older UI code still reads `state` / `requires_2fa`, so derive those aliases
-   * from the authoritative fields rather than inventing new state.
+   * The internal API reports MFA via `mfa_required` / `challenge_id`. Older UI
+   * code still reads `state` / `requires_mfa`, so derive those aliases from the
+   * authoritative fields rather than inventing new state.
    */
   private normalizeLoginResponse(data: LoginResponse): LoginResponse {
-    const requires2FA =
-      data.two_factor_required === true ||
+    const requiresMfa =
+      data.mfa_required === true ||
       Boolean(data.challenge_id) ||
-      data.requires_2fa === true;
+      data.requires_mfa === true;
     return {
       ...data,
-      requires_2fa: data.requires_2fa ?? requires2FA,
-      state: data.state ?? (requires2FA ? "OTP_REQUIRED" : "AUTHENTICATED"),
+      requires_mfa: data.requires_mfa ?? requiresMfa,
+      state: data.state ?? (requiresMfa ? "OTP_REQUIRED" : "AUTHENTICATED"),
     };
   }
 
@@ -302,8 +307,8 @@ class ApiClient {
     return this.normalizeLoginResponse(res.data);
   }
 
-  async verify2FA(payload: TwoFactorVerifyPayload): Promise<TwoFactorVerifyResponse> {
-    const res = await this.request<TwoFactorVerifyResponse>("/api/v1/auth/2fa/verify", {
+  async verifyMfa(payload: MfaVerifyPayload): Promise<MfaVerifyResponse> {
+    const res = await this.request<MfaVerifyResponse>("/api/v1/auth/mfa/verify", {
       method: "POST",
       body: JSON.stringify(payload),
     });
@@ -313,9 +318,9 @@ class ApiClient {
     return this.normalizeLoginResponse(res.data);
   }
 
-  /** Internal spec: POST /api/v1/auth/2fa/resend — { challenge_id } -> { status, message }. */
-  async resend2FA(challengeId: string): Promise<AuthActionResponse> {
-    const res = await this.request<AuthActionResponse>("/api/v1/auth/2fa/resend", {
+  /** POST /api/v1/auth/otp/resend — { challenge_id } -> { status, message }. OTP only. */
+  async resendOtp(challengeId: string): Promise<AuthActionResponse> {
+    const res = await this.request<AuthActionResponse>("/api/v1/auth/otp/resend", {
       method: "POST",
       body: JSON.stringify({ challenge_id: challengeId }),
     });
@@ -360,6 +365,7 @@ class ApiClient {
     const res = await this.request<ChangePasswordResponse>("/api/v1/auth/change-password", {
       method: "POST",
       body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
+      skipAuthExpiredEvent: true,
     });
     return res.data;
   }
@@ -373,27 +379,31 @@ class ApiClient {
     return res.data;
   }
 
-  async verifyResetCode(email: string, code: string): Promise<AuthActionResponse> {
-    const res = await this.request<AuthActionResponse>("/api/v1/auth/verify-reset-code", {
-      method: "POST",
-      body: JSON.stringify({ email, code }),
-    });
+  /** GET /api/v1/auth/reset-password/validate?token=... — link validity check. */
+  async validateResetToken(token: string): Promise<ResetPasswordValidateResponse> {
+    const res = await this.request<ResetPasswordValidateResponse>(
+      `/api/v1/auth/reset-password/validate?token=${encodeURIComponent(token)}`,
+      { method: "GET", skipAuthExpiredEvent: true }
+    );
     return res.data;
   }
 
-  async resetPassword(email: string, code: string, newPassword: string): Promise<AuthActionResponse> {
+  async resetPassword(payload: ResetPasswordPayload): Promise<AuthActionResponse> {
     const res = await this.request<AuthActionResponse>("/api/v1/auth/reset-password", {
       method: "POST",
-      body: JSON.stringify({ email, code, new_password: newPassword }),
+      body: JSON.stringify(payload),
     });
     return res.data;
   }
 
-  // --- Two-factor administration ---
-  async setOwn2FA(enabled: boolean, password: string): Promise<User2FAResponse> {
-    const res = await this.request<User2FAResponse>("/api/v1/me/2fa", {
+  // --- MFA administration ---
+  // A 401 from these endpoints means the supplied *password* was wrong, not
+  // that the session expired. Never let that tear down the authenticated UI.
+  async setOwnOtp(enabled: boolean, password: string): Promise<UserOtpResponse> {
+    const res = await this.request<UserOtpResponse>("/api/v1/me/otp", {
       method: "POST",
       body: JSON.stringify({ enabled, password }),
+      skipAuthExpiredEvent: true,
     });
     return res.data;
   }
@@ -403,6 +413,7 @@ class ApiClient {
     const res = await this.request<TOTPEnrollResponse>("/api/v1/me/totp/enroll", {
       method: "POST",
       body: JSON.stringify({ password }),
+      skipAuthExpiredEvent: true,
     });
     return res.data;
   }
@@ -412,6 +423,7 @@ class ApiClient {
     const res = await this.request<RecoveryCodesResponse>("/api/v1/me/totp/confirm", {
       method: "POST",
       body: JSON.stringify({ password, code }),
+      skipAuthExpiredEvent: true,
     });
     return res.data;
   }
@@ -421,6 +433,7 @@ class ApiClient {
     const res = await this.request<AuthActionResponse>("/api/v1/me/totp/disable", {
       method: "POST",
       body: JSON.stringify(payload),
+      skipAuthExpiredEvent: true,
     });
     return res.data;
   }
@@ -429,15 +442,15 @@ class ApiClient {
   async regenerateRecoveryCodes(password: string): Promise<RecoveryCodesResponse> {
     const res = await this.request<RecoveryCodesResponse>(
       "/api/v1/me/totp/recovery-codes/regenerate",
-      { method: "POST", body: JSON.stringify({ password }) }
+      { method: "POST", body: JSON.stringify({ password }), skipAuthExpiredEvent: true }
     );
     return res.data;
   }
 
-  async adminSetUser2FA(userId: string, enforced: boolean): Promise<AdminEnforce2FAResponse> {
+  async adminSetUserMfa(userId: string, enforced: boolean): Promise<AdminEnforceMfaResponse> {
     this.invalidateUserCache();
-    const res = await this.request<AdminEnforce2FAResponse>(
-      `/api/v1/admin/users/${userId}/2fa`,
+    const res = await this.request<AdminEnforceMfaResponse>(
+      `/api/v1/admin/users/${userId}/mfa`,
       {
         method: "POST",
         body: JSON.stringify({ enforced }),
@@ -446,6 +459,7 @@ class ApiClient {
     return res.data;
   }
 
+  /** Emails a password-reset link to the user. No password is returned. */
   async adminResetUserPassword(userId: string): Promise<AdminActionResponse> {
     this.invalidateUserCache();
     const res = await this.request<AdminActionResponse>(
@@ -455,15 +469,12 @@ class ApiClient {
     return res.data;
   }
 
-  /**
-   * AdminTOTP recovery-code regeneration. The backend route is not deployed yet;
-   * the admin UI exposes this action as disabled until it ships.
-   */
-  async adminRegenerateRecoveryCodes(userId: string): Promise<RecoveryCodesResponse> {
+  /** Clears every enrolled MFA factor for the user. */
+  async adminResetMfa(userId: string): Promise<AdminActionResponse> {
     this.invalidateUserCache();
-    const res = await this.request<RecoveryCodesResponse>(
-      `/api/v1/admin/users/${userId}/totp/recovery-codes/regenerate`,
-      { method: "POST", body: JSON.stringify({}) }
+    const res = await this.request<AdminActionResponse>(
+      `/api/v1/admin/users/${userId}/reset-mfa`,
+      { method: "POST" }
     );
     return res.data;
   }

@@ -35,15 +35,14 @@ export function ProfileTab() {
   const effectiveUser = profile || authUser;
   const isAdmin = effectiveUser?.role === "admin";
 
-  // Posture is derived only from real profile data. `two_factor_enabled` is
-  // supported defensively when a backend exposes it; `totp_enabled` is the
-  // canonical field on UserProfile.
+  // Posture is derived from the enrolled factors reported by the profile.
   const status = (effectiveUser?.status || "").toUpperCase();
   const identityVerified = status === "ACTIVE";
-  const mfaEnabled = Boolean(
-    (effectiveUser as (UserProfile & { two_factor_enabled?: boolean }) | null)?.two_factor_enabled ??
-      effectiveUser?.totp_enabled
-  );
+  const enrolledFactors = [
+    effectiveUser?.otp_enabled ? "OTP" : null,
+    effectiveUser?.totp_enabled ? "Authenticator" : null,
+  ].filter((factor): factor is string => factor !== null);
+  const mfaEnabled = enrolledFactors.length > 0;
   const sessionPolicyActive = true; // platform-enforced; not a per-user claim
   const roleAssigned = Boolean(effectiveUser?.role);
 
@@ -90,7 +89,7 @@ export function ProfileTab() {
             Profile &amp; identity
           </h1>
           <p className="mt-2.5 text-sm leading-relaxed text-muted-foreground">
-            Identity claims, role-based authorization, and two-factor credentials for this principal.
+            Identity claims, role-based authorization, and MFA credentials for this principal.
           </p>
         </div>
 
@@ -298,13 +297,13 @@ export function ProfileTab() {
             <h3 className="font-display text-base font-semibold text-foreground">Credential policy</h3>
           </div>
 
-          <p className="mt-5 text-[13px] font-medium text-foreground">Two-factor authentication</p>
+          <p className="mt-5 text-[13px] font-medium text-foreground">MFA</p>
 
           <dl className="mt-4 space-y-3 border-t border-border pt-5 text-[13px]">
             <div className="flex items-baseline justify-between gap-3">
               <dt className="text-muted-foreground">Second factor</dt>
               <dd className="text-right font-medium text-foreground">
-                {effectiveUser?.totp_enabled ? "OTP, Authenticator" : "OTP"}
+                {enrolledFactors.length ? enrolledFactors.join(", ") : "None"}
               </dd>
             </div>
             <div className="flex items-baseline justify-between gap-3">

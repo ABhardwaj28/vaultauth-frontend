@@ -36,7 +36,7 @@ const menus: Menu[] = [
         heading: "Identity flows",
         links: [
           { title: "Customer login", description: "Hosted sign-in with verified email and password", href: "#showcase", icon: Fingerprint },
-          { title: "Mandatory 2FA", description: "Email OTP before any session is minted", href: "#features", icon: KeyRound },
+          { title: "Mandatory MFA", description: "Email OTP before any session is minted", href: "#features", icon: KeyRound },
           { title: "Machine clients", description: "OAuth clients and scoped bearer tokens", href: "#solutions", icon: Blocks },
         ],
       },

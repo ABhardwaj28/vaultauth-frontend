@@ -13,6 +13,7 @@ import { LoginPage } from "@/pages/auth/LoginPage";
 import { RegisterPage } from "@/pages/auth/RegisterPage";
 import { VerifyOtpPage } from "@/pages/auth/VerifyOtpPage";
 import { SelectFactorPage } from "@/pages/auth/SelectFactorPage";
+import { ResetPasswordPage } from "@/pages/auth/ResetPasswordPage";
 
 // Dashboard Pages
 import { ProfileTab } from "@/pages/dashboard/ProfileTab";
@@ -64,6 +65,7 @@ function AppRoutes() {
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/verify-otp" element={<VerifyOtpPage />} />
           <Route path="/select-factor" element={<SelectFactorPage />} />
+          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
 
         {/* Protected Dashboard Routes */}
