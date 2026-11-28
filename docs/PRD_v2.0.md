@@ -94,7 +94,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 * **Account Lockout:** 3 consecutive password failures set account to `LOCKED` for 5 minutes with atomic counter updates; auto-unlocks after 5 minutes or upon admin unlock.
 * **Enterprise Security Audit Log:** Immutable event logging (`LOGIN_SUCCESS`, `LOGIN_FAILURE`, `LOCKOUT`, `REVOCATION`, etc.) filterable by event type.
 * **PostgreSQL Persistence:** Multi-role schema (`vault_app`, `vault_migrator`, `vault_backup`) hosted on Supabase.
-* **Responsive Frontend Web Client:** Production-grade Bun + React 18 + TypeScript + Tailwind CSS Single-Page Application (SPA) modeled after shadcn/ui and Cloudflare Zero-Trust, with strict Content Security Policy headers.
+* **Responsive Frontend Web Client:** Production-grade Bun + React 18 + TypeScript + Tailwind CSS Single-Page Application (SPA) built as a restrained enterprise security console, with strict Content Security Policy headers.
 
 ### 6.2 Prioritized Cut List (First to Cut → Last to Cut)
 1. **Expo Go Corporate Digital ID Card (Cut #1):** Lowest impact on core authentication and security objectives.
@@ -103,7 +103,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 
 ### 6.3 Out of Scope
 * Production SMS/carrier gateways (e.g. Twilio).
-* External OAuth2/OIDC identity brokering (Okta, Auth0, Google).
+* External OAuth2/OIDC identity brokering with third-party providers.
 * Physical YubiKey hardware parsing or real FIDO2 WebAuthn credential negotiation (WebAuthn remains a reading-only concept card).
 
 ---
@@ -135,7 +135,7 @@ The platform strictly segregates capabilities between **End Users (Employees)** 
 ```mermaid
 flowchart LR
     subgraph Clients["Clients"]
-        WEB["Web Frontend: SPA on Vercel<br>(Bun, React 18, TypeScript, Tailwind CSS, Radix UI)"]
+        WEB["Web Frontend: SPA on a static host<br>(Bun, React 18, TypeScript, Tailwind CSS, Radix UI)"]
         EXPO["Expo Digital ID Card<br>(Optional Mobile Stretch)"]
     end
 
@@ -220,7 +220,7 @@ stateDiagram-v2
 ## 9. Frontend Architecture & Client Engineering (Bun + React + Tailwind)
 
 ### 9.1 Single-Page Application (SPA) Component Architecture
-The frontend is engineered as a modern, high-assurance Single-Page Application (SPA) built with **Bun**, **React 18**, **TypeScript**, **Vite**, **Tailwind CSS**, and **Radix UI**. The UI architecture draws inspiration directly from **shadcn/ui** (`shadcn.com`), Linear, and Cloudflare Zero-Trust, featuring a trademark Cloudflare Safety Amber accent (`#F6821F`), restrained zinc/slate surfaces, 1px hairline borders, and full Dark/Light theme switching with zero Flash of Unstyled Content (FOUC).
+The frontend is engineered as a modern, high-assurance Single-Page Application (SPA) built with **Bun**, **React 18**, **TypeScript**, **Vite**, **Tailwind CSS**, and **Radix UI**. The UI architecture uses a restrained, hairline-bordered enterprise design language, with a signature amber accent (`#F6821F`), restrained zinc/slate surfaces, 1px hairline borders, and full Dark/Light theme switching with zero Flash of Unstyled Content (FOUC).
 
 ```text
 vaultauth-frontend/
@@ -247,7 +247,7 @@ vaultauth-frontend/
     │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
     │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
     ├── components/
-    │   ├── ui/                  # shadcn-grade primitives
+    │   ├── ui/                  # accessible UI primitives
     │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
     │   │   ├── input.tsx        # High-assurance input with focus rings
     │   │   ├── label.tsx        # Accessible form label
@@ -291,10 +291,10 @@ vaultauth-frontend/
             └── ErrorBoundary.tsx    # Global React ErrorBoundary wrapping root routes
 ```
 
-### 9.2 Design System & Theming Tokens (shadcn/ui Standard)
+### 9.2 Design System & Theming Tokens
 The visual styling is built around HSL CSS custom variables configured inside `index.css` and `tailwind.config.js`. It eschews trendy glassmorphism and non-standard animations in favor of clear information architecture, high-contrast typography, and strict 1px hairline borders:
 
-* **Trademark Primary Accent:** Cloudflare Safety Amber (`hsl(28 92% 54%)` / `#F6821F`), conveying vigilance, security, and enterprise reliability.
+* **Trademark Primary Accent:** Signature Safety Amber (`hsl(28 92% 54%)` / `#F6821F`), conveying vigilance, security, and enterprise reliability.
 * **Surface Hierarchy:** Layered neutral shades (`--background`, `--card`, `--popover`, `--muted`) using calibrated Zinc/Slate tones with matching dark/light variants.
 * **Zero-FOUC Theme Management:** An inline script in `index.html` resolves the theme from `localStorage` (`vaultauth_theme`) or `prefers-color-scheme` before the first paint, eliminating flashing.
 * **Accessibility & Focus Rings:** High-visibility focus indicators (`ring-2 ring-ring ring-offset-2`) ensure WCAG 2.1 AA keyboard navigation compliance across all interactive elements.
@@ -353,7 +353,7 @@ The authenticated workspace consolidates employee self-service and enterprise ad
    - Dedicated error views conforming to error codes: `403 Forbidden` (`ForbiddenPage.tsx`), `404 Not Found` (`NotFoundPage.tsx`), `429 Rate Limited` (`RateLimitedPage.tsx` with live countdown parsed from `X-RateLimit-Reset` header), and `500/503 Service Unavailable` (`ServerErrorPage.tsx`).
    - Root React `ErrorBoundary.tsx` catching runtime exceptions with technical error diagnostics and safe recovery actions.
 
-5. **Production Content Security Policy (`vercel.json`):**
+5. **Production Content Security Policy:**
    ```json
    {
      "headers": [
@@ -531,10 +531,10 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 
 | Week | Backend & DevSecOps Deliverables (Shaurya Jain) | Frontend & Security Architecture (Apoorva Bhardwaj) |
 | :---: | :--- | :--- |
-| **Week 1** | • Git repository setup (`vaultauth-backend`).<br>• Alembic migrations & PostgreSQL schema implementation.<br>• Argon2id hashing integration & `/auth/register`.<br>• OpenAPI spec generation & CI test pipeline setup. | • Git repository setup (`vaultauth-frontend`).<br>• Modern Bun + React 18 + TypeScript + Vite project bootstrap.<br>• shadcn/ui design tokens & Cloudflare Amber `#F6821F` styling.<br>• Base layout shells (`AuthShell`, `DashboardShell`, `TopBar`). |
+| **Week 1** | • Git repository setup (`vaultauth-backend`).<br>• Alembic migrations & PostgreSQL schema implementation.<br>• Argon2id hashing integration & `/auth/register`.<br>• OpenAPI spec generation & CI test pipeline setup. | • Git repository setup (`vaultauth-frontend`).<br>• Modern Bun + React 18 + TypeScript + Vite project bootstrap.<br>• Design tokens & signature amber `#F6821F` styling.<br>• Base layout shells (`AuthShell`, `DashboardShell`, `TopBar`). |
 | **Week 2** | • Out-of-band email OTP via Resend.<br>• Opaque 256-bit session token minting.<br>• Primary login authentication & generic error contract.<br>• 3-strike account lockout atomic DB logic. | • Split 6-digit numeric `OtpInput` with auto-advance & paste routing.<br>• Dual auth views (`LoginPage`, `RegisterPage`, `VerifyOtpPage`).<br>• Ephemeral session management (`sessionStorage` + React Context).<br>• 60s cooldown timers & live brute-force countdowns. |
 | **Week 3** | • Session revocation endpoints (`DELETE /sessions/{id}`).<br>• Admin endpoints (`/admin/sessions`, `/admin/audit-logs`).<br>• User governance & OAuth client APIs.<br>• Standby database sync job & Render deployment. | • Unified 6-Tab Dashboard (`ProfileTab`, `SessionsTab`, `AppsTab`, `UsersTab`, `AuditLogsTab`, `GlobalSessionsTab`).<br>• One-Time Secret Reveal modal for OAuth client creation.<br>• 3-strike user unlock interface & role/status toggles.<br>• Audit trail explorer with JSON inspection drawers. |
-| **Week 4 (Buffer)**| • Automated failover drill & recovery test.<br>• Complete CI test suite verification.<br>• Final security audit & backend documentation. | • Standardized error pages (`403`, `404`, `429`, `500/503`) & ErrorBoundary.<br>• Cross-browser testing & mobile responsive polish.<br>• Production CSP security headers deployment on Vercel.<br>• Final walkthrough demonstration recording. |
+| **Week 4 (Buffer)**| • Automated failover drill & recovery test.<br>• Complete CI test suite verification.<br>• Final security audit & backend documentation. | • Standardized error pages (`403`, `404`, `429`, `500/503`) & ErrorBoundary.<br>• Cross-browser testing & mobile responsive polish.<br>• Production CSP security headers deployment.<br>• Final walkthrough demonstration recording. |
 
 ---
 
@@ -542,7 +542,7 @@ All endpoints use base path `/api/v1`. All request/response bodies are JSON. Err
 
 1. **Frontend Repository:** [https://github.com/ABhardwaj28/vaultauth-frontend](https://github.com/ABhardwaj28/vaultauth-frontend)
 2. **Backend Repository:** [https://github.com/ProPlays2312/vaultauth-backend](https://github.com/ProPlays2312/vaultauth-backend)
-3. **Deployed Web Client:** Hosted on Vercel with enterprise CSP response headers.
+3. **Deployed Web Client:** Hosted on a static platform with enterprise CSP response headers.
 4. **Deployed API Service:** Containerized FastAPI on Render free tier.
 5. **Database Infrastructure:** PostgreSQL 15+ on Supabase (Primary) and Neon (Standby).
 6. **Documentation:** This optimized PRD (v2.0), comprehensive READMEs, and OpenAPI specification.

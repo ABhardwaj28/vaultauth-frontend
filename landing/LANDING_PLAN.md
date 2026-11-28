@@ -1,8 +1,8 @@
-# VaultAuth Landing Page — Auth0 Architectural Blueprint (Implemented)
+# VaultAuth Landing Page — Architectural Blueprint (Implemented)
 
 Target: `http://127.0.0.1:3001` (Vite, `--host 0.0.0.0`)
 Identity runtime: `http://localhost:3000` (`vaultauth-frontend`)
-Design reference: [auth0.com](https://auth0.com/)
+Design direction: a restrained enterprise identity console.
 
 ## Design tokens
 
@@ -54,7 +54,7 @@ Deliberately excluded as unsupported: sub-millisecond Redis revocation, sub-15 m
 6. `ArchitectureSection` — SVG circuit with clickable spec HUD.
 7. `FeaturesGrid` — six cursor-spotlight pillars.
 8. `DevelopersSection` — live endpoint list and discovery facts.
-9. `QuickstartSection` — standalone Auth0-style gradient stage with segmented framework switcher, terminal, and copy cards.
+9. `QuickstartSection` — standalone gradient stage with segmented framework switcher, terminal, and copy cards.
 10. `ComparisonSection` — neutral generic comparison.
 11. `PricingSection` — capability tiers only: Developer is self-hosted-only with a documentation CTA; Team, Scale and Sovereign are managed or self-hosted with a team CTA. The editable cost estimator lives on the standalone `/pricing.html` page opened from the top Pricing link. No published or invented prices.
 12. `FaqSection` — five honest technical answers, all closed by default.

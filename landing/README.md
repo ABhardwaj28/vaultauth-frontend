@@ -1,10 +1,10 @@
 # VaultAuth SSO — Enterprise Landing Page
 
-Modern, high-converting enterprise identity & access landing page inspired by [Auth0](https://auth0.com/).
+Modern, high-converting enterprise identity & access landing page built for modern identity teams.
 
 ## Features
 
-- **Auth0-inspired, square-cornered dark interface** with a blended gradient canvas and amber action color.
+- **Square-cornered dark interface** with a blended gradient canvas and amber action color.
 - **Hero workbench**: decoded sample ID-token claims and a real in-browser S256 PKCE challenge generator.
 - **Truthful capabilities**: Argon2id hashing, mandatory email OTP, opaque session tokens, session revocation, RBAC, audit logs, and live OIDC endpoints. Unsupported features (SAML/SCIM, real WebAuthn, published SDKs, invented SLAs) are not claimed.
 - **Scroll-driven security walkthrough**: password entry, six-digit OTP with a live timer, session kill-switch with audit log, and an OAuth client registry. An animated cursor drives each step.

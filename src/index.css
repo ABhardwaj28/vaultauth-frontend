@@ -95,6 +95,12 @@
   }
 }
 
+/* Universal square corners — the same boxy system used by the landing page.
+   Applies to the identity portal only; the landing has its own scoped copy. */
+[class*="rounded"] {
+  border-radius: 0 !important;
+}
+
 /* Precision scrollbars */
 ::-webkit-scrollbar {
   width: 6px;
@@ -105,5 +111,5 @@
 }
 ::-webkit-scrollbar-thumb {
   background: hsl(var(--border));
-  border-radius: 3px;
+  border-radius: 0;
 }

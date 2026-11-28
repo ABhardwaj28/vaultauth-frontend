@@ -158,7 +158,7 @@ export function Hero() {
               </div>
               <span className="inline-flex items-center gap-1.5 font-mono text-[10px] text-[#10B981]">
                 <span className={`h-1.5 w-1.5 rounded-full ${healthy === false ? "bg-[#F07A26]" : "bg-[#10B981]"}`} />
-                {healthy === false ? "API REFERENCE" : healthy === true ? "LIVE API" : "CHECKING API"}
+                {healthy === false ? "API UNAVAILABLE" : healthy === true ? "LIVE API" : "CHECKING API"}
               </span>
             </div>
 

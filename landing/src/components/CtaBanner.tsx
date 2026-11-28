@@ -22,7 +22,7 @@ const actions = [
   {
     icon: FileCode2,
     title: "Documentation",
-    body: "Guides and API reference are being prepared.",
+    body: "Guides are being prepared.",
     href: DOCS_LINK,
     label: "See documentation",
     primary: false,

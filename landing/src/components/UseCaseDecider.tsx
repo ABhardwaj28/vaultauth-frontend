@@ -34,7 +34,7 @@ const cases = [
   },
   {
     id: "m2m",
-    label: "AI & machine clients", short: "AI / M2M",
+    label: "Machine clients", short: "M2M",
     icon: Bot,
     title: "Scoped access for non-human actors",
     body: "Register OAuth clients, exchange authorization codes with PKCE, and verify RS256 tokens locally against a published JWKS.",

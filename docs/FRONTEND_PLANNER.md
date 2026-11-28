@@ -3,7 +3,7 @@
 ## Executive Summary
 This planner outlines the step-by-step frontend implementation roadmap for **VaultAuth SSO** (Track: `PST_PD_154`), tailored directly to the live backend API deployed at **`https://api.vaultauth.proplays2312.eu.org/`**.
 
-The frontend is engineered as a modern, high-assurance Single Page Application (SPA) using **Bun**, **React 18**, **Tailwind CSS**, **Lucide Icons**, and an enterprise cybersecurity dark/light design system with Cloudflare-inspired aesthetics.
+The frontend is engineered as a modern, high-assurance Single Page Application (SPA) using **Bun**, **React 18**, **Tailwind CSS**, **Lucide Icons**, and an enterprise cybersecurity dark/light design system with restrained enterprise aesthetics.
 
 ---
 
@@ -15,11 +15,11 @@ flowchart TD
         UI["React Router v7 SPA Routing"]
         API_LAYER["Typed API Service (src/lib/api.ts)"]
         SESSION_STORE["Ephemeral Token Storage (AuthContext + sessionStorage)"]
-        COMPONENTS["shadcn/ui & Radix UI Primitives (Modals, Tables, Drawers)"]
+        COMPONENTS["Accessible & Radix UI Primitives (Modals, Tables, Drawers)"]
     end
 
     subgraph Backend["Live Backend Service (vaultauth-backend)"]
-        GATEWAY["Cloudflare Proxy / Render Container"]
+        GATEWAY["Edge Proxy / Application Container"]
         CORE_API["FastAPI /api/v1/auth/*"]
         SESSION_API["FastAPI /api/v1/me/sessions & /api/v1/sessions/*"]
         ADMIN_API["FastAPI /api/v1/admin/*"]
@@ -59,7 +59,7 @@ gantt
 ### Phase 1: Foundational Scaffolding & Live Connectivity
 - [x] **Repository & Documentation:** Initialized `vaultauth-frontend` with PRD v2.0 and modern stack.
 - [x] **Modern Stack Architecture:** Upgraded to Bun runtime, React 18, Vite bundler, and Tailwind CSS.
-- [x] **Enterprise Design Tokens:** Custom Cloudflare Tangerine (`#F6821F`) trademark identity, obsidian dark canvas (`#0A0D14`), and pristine light theme (`#F8FAFC`).
+- [x] **Enterprise Design Tokens:** Custom signature amber (`#F6821F`) identity, obsidian dark canvas (`#0A0D14`), and pristine light theme (`#F8FAFC`).
 - [x] **Tactile Elegant Buttons:** Layered depth, internal highlights, micro-borders, and physical press compression (replacing classic flat buttons).
 - [x] **Live Health Handshake:** Dynamic telemetry pill with real-time API ping latency (`GET /health` and `/api/v1/health`).
 
@@ -88,7 +88,7 @@ gantt
 - [x] **OAuth / OIDC Application Management:** Complete relying party client creation with mandatory **One-Time Secret Reveal Modal** and client revocation (`AppsTab.tsx`).
 - [x] **Standardized Error Diagnostics:** Standardized `401`, `403` (Forbidden), `404` (Not Found), `429` (Rate Limited with live reset countdown), `500/503` (Offline), and React `ErrorBoundary`.
 - [x] **Render Cold-Start & Latency Defense:** Global non-blocking alert displaying container warm-up status when backend response latency exceeds 2.0s.
-- [x] **Production Deployment:** Configured for Vercel with strict Content Security Policy (`vercel.json`) and zero-FOUC theme loader.
+- [x] **Production Deployment:** Configured for static hosting with a strict Content Security Policy and zero-FOUC theme loader.
 
 ---
 
@@ -119,7 +119,7 @@ vaultauth-frontend/
     │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
     │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
     ├── components/
-    │   ├── ui/                  # shadcn-grade primitives
+    │   ├── ui/                  # accessible UI primitives
     │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
     │   │   ├── input.tsx        # High-assurance input with focus rings
     │   │   ├── label.tsx        # Accessible form label

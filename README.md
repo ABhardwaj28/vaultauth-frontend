@@ -7,7 +7,6 @@
 [![Track](https://img.shields.io/badge/Track-PST__PD__154%20Product%20Development-orange.svg)]()
 [![Batch](https://img.shields.io/badge/Batch-2026%20Level%204%20(Stretch)-purple.svg)]()
 [![Backend Service](https://img.shields.io/badge/Backend%20API-vaultauth--backend-blueviolet.svg)](https://github.com/ProPlays2312/vaultauth-backend)
-[![Deployment](https://img.shields.io/badge/Deployed%20on-Vercel-black.svg)]()
 
 ---
 
@@ -40,8 +39,8 @@ This repository strictly implements the **VaultAuth SSO PRD v2.0**, which elevat
 
 ## 4. Frontend Architecture & Modern Tech Stack
 
-### 4.1 Bun + React 18 + TypeScript + Tailwind CSS (shadcn/ui-Grade)
-The client is engineered as a production-grade, enterprise-ready Single-Page Application (SPA) powered by **Bun**, **React 18**, **TypeScript**, and **Tailwind CSS**, designed with an engineered aesthetic modeled directly after **shadcn/ui** (`shadcn.com`), Linear, and Cloudflare Zero-Trust:
+### 4.1 Bun + React 18 + TypeScript + Tailwind CSS
+The client is engineered as a production-grade, enterprise-ready Single-Page Application (SPA) powered by **Bun**, **React 18**, **TypeScript**, and **Tailwind CSS**, designed with a precise, hairline-bordered enterprise aesthetic:
 
 ```text
 vaultauth-frontend/
@@ -69,7 +68,7 @@ vaultauth-frontend/
     │   ├── AuthContext.tsx       # Token persistence, /api/v1/me hydration & role helpers
     │   └── ThemeContext.tsx      # FOUC-free persistent theme state (light | dark | system)
     ├── components/
-    │   ├── ui/                  # shadcn-grade primitives
+    │   ├── ui/                  # accessible UI primitives
     │   │   ├── button.tsx       # Accessible button with variants (default, outline, destructive, ghost)
     │   │   ├── input.tsx        # High-assurance input with focus rings
     │   │   ├── label.tsx        # Accessible form label
@@ -114,7 +113,7 @@ vaultauth-frontend/
 ```
 
 ### 4.2 Key Engineering & Security Highlights
-1. **Engineered shadcn/ui Design Standards:**
+1. **Engineered UI Design Standards:**
    - Restrained Zinc/Slate palette driven entirely by semantic HSL CSS custom properties (`--background`, `--card`, `--primary`, `--border`, `--input`, `--ring`).
    - Visual hierarchy established through crisp `1px solid hsl(var(--border))` hairline borders and subtle surface contrast rather than heavy drop shadows or glassmorphism abuse.
    - Dual theme support (Light, Dark, and System) with zero-FOUC inline boot script.
@@ -181,7 +180,7 @@ This single dev server serves the whole website: `/` renders the marketing landi
 
 - [x] **Week 1:** Repository setup, PRD v2.0 optimization, responsive Bootstrap UI layout, and API adapter skeleton.
 - [ ] **Week 2:** Split 6-digit OTP input, registration & email verification views, login flow, and ephemeral token handling.
-- [ ] **Week 3:** Active session management table with 1-click revocation, admin audit log explorer, and Vercel deployment with CSP headers.
+- [ ] **Week 3:** Active session management table with 1-click revocation, admin audit log explorer, and production deployment with CSP headers.
 - [ ] **Week 4:** Cross-browser testing, mobile responsive polish (375px), WebAuthn concept card, and end-to-end demo video.
 
 ---

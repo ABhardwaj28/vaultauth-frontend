@@ -1,6 +1,6 @@
 # VaultAuth Landing — Architecture Notes
 
-Mirror of `AUTH0_LANDING_PLAN.md` with implementation detail.
+Mirror of `LANDING_PLAN.md` with implementation detail.
 
 ## Component hierarchy
 
@@ -32,7 +32,7 @@ src/
 ## Visual system notes
 
 - The page canvas is a fixed smooth gradient from `#080C14` through indigo and teal-tinted darks back to `#080C14`, with large low-opacity amber, indigo, emerald, and magenta radial blobs blended behind transparent sections.
-- The quickstart section follows Auth0's information format (segmented framework switcher, terminal, copy cards) but uses the VaultAuth palette rather than a purple stage.
+- The quickstart section follows a familiar information format (segmented framework switcher, terminal, copy cards) but uses the VaultAuth palette rather than a purple stage.
 - Mobile: grid templates use `minmax(0, …)` and fluid type (`clamp`) to prevent intrinsic min-content overflow. Below `sm`, benchmark and architecture rows become two-column pairs, the closing CTA cards stack, and the mobile menu is fully opaque. Horizontal control strips (framework switcher, marquee) stay horizontal and scroll if needed.
 
 ## Interaction model
